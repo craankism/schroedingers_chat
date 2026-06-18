@@ -29,7 +29,6 @@ export const fileApi = {
 
     delete: async (fileId: number): Promise<void> => {
         await axios.delete(`${fileUrl}/${fileId}`);
-        // Rückgabe void oder Response-Body, je nach Backend-Implementierung
     }
 };
 
