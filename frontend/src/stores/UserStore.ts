@@ -1,6 +1,7 @@
 import type {UserInput, UserType} from "../types/UserType.ts";
 import {create} from "zustand/react";
 import {userApi} from "../services/apiCalls.ts";
+import {useNotificationStore} from "./NotificationStore.ts";
 
 type UserState = {
     users: UserType[],
@@ -17,43 +18,61 @@ export const useUserStore = create<UserState>(
         error: null,
 
         addUser: async (userInput: UserInput) => {
+            useNotificationStore.getState().startLoading();
             try {
                 const data = await userApi.create(userInput);
                 set((state: UserState) => ({
                     users: [...state.users, data]
-                }))
+                }));
+                useNotificationStore.getState().addNotification("User erfolgreich angelegt", "success");
             } catch (e) {
-                set({error: "Fehler" + e})
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim Anlegen des Nutzers", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         },
 
         getUser: async (userId: number) => {
+            useNotificationStore.getState().startLoading();
             try {
                 const data = await userApi.getById(userId);
                 set((state: UserState) => ({
                     users: state.users.map(user => user.userId === userId ? {...user, ...data} : user)
                 }))
             } catch (e) {
-                set({error: "Fehler" + e})
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim Laden des Users", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         },
 
         getAllUsers: async () => {
+            useNotificationStore.getState().startLoading();
             try {
                 const data = await userApi.getAll();
                 set({users: data})
             } catch (e) {
-                set({error: "Fehler" + e})
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim Laden der User", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         },
         deleteUser: async (userId: number) => {
+            useNotificationStore.getState().startLoading();
             try {
                 await userApi.delete(userId);
                 set((state: UserState) => ({
                     users: state.users.filter(user => user.userId !== userId)
-                }))
+                }));
+                useNotificationStore.getState().addNotification("User erfolgreich gelöscht", "success");
             } catch (e) {
                 set({error: "Fehler" + e})
+                useNotificationStore.getState().addNotification("Fehler beim Löschen", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         }
     })

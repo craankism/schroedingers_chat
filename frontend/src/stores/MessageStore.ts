@@ -1,10 +1,11 @@
-import type { MessageInput, MessageType } from "../types/MessageType.ts";
-import { create } from "zustand/react";
-import { messageApi } from "../services/apiCalls.ts";
+import type {MessageInput, MessageType} from "../types/MessageType.ts";
+import {create} from "zustand/react";
+import {messageApi} from "../services/apiCalls.ts";
+import {useNotificationStore} from "./NotificationStore.ts";
 
 type MessageState = {
-    messages: MessageType[];
-    error: string | null;
+    messages: MessageType[],
+    error: string | null,
     postMessage: (messageData: MessageInput) => void;
     getMessage: (messageId: number) => void;
     getAllMessages: () => void;
@@ -17,44 +18,62 @@ export const useMessageStore = create<MessageState>(
         error: null,
 
         postMessage: async (messageData: MessageInput) => {
+            useNotificationStore.getState().startLoading();
             try {
                 const data = await messageApi.post(messageData);
                 set((state: MessageState) => ({
                     messages: [...state.messages, data]
-                }))
+                }));
+                useNotificationStore.getState().addNotification("Nachricht erfolgreich gesendet", "success");
             } catch (e) {
-                set({error: "Fehler" + e})
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim Senden der Nachricht", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         },
 
         getMessage: async (messageId: number) => {
+            useNotificationStore.getState().startLoading();
             try {
                 const data = await messageApi.getById(messageId);
                 set((state: MessageState) => ({
                     messages: state.messages.map(msg => msg.messageId === messageId ? {...msg, ...data} : msg)
-                }))
+                }));
             } catch (e) {
-                set({error: "Fehler" + e})
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim Laden der Nachricht", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         },
 
         getAllMessages: async () => {
+            useNotificationStore.getState().startLoading();
             try {
                 const data = await messageApi.getAll();
-                set({messages: data})
+                set({messages: data});
             } catch (e) {
-                set({error: "Fehler" + e})
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim Laden der Nachrichten", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         },
 
         deleteMessage: async (messageId: number) => {
+            useNotificationStore.getState().startLoading();
             try {
                 await messageApi.delete(messageId);
                 set((state: MessageState) => ({
                     messages: state.messages.filter(msg => msg.messageId !== messageId)
-                }))
+                }));
+                useNotificationStore.getState().addNotification("Nachricht erfolgreich gelöscht", "success");
             } catch (e) {
-                set({error: "Fehler" + e})
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim Löschen der Nachricht", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
             }
         }
     })
