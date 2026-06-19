@@ -1,24 +1,21 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import type React from "react";
-import IconSC from "../assets/iconSC.png";
+import IconSC from "../../assets/iconSC.png";
 import { useNavigate } from "react-router-dom";
-import DrawerList from "./DrawerList";
 
-type MobileNavProps = {
+type DesktopNavProps = {
   pages: string[];
 };
 
-const MobileNav: React.FC<MobileNavProps> = ({ pages }) => {
+const DesktopNav: React.FC<DesktopNavProps> = ({ pages }) => {
   const navigate = useNavigate();
 
   return (
     <>
-      <DrawerList pages={pages} />
       <Box
         sx={{
-          display: { xs: "flex", md: "none" },
+          display: { xs: "none", md: "flex" },
           cursor: "pointer",
-          flexGrow: 1,
         }}
         onClick={() => navigate("/")}
       >
@@ -45,11 +42,22 @@ const MobileNav: React.FC<MobileNavProps> = ({ pages }) => {
             alignSelf: "center",
           }}
         >
-          SC
+          Schroedinger's Chat
         </Typography>
+      </Box>
+      <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+        {pages.map((page) => (
+          <Button
+            key={page}
+            sx={{ my: 2, color: "white", display: "block" }}
+            onClick={() => navigate("/" + page)}
+          >
+            {page}
+          </Button>
+        ))}
       </Box>
     </>
   );
 };
 
-export default MobileNav;
+export default DesktopNav;
