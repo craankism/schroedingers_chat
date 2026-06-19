@@ -29,6 +29,9 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
 
     public AuthDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO) throws UserAlreadyExistsException {
+        //TODO: replace generate Key placeholder
+        //String registryKey = Math.random();
+
         User user = User.builder()
                 .isAdmin(registerUserKeyDTO.isAdmin())
                 .isTrainer(registerUserKeyDTO.isTrainer())
