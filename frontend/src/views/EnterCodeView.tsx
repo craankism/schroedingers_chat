@@ -11,7 +11,11 @@ const EnterCodeView = (): JSX.Element => {
   const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
     e.preventDefault();
     // Code Validation here
-    navigate("/register");
+    // if (code == okay) {
+    navigate("/register/" + code);
+    // } else {
+    alert("Code doesn't exist");
+    // }
   };
 
   return (
