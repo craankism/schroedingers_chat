@@ -1,7 +1,7 @@
 import {endpointUrl} from "../types/constants/constants.ts";
 import axios from "axios";
 import type {FileInput, FileType} from "../types/FileType.ts";
-import type {UserInput, UserType} from "../types/UserType.ts";
+import type {UserInput, UserInvitation, UserType} from "../types/UserType.ts";
 import type {RoomInput, RoomType} from "../types/RoomType.ts";
 import type {MessageInput, MessageType} from "../types/MessageType.ts";
 
@@ -9,6 +9,7 @@ const fileUrl = endpointUrl + "/file";
 const userUrl = endpointUrl + "/user";
 const roomUrl = endpointUrl + "/room";
 const messageUrl = endpointUrl + "/message";
+const registryUrl = endpointUrl + "/register";
 
 
 export const fileApi = {
@@ -41,8 +42,12 @@ export const userApi = {
         const response = await axios.get<UserType>(`${userUrl}/${userId}`);
         return response.data;
     },
-    create: async (user: UserInput): Promise<UserType> => {
-        const response = await axios.post<UserType>(userUrl, user);
+    createUser: async (inviteKey: string, user: UserInput): Promise<UserType> => {
+        const response = await axios.put<UserType>(`${registryUrl}/${inviteKey}`, user);
+        return response.data;
+    },
+    createInvitation: async (invitation: UserInvitation): Promise<UserType> => {
+        const response = await axios.post<UserType>(userUrl, invitation);
         return response.data;
     },
     delete: async (userId: number): Promise<void> => {
