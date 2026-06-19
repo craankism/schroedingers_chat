@@ -56,6 +56,20 @@ const terminalPalette = {
 
 // Component Overrides - Scharfe Kanten, Terminal-Look
 const componentOverrides = {
+    MuiCssBaseline: {
+        styleOverrides: {
+            body: {
+                backgroundColor: '#0a0e14', // Exakte Farbe des Hintergrunds
+                color: terminalPalette.text.primary,
+                margin: 0,
+                padding: 0,
+            },
+            '#root': { // Sichert auch den root Div in index.html
+                backgroundColor: '#0a0e14',
+                minHeight: '100vh',
+            },
+        },
+    },
     MuiAppBar: {
         styleOverrides: {
             root: {
