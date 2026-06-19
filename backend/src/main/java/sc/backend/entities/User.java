@@ -19,13 +19,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String displayName;
 
     @Column(nullable = false)
@@ -33,6 +31,8 @@ public class User {
 
     @Column(nullable = false)
     private boolean isTrainer;
+
+    private String registryKey;
 
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
