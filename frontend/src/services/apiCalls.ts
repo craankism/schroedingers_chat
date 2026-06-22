@@ -1,15 +1,17 @@
 import {endpointUrl} from "../types/constants/constants.ts";
 import axios from "axios";
 import type {FileInput, FileType} from "../types/FileType.ts";
-import type {UserInput, UserInvitation, UserType} from "../types/UserType.ts";
+import type {UserInput, UserType} from "../types/UserType.ts";
 import type {RoomInput, RoomType} from "../types/RoomType.ts";
 import type {MessageInput, MessageType} from "../types/MessageType.ts";
+import type {AuthLoginType, registrationInput} from "../types/AuthType.ts";
 
 const fileUrl = endpointUrl + "/file";
 const userUrl = endpointUrl + "/user";
 const roomUrl = endpointUrl + "/room";
 const messageUrl = endpointUrl + "/message";
-const registryUrl = endpointUrl + "/register";
+const registrationUrl = endpointUrl + "/register";
+const loginUrl = endpointUrl + "/login";
 
 
 export const fileApi = {
@@ -43,11 +45,7 @@ export const userApi = {
         return response.data;
     },
     createUser: async (inviteKey: string, user: UserInput): Promise<UserType> => {
-        const response = await axios.put<UserType>(`${registryUrl}/${inviteKey}`, user);
-        return response.data;
-    },
-    createInvitation: async (invitation: UserInvitation): Promise<UserType> => {
-        const response = await axios.post<UserType>(userUrl, invitation);
+        const response = await axios.put<UserType>(`${registrationUrl}/${inviteKey}`, user);
         return response.data;
     },
     delete: async (userId: number): Promise<void> => {
@@ -97,3 +95,15 @@ export const messageApi = {
         await axios.delete(`${messageUrl}/${messageId}`);
     }
 };
+
+export const authApi = {
+    createRegistrationCode: async (registration: registrationInput): Promise<UserType> => {
+        const response = await axios.post<UserType>(registrationUrl, registration);
+        return response.data;
+    },
+
+    login: async (login: AuthLoginType): Promise<UserType> => {
+        const response = await axios.post<UserType>(loginUrl, login);
+        return response.data;
+    },
+}
