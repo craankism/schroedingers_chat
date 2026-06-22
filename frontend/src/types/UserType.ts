@@ -12,8 +12,3 @@ export type UserInput = {
     pwd: string,
     displayName: string
 }
-
-export type UserInvitation = {
-    isAdmin: boolean,
-    isTrainer: boolean,
-}
