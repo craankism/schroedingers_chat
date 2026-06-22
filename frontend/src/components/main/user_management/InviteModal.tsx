@@ -6,8 +6,8 @@ import Modal from "@mui/material/Modal";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import AddLinkIcon from "@mui/icons-material/AddLink";
 import { Checkbox, FormControlLabel, Grid, TextField } from "@mui/material";
-import { useUserStore } from "../../../stores/UserStore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { useAuthStore } from "../../../stores/AuthStore";
 
 const style = {
   position: "absolute",
@@ -28,11 +28,17 @@ const InviteModal = (): JSX.Element => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const { addInvitation } = useUserStore();
+  const { addRegistrationCode, currentUser } = useAuthStore();
 
-  const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
+  const submitHandler = async (
+    e: React.SubmitEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
-    setLink(addInvitation({ isTrainer }));
+    const createdBy = currentUser?.userId || 0;
+    const result = await addRegistrationCode({ isTrainer, createdBy });
+    if (result) {
+      setLink(result);
+    }
   };
 
   return (
