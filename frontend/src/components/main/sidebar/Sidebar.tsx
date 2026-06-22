@@ -1,9 +1,10 @@
 import { Box, Divider, Drawer, IconButton, Toolbar } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SidebarHelper from "./SidebarHelper";
+import { useAuthStore } from "../../../stores/AuthStore";
 
 const drawerWidth = 240;
 
@@ -17,12 +18,9 @@ const navItems = ["Ankündigungen", "Kursmaterialien"];
 const chatItems = ["Chats"];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
-  const [isAdmin, setIsAdmin] = useState<boolean>(true);
   const [open, setOpen] = useState<boolean>(true);
-
-  useEffect(() => {
-    // check if admin
-  }, []);
+  const { currentUser } = useAuthStore();
+  const isAdmin = currentUser?.isAdmin ?? false;
 
   return (
     <Box sx={{ display: "flex" }}>
