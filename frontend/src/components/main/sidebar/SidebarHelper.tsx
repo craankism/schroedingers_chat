@@ -5,13 +5,17 @@ const SidebarHelper: React.FC<{
   items: string[];
   activeView: string;
   setActiveView: (view: string) => void;
-}> = ({ items, activeView, setActiveView }) => (
+  setOpen: (open: boolean) => void;
+}> = ({ items, activeView, setActiveView, setOpen }) => (
   <List>
     {items.map((item) => (
       <ListItem key={item} disablePadding>
         <ListItemButton
           selected={activeView === item}
-          onClick={() => setActiveView(item)}
+          onClick={() => {
+            setActiveView(item);
+            setOpen(false);
+          }}
         >
           <ListItemText primary={item} />
         </ListItemButton>
