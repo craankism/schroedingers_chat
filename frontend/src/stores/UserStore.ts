@@ -22,8 +22,7 @@ export const useUserStore = create<UserState>(
             try {
                 const data = await userApi.createUser(inviteKey, userInput);
                 set((state: UserState) => ({
-                    users: state.users.map(user =>
-                        user.inviteKey === inviteKey ? {...user, ...data} : user)
+                    users: [...state.users, data]
                 }));
                 useNotificationStore.getState().addNotification("User erfolgreich angelegt", "success");
             } catch (e) {
