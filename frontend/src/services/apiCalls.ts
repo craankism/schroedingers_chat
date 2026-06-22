@@ -4,7 +4,7 @@ import type {FileInput, FileType} from "../types/FileType.ts";
 import type {UserInput, UserType} from "../types/UserType.ts";
 import type {RoomInput, RoomType} from "../types/RoomType.ts";
 import type {MessageInput, MessageType} from "../types/MessageType.ts";
-import type {AuthLoginType, registrationInput} from "../types/AuthType.ts";
+import type {AuthLoginType, registrationInput, registrationReturn} from "../types/AuthType.ts";
 
 const fileUrl = endpointUrl + "/file";
 const userUrl = endpointUrl + "/user";
@@ -44,8 +44,8 @@ export const userApi = {
         const response = await axios.get<UserType>(`${userUrl}/${userId}`);
         return response.data;
     },
-    createUser: async (inviteKey: string, user: UserInput): Promise<UserType> => {
-        const response = await axios.put<UserType>(`${registrationUrl}/${inviteKey}`, user);
+    createUser: async (registrationCode: string, user: UserInput): Promise<UserType> => {
+        const response = await axios.put<UserType>(`${registrationUrl}/${registrationCode}`, user);
         return response.data;
     },
     delete: async (userId: number): Promise<void> => {
@@ -97,13 +97,13 @@ export const messageApi = {
 };
 
 export const authApi = {
-    createRegistrationCode: async (registration: registrationInput): Promise<UserType> => {
-        const response = await axios.post<UserType>(registrationUrl, registration);
+    createRegistrationCode: async (registration: registrationInput): Promise<registrationReturn> => {
+        const response = await axios.post<registrationReturn>(registrationUrl, registration);
         return response.data;
     },
 
-    login: async (login: AuthLoginType): Promise<UserType> => {
-        const response = await axios.post<UserType>(loginUrl, login);
+    login: async (credentials: AuthLoginType): Promise<UserType> => {
+        const response = await axios.post<UserType>(loginUrl, credentials);
         return response.data;
     },
 }

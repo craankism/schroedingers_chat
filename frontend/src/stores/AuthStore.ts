@@ -10,7 +10,8 @@ type AuthState = {
     currentUser: UserType | null;
     isAuthenticated: boolean;
     login: (login: AuthLoginType) => void;
-    addRegistrationCode: (registration: registrationInput) => void;
+    logout: () => void;
+    addRegistrationCode: (registration: registrationInput) => Promise<string | null>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -22,8 +23,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     login: async (login: AuthLoginType) => {
         useNotificationStore.getState().startLoading();
         try {
-            await authApi.login(login);
-            //TODO do we need more Logic here?
+            const data = await authApi.login(login);
+            set({token: data.jwt, currentUser: data, isAuthenticated: true});
+            localStorage.setItem('jwt', data.jwt);
             useNotificationStore.getState().addNotification("Login Erfolgreich", "success");
         } catch (e) {
             set({error: "Fehler" + e})
@@ -33,15 +35,21 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
 
+    logout: () => {
+        localStorage.removeItem('jwt');
+        set({token: null, currentUser: null, isAuthenticated: false})
+    },
+
     addRegistrationCode: async (registration: registrationInput) => {
         useNotificationStore.getState().startLoading();
         try {
-            await authApi.createRegistrationCode(registration);
-            //TODO Logic?
+            const data = await authApi.createRegistrationCode(registration);
             useNotificationStore.getState().addNotification("Einladung erfolgreich angelegt", "success");
+            return data.registrationCode;
         } catch (e) {
             set({error: "Fehler" + e});
-            useNotificationStore.getState().addNotification("Fehler beim ERstellen der Einladung", "error");
+            useNotificationStore.getState().addNotification("Fehler beim Erstellen der Einladung", "error");
+            return null;
         } finally {
             useNotificationStore.getState().stopLoading();
         }

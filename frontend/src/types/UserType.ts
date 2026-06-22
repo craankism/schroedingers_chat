@@ -4,7 +4,7 @@ export type UserType = {
     displayName: string,
     isAdmin: boolean,
     isTrainer: boolean,
-    inviteKey: string,
+    jwt: string,
 }
 
 export type UserInput = {
