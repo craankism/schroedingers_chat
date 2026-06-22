@@ -28,7 +28,7 @@ function NavTop() {
   };
 
   return (
-    <AppBar position="static" id="nav">
+    <AppBar position="fixed" id="nav" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Container maxWidth={false}>
         <Toolbar disableGutters>
           <DesktopNav pages={pages} />

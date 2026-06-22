@@ -8,9 +8,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
+import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.AuthDTO;
 import sc.backend.entities.User;
 import sc.backend.exceptions.EmptyOptionalException;
+import sc.backend.exceptions.KeyInvalidException;
 import sc.backend.exceptions.UserAlreadyExistsException;
 import sc.backend.repositories.UserRepository;
 
@@ -26,26 +28,34 @@ public class UserService {
     private final ConversionService conversionService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthDTO register(RegisterDTO registerDTO) throws UserAlreadyExistsException {
+    public AuthDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO) throws UserAlreadyExistsException {
+        //TODO: replace generate Key placeholder
+        //String registryKey = Math.random();
+
         User user = User.builder()
-                .email(registerDTO.getEmail())
-                .password(passwordEncoder.encode(registerDTO.getPassword()))
-                .displayName(registerDTO.getDisplayName())
-                .isAdmin(false)
-                .isTrainer(false)
+                .isAdmin(registerUserKeyDTO.isAdmin())
+                .isTrainer(registerUserKeyDTO.isTrainer())
                 .build();
         userRepository.save(user);
 
         String jwt = tokenService.generateTokenWithClaims(user);
 
-        return AuthDTO.builder()
-                .userId(user.getUserId())
-                .email(user.getEmail())
-                .displayName(user.getDisplayName())
-                .isAdmin(user.isAdmin())
-                .isTrainer(user.isTrainer())
-                .jwt(jwt)
-                .build();
+        return convertToAuthDTO(user, jwt);
+    }
+
+    public AuthDTO register(String registryKey, RegisterDTO registerDTO) {
+        User user = userRepository.findByRegistryKey(registryKey).orElseThrow(() ->
+                        new KeyInvalidException("Key is invalid!"));
+
+        user.setEmail(registerDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+        user.setDisplayName(registerDTO.getDisplayName());
+
+        userRepository.save(user);
+
+        String jwt = tokenService.generateTokenWithClaims(user);
+
+        return convertToAuthDTO(user, jwt);
     }
 
     public AuthDTO login(LoginDTO loginDTO) {
@@ -56,14 +66,7 @@ public class UserService {
 
         String jwt = tokenService.generateTokenWithClaims(user);
 
-        return AuthDTO.builder()
-                .userId(user.getUserId())
-                .email(user.getEmail())
-                .displayName(user.getDisplayName())
-                .isAdmin(user.isAdmin())
-                .isTrainer(user.isTrainer())
-                .jwt(jwt)
-                .build();
+        return convertToAuthDTO(user, jwt);
     }
 
     public User getUserByEmail(Optional<User> userOptional) {
@@ -75,5 +78,16 @@ public class UserService {
             throw new UsernameNotFoundException("Username not found!");
         }
         return user;
+    }
+
+    private AuthDTO convertToAuthDTO(User user, String jwt) {
+        return AuthDTO.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .displayName(user.getDisplayName())
+                .isAdmin(user.isAdmin())
+                .isTrainer(user.isTrainer())
+                .jwt(jwt)
+                .build();
     }
 }
