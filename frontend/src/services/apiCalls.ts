@@ -10,7 +10,7 @@ const fileUrl = endpointUrl + "/file";
 const userUrl = endpointUrl + "/user";
 const roomUrl = endpointUrl + "/room";
 const messageUrl = endpointUrl + "/message";
-const registrationUrl = endpointUrl + "/register";
+const registrationUrl = endpointUrl + "/auth/register";
 const loginUrl = endpointUrl + "/login";
 
 

@@ -9,16 +9,18 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../stores/AuthStore";
 
 const LoginView = (): JSX.Element => {
   const navigate = useNavigate();
+  const { login } = useAuthStore();
 
-  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
   const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    // placeholder
+    login({ email, password });
   };
 
   return (
@@ -44,13 +46,13 @@ const LoginView = (): JSX.Element => {
           <Grid size={12}>
             <TextField
               id="username"
-              type="text"
+              type="email"
               label="Username"
               variant="outlined"
               fullWidth
-              defaultValue={username}
+              defaultValue={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setUsername(e.target.value)
+                setEmail(e.target.value)
               }
             />
           </Grid>

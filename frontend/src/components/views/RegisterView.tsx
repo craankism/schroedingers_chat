@@ -7,28 +7,25 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useUserStore } from "../../stores/UserStore";
 
 const RegisterView = (): JSX.Element => {
   const navigate = useNavigate();
   const params = useParams();
-  const inviteKey = params.inviteKey;
+  const inviteKey = params.inviteKey || "";
 
-  const [username, setUsername] = useState<string>("");
+  const [displayName, setDisplayName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [pwd, setPwd] = useState<string>("");
+  const { addUser } = useUserStore();
 
   const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    // update User in Database with invite key
-    // save token to localStorage
-    navigate("/");
+    addUser(inviteKey, { email, pwd, displayName });
+    navigate("/login");
   };
-
-  useEffect(() => {
-    // inviteKey validation
-  }, []);
 
   return (
     <form onSubmit={submitHandler}>
@@ -57,9 +54,9 @@ const RegisterView = (): JSX.Element => {
               label="Username"
               variant="outlined"
               fullWidth
-              defaultValue={username}
+              defaultValue={displayName}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setUsername(e.target.value)
+                setDisplayName(e.target.value)
               }
             />
           </Grid>
@@ -83,9 +80,9 @@ const RegisterView = (): JSX.Element => {
               label="Password"
               variant="outlined"
               fullWidth
-              defaultValue={password}
+              defaultValue={pwd}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPassword(e.target.value)
+                setPwd(e.target.value)
               }
             />
           </Grid>
