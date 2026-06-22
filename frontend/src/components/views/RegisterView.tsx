@@ -7,19 +7,28 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-const LoginView = (): JSX.Element => {
+const RegisterView = (): JSX.Element => {
   const navigate = useNavigate();
+  const params = useParams();
+  const inviteKey = params.inviteKey;
 
   const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
   const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    // placeholder
+    // update User in Database with invite key
+    // save token to localStorage
+    navigate("/");
   };
+
+  useEffect(() => {
+    // inviteKey validation
+  }, []);
 
   return (
     <form onSubmit={submitHandler}>
@@ -39,7 +48,7 @@ const LoginView = (): JSX.Element => {
           }}
         >
           <Grid size={12}>
-            <Typography variant="h1">Login</Typography>
+            <Typography variant="h1">Register</Typography>
           </Grid>
           <Grid size={12}>
             <TextField
@@ -51,6 +60,19 @@ const LoginView = (): JSX.Element => {
               defaultValue={username}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setUsername(e.target.value)
+              }
+            />
+          </Grid>
+          <Grid size={12}>
+            <TextField
+              id="username"
+              type="email"
+              label="E-Mail"
+              variant="outlined"
+              fullWidth
+              defaultValue={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
               }
             />
           </Grid>
@@ -69,23 +91,16 @@ const LoginView = (): JSX.Element => {
           </Grid>
           <Grid size={12}>
             <Button type="submit" variant="contained">
-              LOGIN
+              REGISTER
             </Button>
           </Grid>
           <Grid>
             <Link
-              onClick={() => navigate("/code")}
+              onClick={() => navigate("/login")}
               underline="none"
               sx={{ cursor: "pointer" }}
             >
-              <Typography>Create Account</Typography>
-            </Link>
-            <Link
-              onClick={() => navigate("/placeholder")}
-              underline="none"
-              sx={{ cursor: "pointer" }}
-            >
-              <Typography>Forgot Password?</Typography>
+              <Typography>Already have an Account?</Typography>
             </Link>
           </Grid>
         </Grid>
@@ -94,4 +109,4 @@ const LoginView = (): JSX.Element => {
   );
 };
 
-export default LoginView;
+export default RegisterView;

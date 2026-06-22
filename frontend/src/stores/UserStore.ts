@@ -1,4 +1,4 @@
-import type {UserInput, UserType} from "../types/UserType.ts";
+import type {UserInput, UserInvitation, UserType} from "../types/UserType.ts";
 import {create} from "zustand/react";
 import {userApi} from "../services/apiCalls.ts";
 import {useNotificationStore} from "./NotificationStore.ts";
@@ -6,7 +6,8 @@ import {useNotificationStore} from "./NotificationStore.ts";
 type UserState = {
     users: UserType[],
     error: string | null,
-    addUser: (userInput: UserInput) => void;
+    addUser: (inviteKey: string, userInput: UserInput) => void;
+    addInvitation: (invitation: UserInvitation) => void;
     getUser: (userId: number) => void;
     getAllUsers: () => void;
     deleteUser: (userId: number) => void;
@@ -17,17 +18,34 @@ export const useUserStore = create<UserState>(
         users: [],
         error: null,
 
-        addUser: async (userInput: UserInput) => {
+        addUser: async (inviteKey: string, userInput: UserInput) => {
             useNotificationStore.getState().startLoading();
             try {
-                const data = await userApi.create(userInput);
+                const data = await userApi.createUser(inviteKey, userInput);
                 set((state: UserState) => ({
-                    users: [...state.users, data]
+                    users: state.users.map(user =>
+                        user.inviteKey === inviteKey ? {...user, ...data} : user)
                 }));
                 useNotificationStore.getState().addNotification("User erfolgreich angelegt", "success");
             } catch (e) {
                 set({error: "Fehler" + e});
                 useNotificationStore.getState().addNotification("Fehler beim Anlegen des Nutzers", "error");
+            } finally {
+                useNotificationStore.getState().stopLoading();
+            }
+        },
+
+        addInvitation: async (invitation: UserInvitation) => {
+            useNotificationStore.getState().startLoading();
+            try {
+                const data = await userApi.createInvitation(invitation);
+                set((state: UserState) => ({
+                    users: [...state.users, data]
+                }));
+                useNotificationStore.getState().addNotification("Einladung erfolgreich angelegt", "success");
+            } catch (e) {
+                set({error: "Fehler" + e});
+                useNotificationStore.getState().addNotification("Fehler beim ERstellen der Einladung", "error");
             } finally {
                 useNotificationStore.getState().stopLoading();
             }
