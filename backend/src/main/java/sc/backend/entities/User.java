@@ -62,6 +62,7 @@ public class User implements UserDetails {
         return email;
     }
 
+    //TODO: probably needs to be changed in the future
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
