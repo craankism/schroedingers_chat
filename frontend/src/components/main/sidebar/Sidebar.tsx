@@ -1,7 +1,7 @@
 import { Box, Divider, Drawer, Toolbar } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import SidebarHelper from "../Sidebar/SidebarHelper";
+import SidebarHelper from "./SidebarHelper";
 
 const drawerWidth = 240;
 
