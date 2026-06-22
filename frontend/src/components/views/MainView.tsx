@@ -1,10 +1,10 @@
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { useState } from "react";
-import Sidebar from "../main/Sidebar";
+import Sidebar from "../main/sidebar/Sidebar";
 import Chat from "../main/Chat";
 import FileManagement from "../main/FileManagement";
 import Files from "../main/Files";
-import UserManagement from "../main/UserManagement";
+import UserManagement from "../main/user_management/UserManagement";
 import { Box } from "@mui/material";
 import Announcement from "../main/Announcement";
 
@@ -13,7 +13,7 @@ const Active = {
   Userverwaltung: <UserManagement />,
   Dateiverwaltung: <FileManagement />,
   Kursmaterialien: <Files />,
-  Ankündigungen: <Announcement />
+  Ankündigungen: <Announcement />,
 };
 
 const MainView = (): JSX.Element => {
