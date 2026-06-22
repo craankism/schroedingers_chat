@@ -5,7 +5,6 @@ export type AuthLoginType = {
 
 export type registrationInput = {
     isTrainer: boolean,
-    createdBy: number,
 }
 
 export type registrationReturn = {

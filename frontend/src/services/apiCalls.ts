@@ -12,6 +12,7 @@ const roomUrl = endpointUrl + "/room";
 const messageUrl = endpointUrl + "/message";
 const registrationUrl = endpointUrl + "/auth/register";
 const loginUrl = endpointUrl + "/login";
+const validationUrl = endpointUrl + "/";
 
 
 export const fileApi = {
@@ -106,4 +107,9 @@ export const authApi = {
         const response = await axios.post<UserType>(loginUrl, credentials);
         return response.data;
     },
+
+    validateCode: async (registrationCode: string)=> {
+        const response = await axios.post<boolean>(validationUrl + registrationCode)
+        return response.data;
+    }
 }
