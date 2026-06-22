@@ -28,6 +28,7 @@ public class TokenService {
     public String generateTokenWithClaims(User user) {
         Map<String, Object> claims = new HashMap<>();
 
+        //TODO: what should be in the token?
         claims.put("email", user.getEmail());
         claims.put("displayName", user.getDisplayName());
         claims.put("isAdmin", user.isAdmin());
@@ -41,6 +42,7 @@ public class TokenService {
                 .setClaims(claims)
                 .setSubject(user.getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
+                //TODO: How long should it be valid?
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS512)
                 .compact();

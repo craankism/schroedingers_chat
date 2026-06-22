@@ -35,9 +35,12 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(paths.matcher("/login")).authenticated()
-                        .requestMatchers(paths.matcher("/api/auth/register")).permitAll()
+                        .requestMatchers(paths.matcher("/api/auth/login")).permitAll()
+                        .requestMatchers(paths.matcher("/api/auth/register/{registryKey}")).permitAll()
+                        .requestMatchers(paths.matcher("/api/auth/register")).permitAll() //Nur Superadmin
+                        .requestMatchers(paths.matcher("/h2/**")).permitAll() //Test
                         .anyRequest().permitAll()
+                        //.anyRequest().authenticated()
                         //TODO: change permissions
                 )
                 .build();

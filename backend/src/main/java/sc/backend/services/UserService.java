@@ -17,6 +17,7 @@ import sc.backend.exceptions.UserAlreadyExistsException;
 import sc.backend.repositories.UserRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -30,11 +31,13 @@ public class UserService {
 
     public AuthDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO) throws UserAlreadyExistsException {
         //TODO: replace generate Key placeholder
-        //String registryKey = Math.random();
+        String registryKey = UUID.randomUUID().toString().replace("-", "");
+        registryKey = registryKey.substring(0, 10);
 
         User user = User.builder()
                 .isAdmin(registerUserKeyDTO.isAdmin())
                 .isTrainer(registerUserKeyDTO.isTrainer())
+                .registryKey(registryKey)
                 .build();
         userRepository.save(user);
 
@@ -75,7 +78,7 @@ public class UserService {
         try {
             user = conversionService.getEntityFromOptional(userOptional);
         } catch (EmptyOptionalException e) {
-            throw new UsernameNotFoundException("Username not found!");
+            throw new UsernameNotFoundException("Email not found!");
         }
         return user;
     }
