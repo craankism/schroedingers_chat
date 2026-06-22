@@ -12,6 +12,7 @@ type AuthState = {
     login: (login: AuthLoginType) => void;
     logout: () => void;
     addRegistrationCode: (registration: registrationInput) => Promise<string | null>;
+    validateRegistrationCode: (registrationCode: string) => Promise<boolean>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -50,6 +51,21 @@ export const useAuthStore = create<AuthState>((set) => ({
             set({error: "Fehler" + e});
             useNotificationStore.getState().addNotification("Fehler beim Erstellen der Einladung", "error");
             return null;
+        } finally {
+            useNotificationStore.getState().stopLoading();
+        }
+    },
+
+    validateRegistrationCode: async (registrationCode: string) => {
+        useNotificationStore.getState().startLoading();
+        try {
+            const data = await authApi.validateCode(registrationCode);
+            useNotificationStore.getState().addNotification("Code ist korrekt", "success");
+            return data;
+        } catch (e) {
+            set({error: "Fehler" + e});
+            useNotificationStore.getState().addNotification("Fehler beim Erstellen der Einladung", "error");
+            return false;
         } finally {
             useNotificationStore.getState().stopLoading();
         }
