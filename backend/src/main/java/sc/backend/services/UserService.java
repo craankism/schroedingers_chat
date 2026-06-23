@@ -1,5 +1,6 @@
 package sc.backend.services;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -8,16 +9,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
-import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.AuthDTO;
+import sc.backend.dtos.res.CodeDTO;
+import sc.backend.entities.Registration;
 import sc.backend.entities.User;
 import sc.backend.exceptions.EmptyOptionalException;
 import sc.backend.exceptions.KeyInvalidException;
-import sc.backend.exceptions.UserAlreadyExistsException;
+import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -28,37 +29,42 @@ public class UserService {
     private final TokenService tokenService;
     private final ConversionService conversionService;
     private final AuthenticationManager authenticationManager;
+    private final RegistrationRepository registrationRepository;
 
-    public AuthDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO) throws UserAlreadyExistsException {
-        //TODO: replace generate Key placeholder
-        String registryKey = UUID.randomUUID().toString().replace("-", "");
-        registryKey = registryKey.substring(0, 10);
+    @Transactional
+    public AuthDTO register(String registryKey, RegisterDTO registerDTO) {
+        Registration registration = registrationRepository.findByRegistrationCode(registryKey).orElseThrow(() ->
+                        new KeyInvalidException("Key is not valid!"));
+
+        if (registration.getUsedBy() != null) {
+            throw new KeyInvalidException("Registration code has already been used!");
+        }
 
         User user = User.builder()
-                .isAdmin(registerUserKeyDTO.isAdmin())
-                .isTrainer(registerUserKeyDTO.isTrainer())
-                .registryKey(registryKey)
+                .email(registerDTO.getEmail())
+                .password(passwordEncoder.encode(registerDTO.getPassword()))
+                .displayName(registerDTO.getDisplayName())
+                .isAdmin(false)
+                .isTrainer(registration.isTrainer())
                 .build();
+
         userRepository.save(user);
+        registration.setUsedBy(user);
+        registrationRepository.save(registration);
 
         String jwt = tokenService.generateTokenWithClaims(user);
 
         return convertToAuthDTO(user, jwt);
     }
 
-    public AuthDTO register(String registryKey, RegisterDTO registerDTO) {
-        User user = userRepository.findByRegistryKey(registryKey).orElseThrow(() ->
-                        new KeyInvalidException("Key is invalid!"));
+    public CodeDTO checkValidity(String code) {
+        Optional<Registration> registration = registrationRepository.findByRegistrationCode(code);
 
-        user.setEmail(registerDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
-        user.setDisplayName(registerDTO.getDisplayName());
+        boolean valid = registration.isPresent() && registration.get().getUsedBy() == null;
 
-        userRepository.save(user);
-
-        String jwt = tokenService.generateTokenWithClaims(user);
-
-        return convertToAuthDTO(user, jwt);
+        return CodeDTO.builder()
+                .isValid(valid)
+                .build();
     }
 
     public AuthDTO login(LoginDTO loginDTO) {

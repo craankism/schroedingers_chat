@@ -36,8 +36,9 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(paths.matcher("/api/auth/login")).permitAll()
-                        .requestMatchers(paths.matcher("/api/auth/register/{registryKey}")).permitAll()
-                        .requestMatchers(paths.matcher("/api/auth/register")).permitAll() //Nur Superadmin
+                        .requestMatchers(paths.matcher("/api/auth/register/{code}")).permitAll()
+                        .requestMatchers(paths.matcher("/api/auth/registration-codes/{code}/validity")).permitAll()
+                        .requestMatchers(paths.matcher("/api/admin/registration-codes")).permitAll()  //Nur Admin
                         .requestMatchers(paths.matcher("/h2/**")).permitAll() //Test
                         .anyRequest().permitAll()
                         //.anyRequest().authenticated()
