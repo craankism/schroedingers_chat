@@ -12,5 +12,4 @@ public class RegisterDTO {
     private String email;
     private String password;
     private String displayName;
-    private String registryKey;
 }

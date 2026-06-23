@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
-public class RegisterUserKeyDTO {
+public class CheckCodeDTO {
 
-    private boolean isTrainer;
+    private String code;
 }

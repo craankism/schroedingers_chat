@@ -36,11 +36,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean isTrainer;
 
-    private String registryKey;
-
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
-    private List<Room> createdRoomList =  new ArrayList<>();
+    private List<Room> createdRoomList = new ArrayList<>();
 
     @Builder.Default
     @ManyToMany
@@ -56,6 +54,14 @@ public class User implements UserDetails {
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
     private List<Message> messageList = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "registrationId")
+    private Registration registration;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "createdBy")
+    private List<Registration> registrationList = new ArrayList<>();
 
     @Override
     public String getUsername() {

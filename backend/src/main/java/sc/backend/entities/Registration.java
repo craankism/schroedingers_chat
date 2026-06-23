@@ -11,24 +11,26 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
-public class Message {
+public class Registration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int messageId;
+    private int registrationId;
 
     @Column(nullable = false)
-    private String content;
+    private boolean isTrainer;
 
     //TODO: best date type?
     @Column(nullable = false)
-    private Date creationDate;
+    private Date createdAt;
+
+    private String registrationCode;
+
+    @OneToOne
+    @JoinColumn(name = "registration", nullable = true)
+    private User usedBy;
 
     @ManyToOne
     @JoinColumn(name = "userId")
     private User createdBy;
-
-    @ManyToOne
-    @JoinColumn(name = "roomId")
-    private Room room;
 }

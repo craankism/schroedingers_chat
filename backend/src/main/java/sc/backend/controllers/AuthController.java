@@ -7,9 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
-import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.AuthDTO;
-import sc.backend.exceptions.UserAlreadyExistsException;
 import sc.backend.services.UserService;
 
 @RequiredArgsConstructor
@@ -19,23 +17,14 @@ public class AuthController {
 
     private final UserService userService;
 
-    @PostMapping("register")
-    public ResponseEntity<?> registerUserKey(@RequestBody RegisterUserKeyDTO registerUserKeyDTO) {
-        AuthDTO authDTO;
-
-        try {
-            authDTO = userService.registerUserKey(registerUserKeyDTO);
-        } catch (UserAlreadyExistsException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(authDTO, HttpStatus.CREATED);
+    @PostMapping("register/{code}")
+    public ResponseEntity<?> register(@PathVariable String code, @RequestBody RegisterDTO registerDTO) {
+        return new ResponseEntity<>(userService.register(code, registerDTO), HttpStatus.OK);
     }
 
-    @PostMapping("register/{registryKey}")
-    public ResponseEntity<?> register(@PathVariable String registryKey, @RequestBody RegisterDTO registerDTO) {
-        return new ResponseEntity<>(userService.register(registryKey, registerDTO), HttpStatus.OK);
+    @GetMapping("registration-codes/{code}/validity")
+    public ResponseEntity<?> checkValidity(@PathVariable("code") String code) {
+        return new ResponseEntity<>(userService.checkValidity(code), HttpStatus.OK);
     }
 
     @PostMapping("login")
