@@ -22,7 +22,7 @@ public class AuthController {
         return new ResponseEntity<>(userService.register(code, registerDTO), HttpStatus.OK);
     }
 
-    @GetMapping("registration-codes/{code}/validity")
+    @GetMapping("register/validation/{code}")
     public ResponseEntity<?> checkValidity(@PathVariable("code") String code) {
         return new ResponseEntity<>(userService.checkValidity(code), HttpStatus.OK);
     }

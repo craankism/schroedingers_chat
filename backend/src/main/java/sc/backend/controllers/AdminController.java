@@ -18,7 +18,7 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    @PostMapping("registration-codes")
+    @PostMapping("invite")
     public ResponseEntity<?> registerUserKey(@RequestBody RegisterUserKeyDTO registerUserKeyDTO, Authentication authentication) {
         return new ResponseEntity<>(adminService.registerUserKey(registerUserKeyDTO, authentication.getName()), HttpStatus.CREATED);
     }
