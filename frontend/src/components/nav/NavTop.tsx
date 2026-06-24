@@ -7,15 +7,15 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
+import { useAuthStore } from "../../stores/AuthStore";
 
 const pages = ["files", "chats"];
 
 function NavTop() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
 
-  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(
-    () => localStorage.getItem("token") !== null,
-  );
+  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(isAuthenticated);
 
   const handleAuthAction = () => {
     if (isLoggedIn) {
@@ -28,7 +28,11 @@ function NavTop() {
   };
 
   return (
-    <AppBar position="fixed" id="nav" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <AppBar
+      position="fixed"
+      id="nav"
+      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+    >
       <Container maxWidth={false}>
         <Toolbar disableGutters>
           <DesktopNav pages={pages} />

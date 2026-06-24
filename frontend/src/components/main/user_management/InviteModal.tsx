@@ -34,7 +34,7 @@ const InviteModal = (): JSX.Element => {
         e: React.SubmitEvent<HTMLFormElement>,
     ): Promise<void> => {
         e.preventDefault();
-        const result = await addRegistrationCode({isTrainer});
+        const result = await addRegistrationCode(isTrainer);
         if (result) {
             setLink(result);
         }

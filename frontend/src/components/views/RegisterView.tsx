@@ -18,12 +18,12 @@ const RegisterView = (): JSX.Element => {
 
   const [displayName, setDisplayName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [pwd, setPwd] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const { addUser } = useUserStore();
 
   const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    addUser(inviteKey, { email, pwd, displayName });
+    addUser(inviteKey, { email, password, displayName });
     navigate("/login");
   };
 
@@ -80,9 +80,9 @@ const RegisterView = (): JSX.Element => {
               label="Password"
               variant="outlined"
               fullWidth
-              defaultValue={pwd}
+              defaultValue={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPwd(e.target.value)
+                setPassword(e.target.value)
               }
             />
           </Grid>
