@@ -1,0 +1,312 @@
+openapi: 3.0.4
+
+info:
+  title: Schroedingers Chat API
+  description: |
+    OpenAPI documentation for the Schroedingers Chat backend.
+  version: 0.1.9
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+  - url: https://staging-api.example.com/api
+    description: Staging server
+
+tags:
+  - name: Authentication
+    description: Registration, registration-code validation, and login
+  - name: Administration
+    description: Registration invitation management
+
+paths:
+  /auth/register/{code}:
+    post:
+      tags:
+        - Authentication
+      operationId: registerUser
+      summary: Register a user
+      description: |
+        Registers a user with an unused registration code.
+
+        The new user's trainer status is copied from the registration entry.
+        A JWT is generated and returned after successful registration.
+      parameters:
+        - $ref: "#/components/parameters/RegistrationCode"
+      requestBody:
+        required: true
+        description: Data required to create the user
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              email: user@example.com
+              password: secure-password
+              displayName: Alice
+      responses:
+        "200":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: |
+            Registration failed because the code is invalid, the code was
+            already used, or the submitted data could not be processed.
+        "409":
+          description: A user with the supplied email already exists
+        "500":
+          description: An unexpected server error occurred
+
+  /auth/register/validation/{code}:
+    get:
+      tags:
+        - Authentication
+      operationId: validateRegistrationCode
+      summary: Validate a registration code
+      description: |
+        Returns `valid: true` when the registration code exists and has not
+        been used. Otherwise, it returns `valid: false`.
+      parameters:
+        - $ref: "#/components/parameters/RegistrationCode"
+      responses:
+        "200":
+          description: Registration-code validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodeResponse"
+              examples:
+                valid:
+                  summary: Valid and unused code
+                  value:
+                    valid: true
+                invalid:
+                  summary: Missing or already-used code
+                  value:
+                    valid: false
+        "500":
+          description: An unexpected server error occurred
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      operationId: loginUser
+      summary: Log in a user
+      description: |
+        Looks up the user by email, authenticates the password, generates a
+        JWT, and returns the authenticated user's data.
+      requestBody:
+        required: true
+        description: Login credentials
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: user@example.com
+              password: secure-password
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: |
+            Authentication failed for a reason other than an unknown email.
+            The current controller returns no response body for this status.
+        "401":
+          description: No user exists for the supplied email
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Email not found!
+        "500":
+          description: An unexpected server error occurred
+
+  /admin/invite:
+    post:
+      tags:
+        - Administration
+      operationId: createRegistrationInvitation
+      summary: Create a registration invitation
+      description: |
+        Generates a new registration code and stores the authenticated user
+        as its creator. The request determines whether the invited user will
+        become a trainer.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: Settings for the new registration invitation
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterUserKeyRequest"
+            example:
+              trainer: true
+      responses:
+        "201":
+          description: Registration invitation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResponse"
+        "401":
+          description: The request is not authenticated
+        "403":
+          description: The authenticated user is not allowed to create invitations
+        "500":
+          description: |
+            The authenticated user could not be found or an unexpected server
+            error occurred
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT returned after login or registration
+
+  parameters:
+    RegistrationCode:
+      name: code
+      in: path
+      required: true
+      description: Registration code to validate or consume
+      schema:
+        type: string
+        minLength: 1
+      example: ABC123
+
+  schemas:
+    LoginRequest:
+      type: object
+      description: JSON representation of LoginDTO
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: secure-password
+
+    RegisterRequest:
+      type: object
+      description: JSON representation of RegisterDTO
+      required:
+        - email
+        - password
+        - displayName
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: secure-password
+        displayName:
+          type: string
+          example: Alice
+
+    RegisterUserKeyRequest:
+      type: object
+      description: |
+        JSON representation of RegisterUserKeyDTO.
+      required:
+        - trainer
+      properties:
+        trainer:
+          type: boolean
+          description: Whether the registered user should receive the trainer role
+          example: true
+
+    AuthResponse:
+      type: object
+      description: |
+        JSON representation of AuthDTO.
+      required:
+        - userId
+        - email
+        - displayName
+        - admin
+        - trainer
+        - jwt
+      properties:
+        userId:
+          type: integer
+          format: int32
+          example: 1
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        displayName:
+          type: string
+          example: Alice
+        admin:
+          type: boolean
+          example: false
+        trainer:
+          type: boolean
+          example: true
+        jwt:
+          type: string
+          description: JSON Web Token for authenticated API requests
+          example: eyJhbGciOiJIUzI1NiJ9.example-token
+
+    CodeResponse:
+      type: object
+      description: |
+        JSON representation of CodeDTO.
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+          example: true
+
+    RegistrationResponse:
+      type: object
+      description: |
+        JSON representation of RegistrationDTO.
+      required:
+        - registrationId
+        - trainer
+        - createdAt
+        - registrationCode
+        - createdBy
+      properties:
+        registrationId:
+          type: integer
+          format: int32
+          example: 5
+        trainer:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Time at which the registration entry was created
+          example: "2026-06-24T12:00:00Z"
+        registrationCode:
+          type: string
+          example: ABC123
+        createdBy:
+          type: integer
+          format: int32
+          description: ID of the user who created the invitation
+          example: 1
