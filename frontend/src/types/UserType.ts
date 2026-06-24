@@ -9,6 +9,6 @@ export type UserType = {
 
 export type UserInput = {
     email: string,
-    pwd: string,
+    password: string,
     displayName: string
 }

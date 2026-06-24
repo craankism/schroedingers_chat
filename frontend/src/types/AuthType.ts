@@ -3,10 +3,6 @@ export type AuthLoginType = {
     password: string,
 }
 
-export type registrationInput = {
-    isTrainer: boolean,
-}
-
 export type registrationReturn = {
     registrationCode: string
 }

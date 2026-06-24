@@ -18,9 +18,12 @@ const LoginView = (): JSX.Element => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
+  const submitHandler = async (e: React.SubmitEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    login({ email, password });
+    await login({ email, password });
+    if (useAuthStore.getState().isAuthenticated) {
+      await navigate("/");
+    }
   };
 
   return (

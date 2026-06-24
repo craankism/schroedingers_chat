@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { List, ListItem, ListItemButton, ListItemText, useMediaQuery, useTheme } from "@mui/material";
 import React from "react";
 
 const SidebarHelper: React.FC<{
@@ -6,7 +6,11 @@ const SidebarHelper: React.FC<{
   activeView: string;
   setActiveView: (view: string) => void;
   setOpen: (open: boolean) => void;
-}> = ({ items, activeView, setActiveView, setOpen }) => (
+}> = ({ items, activeView, setActiveView, setOpen }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  return (
   <List>
     {items.map((item) => (
       <ListItem key={item} disablePadding>
@@ -14,7 +18,7 @@ const SidebarHelper: React.FC<{
           selected={activeView === item}
           onClick={() => {
             setActiveView(item);
-            setOpen(false);
+            if (isMobile) setOpen(false);
           }}
         >
           <ListItemText primary={item} />
@@ -22,6 +26,7 @@ const SidebarHelper: React.FC<{
       </ListItem>
     ))}
   </List>
-);
+  );
+};
 
 export default SidebarHelper;
