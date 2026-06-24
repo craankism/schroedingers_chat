@@ -1,10 +1,10 @@
 import type { UserType } from "../types/UserType.ts";
 import { create } from "zustand/react";
-import type { AuthLoginType } from "../types/AuthType.ts";
+import type { AuthLoginType, CodeValidationType } from "../types/AuthType.ts";
 import { useNotificationStore } from "./NotificationStore.ts";
 import { authApi } from "../services/apiCalls.ts";
 
-function decodeJwt(token: string): UserType | null {
+export function decodeJwt(token: string): UserType | null {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     return {
@@ -27,10 +27,10 @@ type AuthState = {
   isAuthenticated: boolean;
   login: (login: AuthLoginType) => Promise<void>;
   logout: () => void;
-  addRegistrationCode: (
-    registration: boolean,
-  ) => Promise<string | null>;
-  validateRegistrationCode: (registrationCode: string) => Promise<boolean>;
+  addRegistrationCode: (registration: boolean) => Promise<string | null>;
+  validateRegistrationCode: (
+    registrationCode: string,
+  ) => Promise<CodeValidationType>;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -70,8 +70,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       useNotificationStore
         .getState()
         .addNotification("Einladung erfolgreich angelegt", "success");
-      
-        return data.registrationCode;
+
+      return data.registrationCode;
     } catch (e) {
       set({ error: "Fehler" + e });
       useNotificationStore
@@ -87,16 +87,22 @@ export const useAuthStore = create<AuthState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       const data = await authApi.validateCode(registrationCode);
-      useNotificationStore
-        .getState()
-        .addNotification("Code ist korrekt", "success");
+      if (data.valid) {
+        useNotificationStore
+          .getState()
+          .addNotification("Code ist korrekt", "success");
+      } else {
+        useNotificationStore
+          .getState()
+          .addNotification("Code ist ungültig", "error");
+      }
       return data;
     } catch (e) {
       set({ error: "Fehler" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Erstellen der Einladung", "error");
-      return false;
+        .addNotification("Fehler beim Validieren des Codes", "error");
+      return { valid: false };
     } finally {
       useNotificationStore.getState().stopLoading();
     }

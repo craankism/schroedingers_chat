@@ -3,7 +3,7 @@ import { useAuthStore } from "../stores/AuthStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
 
 const ProtectedRoute = (): JSX.Element => {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isAuthenticated = useAuthStore((s) => s.token);
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 

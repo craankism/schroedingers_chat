@@ -14,7 +14,9 @@ const EnterCodeView = (): JSX.Element => {
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    if (await validateRegistrationCode(code)) {
+    const result = await validateRegistrationCode(code);
+    console.log(result);
+    if (result.valid === true) {
       navigate("/register/" + code);
     }
   };

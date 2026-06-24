@@ -18,12 +18,12 @@ const LoginView = (): JSX.Element => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const submitHandler = async (e: React.SubmitEvent<HTMLFormElement>): Promise<void> => {
+  const submitHandler = async (
+    e: React.SubmitEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
     await login({ email, password });
-    if (useAuthStore.getState().isAuthenticated) {
-      await navigate("/");
-    }
+    navigate("/");
   };
 
   return (
@@ -48,9 +48,9 @@ const LoginView = (): JSX.Element => {
           </Grid>
           <Grid size={12}>
             <TextField
-              id="username"
+              id="email"
               type="email"
-              label="Username"
+              label="E-Mail"
               variant="outlined"
               fullWidth
               defaultValue={email}
