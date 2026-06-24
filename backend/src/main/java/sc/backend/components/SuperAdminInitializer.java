@@ -29,14 +29,14 @@ public class SuperAdminInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         if (!userRepository.existsByEmail(adminEmail)) {
-            // User Entity anpassen je nach deinem Paketnamen
-            User superAdmin = new User();
-            superAdmin.setEmail(adminEmail);
-            superAdmin.setPassword(passwordEncoder.encode(adminPassword));
-            superAdmin.setDisplayName("Super Admin");
-            superAdmin.setAdmin(true);
-            superAdmin.setTrainer(false);
-            userRepository.save(superAdmin);
+            User admin = User.builder()
+                .email(adminEmail)
+                .password(passwordEncoder.encode(adminPassword))
+                .displayName("Super Admin")
+                .isAdmin(true)
+                .isTrainer(false)
+                .build();
+            userRepository.save(admin);
             System.out.println("SuperAdmin erstellt: " + adminEmail);
         } else {
             System.out.println("SuperAdmin existiert bereits: " + adminEmail);
