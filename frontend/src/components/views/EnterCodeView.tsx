@@ -2,20 +2,21 @@ import type { JSX } from "@emotion/react/jsx-runtime";
 import { Button, Container, Grid, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../stores/AuthStore";
 
 const EnterCodeView = (): JSX.Element => {
   const navigate = useNavigate();
 
   const [code, setCode] = useState<string>("");
+  const { validateRegistrationCode } = useAuthStore();
 
-  const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
+  const submitHandler = async (
+    e: React.SubmitEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
-    // Code Validation here
-    // if (code == okay) {
-    navigate("/register/" + code);
-    // } else {
-    alert("Code doesn't exist");
-    // }
+    if (await validateRegistrationCode(code)) {
+      navigate("/register/" + code);
+    }
   };
 
   return (
