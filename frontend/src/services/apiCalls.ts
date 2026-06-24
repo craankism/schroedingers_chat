@@ -5,6 +5,7 @@ import type { MessageInput, MessageType } from "../types/MessageType.ts";
 import type {
   AuthLoginType,
   registrationReturn,
+  CodeValidationType,
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
 
@@ -111,7 +112,7 @@ export const authApi = {
   ): Promise<registrationReturn> => {
     const response = await api.post<registrationReturn>(
       createCodeUrl,
-      registration
+      registration,
     );
     return response.data;
   },
@@ -121,8 +122,10 @@ export const authApi = {
     return response.data;
   },
 
-  validateCode: async (registrationCode: string) => {
-    const response = await api.get<boolean>(
+  validateCode: async (
+    registrationCode: string,
+  ): Promise<CodeValidationType> => {
+    const response = await api.get<CodeValidationType>(
       `${validationUrl}/${registrationCode}`,
     );
     return response.data;

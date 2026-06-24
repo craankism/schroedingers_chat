@@ -6,11 +6,13 @@ import EnterCodeView from "./components/views/EnterCodeView";
 import RegisterView from "./components/views/RegisterView";
 import MainView from "./components/views/MainView";
 import ProtectedRoute from "./components/ProtectedRoute";
+import NotificationBanner from "./components/NotificationBanner";
 
 const App = (): JSX.Element => {
   return (
     <>
       <NavTop />
+      <NotificationBanner />
       <Routes>
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<MainView />} />

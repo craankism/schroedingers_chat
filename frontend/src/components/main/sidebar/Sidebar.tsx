@@ -4,7 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SidebarHelper from "./SidebarHelper";
-import { useAuthStore } from "../../../stores/AuthStore";
+import { decodeJwt } from "../../../stores/AuthStore";
 
 const drawerWidth = 240;
 
@@ -19,8 +19,7 @@ const chatItems = ["Chats"];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
   const [open, setOpen] = useState<boolean>(true);
-  const { currentUser } = useAuthStore();
-  const isAdmin = currentUser?.isAdmin ?? false;
+  const isAdmin = decodeJwt(localStorage.getItem("jwt") || "")?.isAdmin;
 
   return (
     <Box sx={{ display: "flex" }}>

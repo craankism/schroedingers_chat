@@ -13,19 +13,24 @@ const pages = ["files", "chats"];
 
 function NavTop() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, logout } = useAuthStore();
 
   const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(isAuthenticated);
 
   const handleAuthAction = () => {
     if (isLoggedIn) {
-      localStorage.removeItem("token");
+      logout();
       setIsLoggedIn(false);
       navigate("/");
     } else {
       navigate("/login");
     }
   };
+
+  React.useEffect(() => {
+    // eslint-disable-next-line
+    setIsLoggedIn(isAuthenticated)
+  }, [isAuthenticated]);
 
   return (
     <AppBar
