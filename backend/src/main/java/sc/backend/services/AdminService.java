@@ -19,14 +19,15 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final RegistrationRepository registrationRepository;
+    // MH: added Service for Random Code
+    private final RegistryCodeService registryCodeService;
 
     public RegistrationDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO, String creatorEmail) {
         User creator = userRepository.findByEmail(creatorEmail).orElseThrow(() ->
                 new UsernameNotFoundException("Authenticated user not found"));
 
-        //TODO: replace generate Key placeholder
-        String registryKey = UUID.randomUUID().toString().replace("-", "");
-        registryKey = registryKey.substring(0, 10);
+        // MH: changed Code to use new Service
+        String registryKey = registryCodeService.generateRegistryCode();
 
         Registration registration = Registration.builder()
                 .isTrainer(registerUserKeyDTO.isTrainer())
