@@ -1,36 +1,98 @@
 import { DataGrid } from "@mui/x-data-grid";
-import type { GridColDef } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { useUserStore } from "../../../stores/UserStore";
 import { useEffect } from "react";
-
-const columns: GridColDef[] = [
-  { field: "userId", headerName: "ID", width: 70 },
-  { field: "email", headerName: "E-Mail", width: 160 },
-  { field: "displayName", headerName: "Display Name", width: 130 },
-  {
-    field: "isAdmin",
-    headerName: "Admin",
-    type: "boolean",
-    width: 90,
-  },
-  {
-    field: "isTrainer",
-    headerName: "Trainer",
-    type: "boolean",
-    width: 160,
-  },
-];
-
-const paginationModel = { page: 0, pageSize: 5 };
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Button } from "@mui/material";
+import type {
+  GridColDef,
+  GridRenderCellParams,
+  GridRowModel,
+} from "@mui/x-data-grid";
 
 const UserTable = (): JSX.Element => {
-  const { getAllUsers, users } = useUserStore();
+  const { getAllUsers, deleteUser, users, updateUser } = useUserStore();
+
+  const handleRowUpdate = (
+    updatedRow: GridRowModel,
+    originalRow: GridRowModel,
+  ): GridRowModel => {
+    if (updatedRow.isAdmin !== originalRow.isAdmin) {
+      updateUser(updatedRow.userId, "setAdmin");
+    } else if (updatedRow.isTrainer !== originalRow.isAdmin) {
+      updateUser(updatedRow.userId, "setTrainer");
+    } else if (updatedRow.isActive !== originalRow.isActive) {
+      updateUser(updatedRow.userId, "setActive");
+    }
+    return updatedRow;
+  };
 
   useEffect(() => {
     getAllUsers();
   }, [getAllUsers]);
+
+  const columns: GridColDef[] = [
+    { field: "userId", headerName: "ID", minWidth: 70, flex: 0.5 },
+    { field: "email", headerName: "E-Mail", minWidth: 220, flex: 1.8 },
+    {
+      field: "displayName",
+      headerName: "Display Name",
+      minWidth: 160,
+      flex: 1.2,
+    },
+    {
+      field: "isAdmin",
+      headerName: "Admin",
+      type: "boolean",
+      editable: true,
+      minWidth: 100,
+      flex: 0.8,
+    },
+    {
+      field: "isTrainer",
+      headerName: "Trainer",
+      type: "boolean",
+      editable: true,
+      minWidth: 100,
+      flex: 0.8,
+    },
+    {
+      field: "isActive",
+      headerName: "Sperren",
+      type: "boolean",
+      editable: true,
+      minWidth: 100,
+      flex: 0.8,
+    },
+    {
+      field: "delete",
+      headerName: "Löschen",
+      type: "boolean",
+      minWidth: 110,
+      flex: 0.9,
+      renderCell: (params: GridRenderCellParams) => (
+        <Button
+          onClick={() => deleteUser(params.row.userId)}
+          sx={{ border: "none", boxShadow: "none" }}
+        >
+          <DeleteIcon />
+        </Button>
+      ),
+    },
+  ];
+
+  const paginationModel = { page: 0, pageSize: 10 };
+
+  // const test = [{
+  //   id: 1,
+  //   userId: 1,
+  //   email: "sa@xd.de",
+  //   displayName: "Craankism",
+  //   isAdmin: false,
+  //   isTrainer: false,
+  //   isActive: false,
+  // }];
 
   return (
     <Paper sx={{ height: 400, width: "100%" }}>
@@ -38,8 +100,8 @@ const UserTable = (): JSX.Element => {
         rows={users}
         columns={columns}
         initialState={{ pagination: { paginationModel } }}
-        pageSizeOptions={[5, 10]}
-        checkboxSelection
+        pageSizeOptions={[5, 10, 20, 30]}
+        processRowUpdate={handleRowUpdate}
         sx={{ border: 0 }}
       />
     </Paper>

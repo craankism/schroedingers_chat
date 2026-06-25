@@ -18,6 +18,7 @@ const registrationUrl = "/auth/register";
 const validationUrl = "/auth/register/validation";
 const loginUrl = "/auth/login";
 const createCodeUrl = "/admin/invite";
+const changeUserUrl = "/admin/user";
 
 export const fileApi = {
   getAll: async (): Promise<FileType[]> => {
@@ -59,8 +60,11 @@ export const userApi = {
     );
     return response.data;
   },
+  update: async (userId: number, role: string): Promise<void> => {
+    await api.get(`${changeUserUrl}/${role}/${userId}`);
+  },
   delete: async (userId: number): Promise<void> => {
-    await api.delete(`${userUrl}/${userId}`);
+    await api.delete(`${changeUserUrl}/${userId}`);
   },
 };
 
