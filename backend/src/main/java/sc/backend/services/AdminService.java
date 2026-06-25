@@ -12,7 +12,6 @@ import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.util.Date;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -54,6 +53,7 @@ public class AdminService {
 
         boolean admin = user.isAdmin();
         user.setAdmin(!admin);
+        userRepository.save(user);
 
         return userService.convertToDTO(user);
     }
@@ -63,6 +63,7 @@ public class AdminService {
 
         boolean trainer = user.isTrainer();
         user.setTrainer(!trainer);
+        userRepository.save(user);
 
         return userService.convertToDTO(user);
     }
@@ -72,6 +73,7 @@ public class AdminService {
 
         boolean active = user.isActive();
         user.setActive(!active);
+        userRepository.save(user);
 
         return userService.convertToDTO(user);
     }
