@@ -56,7 +56,7 @@ public class User implements UserDetails {
 
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
-    private List<Message> messageList = new ArrayList<>();
+    private List<ChatMessage> chatMessageList = new ArrayList<>();
 
     @OneToOne
     @JoinColumn(name = "registrationId")
