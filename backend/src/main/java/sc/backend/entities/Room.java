@@ -31,5 +31,5 @@ public class Room {
 
     @Builder.Default
     @OneToMany(mappedBy = "room")
-    private List<Message> messageList = new ArrayList<>();
+    private List<ChatMessage> chatMessageList = new ArrayList<>();
 }
