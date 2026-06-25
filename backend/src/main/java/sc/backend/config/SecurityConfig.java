@@ -35,13 +35,10 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(paths.matcher("/api/auth/login")).permitAll()
-                        .requestMatchers(paths.matcher("/api/auth/register/{code}")).permitAll()
-                        .requestMatchers(paths.matcher("/api/auth/registration-codes/{code}/validity")).permitAll()
-                        .requestMatchers(paths.matcher("/api/admin/registration-codes")).permitAll()  //Nur Admin
+                        .requestMatchers(paths.matcher("/api/auth/**")).permitAll()
+                        .requestMatchers(paths.matcher("/api/admin/**")).hasRole("ADMIN")
                         .requestMatchers(paths.matcher("/h2/**")).permitAll() //Test
-                        .anyRequest().permitAll()
-                        //.anyRequest().authenticated()
+                        .anyRequest().authenticated()
                         //TODO: change permissions
                 )
                 .build();

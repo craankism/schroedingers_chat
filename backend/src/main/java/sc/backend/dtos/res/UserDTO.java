@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
-public class AuthDTO {
+public class UserDTO {
 
     private int userId;
     private String email;
@@ -15,5 +15,4 @@ public class AuthDTO {
     private boolean isAdmin;
     private boolean isTrainer;
     private boolean isActive;
-    private String jwt;
 }
