@@ -74,8 +74,8 @@ export const useUserStore = create<UserState>((set) => ({
   updateUser: async (userId: number, role: string) => {
     useNotificationStore.getState().startLoading();
     try {
-      const data = await userApi.getById(userId);
       await userApi.update(userId, role);
+      const data = await userApi.getById(userId);
       set((state: UserState) => ({
         users: state.users.map((user) =>
           user.userId === userId ? { ...user, ...data } : user,

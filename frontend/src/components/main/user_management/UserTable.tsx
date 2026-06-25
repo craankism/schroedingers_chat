@@ -14,16 +14,16 @@ import type {
 const UserTable = (): JSX.Element => {
   const { getAllUsers, deleteUser, users, updateUser } = useUserStore();
 
-  const handleRowUpdate = (
+  const handleRowUpdate = async (
     updatedRow: GridRowModel,
     originalRow: GridRowModel,
-  ): GridRowModel => {
-    if (updatedRow.isAdmin !== originalRow.isAdmin) {
-      updateUser(updatedRow.userId, "setAdmin");
-    } else if (updatedRow.isTrainer !== originalRow.isAdmin) {
-      updateUser(updatedRow.userId, "setTrainer");
-    } else if (updatedRow.isActive !== originalRow.isActive) {
-      updateUser(updatedRow.userId, "setActive");
+  ): Promise<GridRowModel> => {
+    if (updatedRow.admin !== originalRow.admin) {
+      await updateUser(updatedRow.userId, "setAdmin");
+    } else if (updatedRow.trainer !== originalRow.trainer) {
+      await updateUser(updatedRow.userId, "setTrainer");
+    } else if (updatedRow.active !== originalRow.active) {
+      await updateUser(updatedRow.userId, "setActive");
     }
     return updatedRow;
   };
@@ -42,7 +42,7 @@ const UserTable = (): JSX.Element => {
       flex: 1.2,
     },
     {
-      field: "isAdmin",
+      field: "admin",
       headerName: "Admin",
       type: "boolean",
       editable: true,
@@ -50,7 +50,7 @@ const UserTable = (): JSX.Element => {
       flex: 0.8,
     },
     {
-      field: "isTrainer",
+      field: "trainer",
       headerName: "Trainer",
       type: "boolean",
       editable: true,
@@ -58,8 +58,8 @@ const UserTable = (): JSX.Element => {
       flex: 0.8,
     },
     {
-      field: "isActive",
-      headerName: "Sperren",
+      field: "active",
+      headerName: "Aktiv",
       type: "boolean",
       editable: true,
       minWidth: 100,
@@ -98,6 +98,7 @@ const UserTable = (): JSX.Element => {
     <Paper sx={{ height: 400, width: "100%" }}>
       <DataGrid
         rows={users}
+        getRowId={(row) => row.userId}
         columns={columns}
         initialState={{ pagination: { paginationModel } }}
         pageSizeOptions={[5, 10, 20, 30]}
