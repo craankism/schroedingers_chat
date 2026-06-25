@@ -8,31 +8,32 @@ import org.springframework.web.bind.annotation.*;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.res.AuthDTO;
-import sc.backend.services.UserService;
+import sc.backend.dtos.res.CodeDTO;
+import sc.backend.services.AuthService;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthService authService;
 
-    @PostMapping("register/{code}")
-    public ResponseEntity<?> register(@PathVariable String code, @RequestBody RegisterDTO registerDTO) {
-        return new ResponseEntity<>(userService.register(code, registerDTO), HttpStatus.OK);
+    @PostMapping("/register/{code}")
+    public ResponseEntity<AuthDTO> register(@PathVariable String code, @RequestBody RegisterDTO registerDTO) {
+        return new ResponseEntity<>(authService.register(code, registerDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping("register/validation/{code}")
-    public ResponseEntity<?> checkValidity(@PathVariable("code") String code) {
-        return new ResponseEntity<>(userService.checkValidity(code), HttpStatus.OK);
+    @GetMapping("/register/validation/{code}")
+    public ResponseEntity<CodeDTO> checkValidity(@PathVariable String code) {
+        return new ResponseEntity<>(authService.checkValidity(code), HttpStatus.OK);
     }
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
         AuthDTO authDTO;
 
         try {
-            authDTO = userService.login(loginDTO);
+            authDTO = authService.login(loginDTO);
         } catch (UsernameNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {

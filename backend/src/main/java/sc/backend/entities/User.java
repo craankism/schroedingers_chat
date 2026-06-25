@@ -36,6 +36,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean isTrainer;
 
+    @Column(nullable = false)
+    private boolean isActive;
+
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
     private List<Room> createdRoomList = new ArrayList<>();
