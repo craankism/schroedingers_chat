@@ -1,5 +1,7 @@
-import { List, Typography } from "@mui/material";
+import { Box, List, Typography } from "@mui/material";
 import type React from "react";
+import { useEffect, useRef } from "react";
+import { useAuthStore } from "../../../stores/AuthStore";
 
 type MessagesDisplayProps = {
   connectionStatus: string;
@@ -10,15 +12,61 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   connectionStatus,
   messageHistory,
 }) => {
+  const { currentUser } = useAuthStore();
+  const lastMessageRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to the last message when messageHistory changes
+  useEffect(() => {
+    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messageHistory]);
+
   return (
-    <>
-      <Typography>The WebSocket is currently {connectionStatus}</Typography>
-      <List>
-        {messageHistory.map((message, idx) => (
-          <Typography key={idx}>{message}</Typography>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        overflow: "hidden",
+        p: 3,
+      }}
+    >
+      <Typography sx={{ mb: 2 }}>
+        The WebSocket is currently {connectionStatus}
+      </Typography>
+      <List
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          overflowY: "auto",
+          pr: 1,
+        }}
+      >
+        {messageHistory.map((message, id) => (
+          <Box
+            key={id}
+            sx={{ display: "flex", mb: 2 }}
+            ref={id === messageHistory.length - 1 ? lastMessageRef : null}
+          >
+            {currentUser?.displayName === JSON.parse(message).sender ? (
+              <Box sx={{ marginLeft: "auto", textAlign: "right" }}>
+                <Typography sx={{ color: "cyan" }}>
+                  {JSON.parse(message).sender}
+                </Typography>
+                <Typography>{JSON.parse(message).content}</Typography>
+              </Box>
+            ) : (
+              <Box>
+                <Typography sx={{ color: "red" }}>
+                  {JSON.parse(message).sender}
+                </Typography>
+                <Typography>{JSON.parse(message).content}</Typography>
+              </Box>
+            )}
+          </Box>
         ))}
       </List>
-    </>
+    </Box>
   );
 };
 
