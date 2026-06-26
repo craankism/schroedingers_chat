@@ -2,10 +2,11 @@ import { Box, List, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useRef } from "react";
 import { useAuthStore } from "../../../stores/AuthStore";
+import type {MessageInput} from "../../../types/MessageType.ts";
 
 type MessagesDisplayProps = {
   connectionStatus: string;
-  messageHistory: string[];
+  messageHistory: MessageInput[];
 };
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
@@ -48,19 +49,19 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
             sx={{ display: "flex", mb: 2 }}
             ref={id === messageHistory.length - 1 ? lastMessageRef : null}
           >
-            {currentUser?.displayName === JSON.parse(message).sender ? (
+            {currentUser?.displayName === message.sender ? (
               <Box sx={{ marginLeft: "auto", textAlign: "right" }}>
                 <Typography sx={{ color: "cyan" }}>
-                  {JSON.parse(message).sender}
+                  {message.sender}
                 </Typography>
-                <Typography>{JSON.parse(message).content}</Typography>
+                <Typography>{message.content}</Typography>
               </Box>
             ) : (
               <Box>
                 <Typography sx={{ color: "red" }}>
-                  {JSON.parse(message).sender}
+                  {message.sender}
                 </Typography>
-                <Typography>{JSON.parse(message).content}</Typography>
+                <Typography>{message.content}</Typography>
               </Box>
             )}
           </Box>

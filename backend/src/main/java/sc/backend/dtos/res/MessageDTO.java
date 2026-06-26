@@ -2,6 +2,8 @@ package sc.backend.dtos.res;
 
 import lombok.*;
 
+import java.util.Date;
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -9,6 +11,8 @@ import lombok.*;
 @Setter
 public class MessageDTO {
 
+    private int messageId;
     private String content;
     private String sender;
+    private Date creationDate;
 }
