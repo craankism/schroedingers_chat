@@ -5,13 +5,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "./MessagesDisplay";
 import Message from "./Message";
 import { heightMinusTopNav } from "../../../types/constants/constants";
-import type { MessageType } from "../../../types/MessageType";
+import type {MessageInput, MessageType} from "../../../types/MessageType";
 
 const Chat = (): JSX.Element => {
   const clientRef = useRef<Client | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
-  const [messageHistory, setMessageHistory] = useState<string[]>([]);
+  const [messageHistory, setMessageHistory] = useState<MessageInput[]>([]);
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
@@ -25,8 +25,12 @@ const Chat = (): JSX.Element => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
+          fetch('/api/messages')
+              .then(response => response.json())
+              .then(messages => setMessageHistory(messages));
         client.subscribe("/topic/messages", (incomingMessage) => {
-          setMessageHistory((prev) => [...prev, incomingMessage.body]);
+            console.log(incomingMessage.body);
+          setMessageHistory((prev) => [...prev, JSON.parse(incomingMessage.body)]);
         });
       },
       onWebSocketClose: handleConnectionClose,
