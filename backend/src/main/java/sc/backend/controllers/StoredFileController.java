@@ -1,6 +1,7 @@
 package sc.backend.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/file")
+@Profile("prod")
 @RequiredArgsConstructor
 public class StoredFileController {
 
