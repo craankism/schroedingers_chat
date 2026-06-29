@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
-public class StoredFileDTO {
+public class StoredFileMetaDTO {
     private int fileId;
     private String filename;
     private int uploadedById;

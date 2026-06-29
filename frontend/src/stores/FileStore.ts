@@ -7,8 +7,9 @@ type FileState = {
     files: FileType[],
     error: string | null,
     uploadFile: (fileData: FileInput) => void;
-    getFile: (fileId: number) => void;
-    getAllFiles: () => void;
+    downloadFile: (fileId: number, fileName: string) => void;
+    getFileMeta: (fileId: number) => void;
+    getAllFilesMeta: () => void;
     deleteFile: (fileId: number) => void;
 }
 
@@ -33,10 +34,29 @@ export const useFileStore = create<FileState>(
             }
         },
 
-        getFile: async (fileId: number) => {
+        downloadFile: async (fileId: number, fileName: string) => {
+          useNotificationStore.getState().startLoading();
+          try {
+              const blob = await fileApi.download(fileId);
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = fileName;
+              link.click();
+              window.URL.revokeObjectURL(url);
+              useNotificationStore.getState().addNotification("Download gestartet", "success");
+          } catch (e) {
+              set({error: "Fehler" + e});
+              useNotificationStore.getState().addNotification("Fehler beim Download", "error");
+          } finally {
+              useNotificationStore.getState().stopLoading();
+          }
+        },
+
+        getFileMeta: async (fileId: number) => {
             useNotificationStore.getState().startLoading();
             try {
-                const data = await fileApi.getById(fileId);
+                const data = await fileApi.getByIdMeta(fileId);
                 set((state: FileState) => ({
                     files: state.files.map(file => file.fileId === fileId ? {...file, ...data} : file)
                 }));
@@ -48,10 +68,10 @@ export const useFileStore = create<FileState>(
             }
         },
 
-        getAllFiles: async () => {
+        getAllFilesMeta: async () => {
             useNotificationStore.getState().startLoading();
             try {
-                const data = await fileApi.getAll();
+                const data = await fileApi.getAllMeta();
                 set({files: data});
             } catch (e) {
                 set({error: "Fehler" + e});

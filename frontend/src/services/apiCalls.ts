@@ -22,19 +22,31 @@ const changeUserUrl = "/admin/user";
 const websocket = "/messages";
 
 export const fileApi = {
-  getAll: async (): Promise<FileType[]> => {
+  getAllMeta: async (): Promise<FileType[]> => {
     const response = await api.get<FileType[]>(fileUrl);
     return response.data;
   },
 
-  getById: async (fileId: number): Promise<FileType> => {
+  getByIdMeta: async (fileId: number): Promise<FileType> => {
     const response = await api.get<FileType>(`${fileUrl}/${fileId}`);
     return response.data;
   },
 
-  upload: async (file: FileInput): Promise<FileType> => {
-    const response = await api.post<FileType>(fileUrl, file);
+  upload: async (fileInput: FileInput): Promise<FileType> => {
+    const formData = new FormData();
+    formData.append("file", fileInput.file);
+
+    const response = await api.post<FileType>(fileUrl + '/upload', formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
+  },
+
+  download: async (fileId: number): Promise<Blob> => {
+    const response = await api.get(`${fileUrl}/download/${fileId}`, {
+      responseType: "blob",
+    });
+   return response.data;
   },
 
   delete: async (fileId: number): Promise<void> => {

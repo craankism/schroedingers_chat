@@ -7,10 +7,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import sc.backend.dtos.res.StoredFileDTO;
+import sc.backend.dtos.res.StoredFileMetaDTO;
 import sc.backend.services.FileStorageService;
 
 import java.io.InputStream;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/file")
@@ -26,7 +27,7 @@ public class StoredFileController {
      * - roomId und userId kommen als RequestParam (spaeter aus JWT)
      */
     @PostMapping("/upload")
-    public ResponseEntity<StoredFileDTO> uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<StoredFileMetaDTO> uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         return new ResponseEntity<>(fileStorageService.uploadFile(file, userName), HttpStatus.OK);
@@ -38,7 +39,7 @@ public class StoredFileController {
      */
     @GetMapping("/download/{fileId}")
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Integer fileId) throws Exception {
-        StoredFileDTO metadata = fileStorageService.getFileMetadata(fileId);
+        StoredFileMetaDTO metadata = fileStorageService.getFileMetadata(fileId);
         InputStream stream = fileStorageService.downloadFile(fileId);
 
         return ResponseEntity.ok()
@@ -53,8 +54,13 @@ public class StoredFileController {
      * Metadaten abrufen (fuer Frontend Dateiliste)
      */
     @GetMapping("/{fileId}")
-    public ResponseEntity<StoredFileDTO> getFileMetadata(@PathVariable Integer fileId) {
+    public ResponseEntity<StoredFileMetaDTO> getFileMetadata(@PathVariable Integer fileId) {
         return new ResponseEntity<>(fileStorageService.getFileMetadata(fileId), HttpStatus.OK);
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<StoredFileMetaDTO>> getAllFilesMetadata() {
+        return new ResponseEntity<>(fileStorageService.getAllFilesMetaDate(), HttpStatus.OK);
     }
 }
 

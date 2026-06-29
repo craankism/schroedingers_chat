@@ -1,14 +1,12 @@
 export type FileType = {
     fileId: number,
     filename: string,
-    path: string,
     size: number,
+    mimeType: string,
+    uploadedAt: string,
     uploadedBy: number
 }
 
 export type FileInput = {
-    filename: string,
-    path: string,
-    size: number,
-    uploadedBy: number
+   file: File
 }
