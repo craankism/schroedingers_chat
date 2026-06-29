@@ -82,8 +82,8 @@ export const userApi = {
 };
 
 export const roomApi = {
-  getMessages: async (): Promise<MessageInput[]> => {
-    const response = await api.get(websocket);
+  getMessages: async (roomId: number): Promise<MessageInput[]> => {
+    const response = await api.get(`${websocket}/${roomId}`);
     return response.data;
   },
 

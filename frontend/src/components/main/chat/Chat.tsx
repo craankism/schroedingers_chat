@@ -30,7 +30,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
-        roomApi.getMessages().then((messages) => setMessageHistory(messages));
+        roomApi.getMessages(roomId.roomId).then((messages) => setMessageHistory(messages));
         client.subscribe(
           "/topic/" + roomId.roomId + "/messages",
           (incomingMessage) => {
@@ -81,7 +81,6 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         flexDirection: "column",
         mt: heightMinusTopNav,
         overflow: "hidden",
-        pb: "80px", // Account for fixed Message input at bottom
       }}
     >
       <MessagesDisplay

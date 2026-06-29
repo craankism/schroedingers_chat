@@ -8,7 +8,7 @@ type UserState = {
   error: string | null;
   addUser: (inviteKey: string, userInput: UserInput) => void;
   getUser: (userId: number) => void;
-  getAllUsers: () => void;
+  getAllUsers: () => Promise<UserType[] | undefined>;
   updateUser: (userId: number, role: string) => void;
   deleteUser: (userId: number) => void;
 };
@@ -61,6 +61,7 @@ export const useUserStore = create<UserState>((set) => ({
     try {
       const data = await userApi.getAll();
       set({ users: data });
+      return data;
     } catch (e) {
       set({ error: "Fehler" + e });
       useNotificationStore
