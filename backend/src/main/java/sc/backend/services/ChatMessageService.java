@@ -51,7 +51,7 @@ public class ChatMessageService {
         Room room = roomService.findRoomById(roomId);
         List<MessageDTO> messageDTOList = new ArrayList<>();
 
-        for (ChatMessage chatMessage : chatMessageRepository.findAllByRoom(room.getRoomId())) {
+        for (ChatMessage chatMessage : chatMessageRepository.findAllByRoom(room)) {
             messageDTOList.add(convertToDTO(chatMessage));
         }
 

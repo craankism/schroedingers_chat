@@ -20,7 +20,7 @@ const Message: React.FC<MessageProps> = ({
         position: "fixed",
         bottom: 0,
         left: { xs: 0, md: "240px" },
-        right: 0,
+        right: { xs: 0, md: "240px" },
         zIndex: 1200,
         display: "flex",
         gap: 1,
