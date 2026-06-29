@@ -19,6 +19,7 @@ const validationUrl = "/auth/register/validation";
 const loginUrl = "/auth/login";
 const createCodeUrl = "/admin/invite";
 const changeUserUrl = "/admin/user";
+const websocket = "/messages";
 
 export const fileApi = {
   getAll: async (): Promise<FileType[]> => {
@@ -69,6 +70,11 @@ export const userApi = {
 };
 
 export const roomApi = {
+  getMessages: async (): Promise<MessageInput[]> => {
+    const response = await api.get(websocket);
+    return response.data;
+  },
+
   getAll: async (): Promise<RoomType[]> => {
     const response = await api.get<RoomType[]>(roomUrl);
     return response.data;

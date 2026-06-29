@@ -5,7 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "./MessagesDisplay";
 import Message from "./Message";
 import { heightMinusTopNav } from "../../../types/constants/constants";
-import type {MessageInput, MessageType} from "../../../types/MessageType";
+import type { MessageInput, MessageType } from "../../../types/MessageType";
+import { roomApi } from "../../../services/apiCalls";
 
 const Chat = (): JSX.Element => {
   const clientRef = useRef<Client | null>(null);
@@ -25,12 +26,13 @@ const Chat = (): JSX.Element => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
-          fetch('/api/messages')
-              .then(response => response.json())
-              .then(messages => setMessageHistory(messages));
+        roomApi.getMessages().then((messages) => setMessageHistory(messages));
         client.subscribe("/topic/messages", (incomingMessage) => {
-            console.log(incomingMessage.body);
-          setMessageHistory((prev) => [...prev, JSON.parse(incomingMessage.body)]);
+          console.log(incomingMessage.body);
+          setMessageHistory((prev) => [
+            ...prev,
+            JSON.parse(incomingMessage.body),
+          ]);
         });
       },
       onWebSocketClose: handleConnectionClose,
@@ -55,7 +57,7 @@ const Chat = (): JSX.Element => {
     clientRef.current.publish({
       destination: "/app/chat",
       body: JSON.stringify({
-        content: trimmedMessage
+        content: trimmedMessage,
       } as MessageType),
     });
     setMessage("");

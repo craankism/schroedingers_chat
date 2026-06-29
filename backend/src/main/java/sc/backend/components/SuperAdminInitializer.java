@@ -35,6 +35,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
                 .displayName("Super Admin")
                 .isAdmin(true)
                 .isTrainer(false)
+                .isActive(true)
                 .build();
             userRepository.save(admin);
             System.out.println("SuperAdmin erstellt: " + adminEmail);
