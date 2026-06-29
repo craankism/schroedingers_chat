@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sc.backend.dtos.res.MessageDTO;
@@ -18,8 +19,8 @@ public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
 
-    @GetMapping
-    public ResponseEntity<List<MessageDTO>> getMessages() {
-        return new ResponseEntity<>(chatMessageService.getAllMessages(), HttpStatus.OK);
+    @GetMapping("{roomId}")
+    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable int roomId) {
+        return new ResponseEntity<>(chatMessageService.getAllMessages(roomId), HttpStatus.OK);
     }
 }

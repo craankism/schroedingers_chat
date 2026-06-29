@@ -1,7 +1,6 @@
 package sc.backend.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.RegistrationDTO;
@@ -24,8 +23,7 @@ public class AdminService {
     private final UserService userService;
 
     public RegistrationDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO, String creatorEmail) {
-        User creator = userRepository.findByEmail(creatorEmail).orElseThrow(() ->
-                new UsernameNotFoundException("Authenticated user not found"));
+        User creator = userService.getUserByEmail(userRepository.findByEmail(creatorEmail));
 
         // MH: changed Code to use new Service
         String registryKey = registryCodeService.generateRegistryCode();
@@ -78,7 +76,7 @@ public class AdminService {
         return userService.convertToDTO(user);
     }
 
-    public void  deleteUser(int userId) {
+    public void deleteUser(int userId) {
         User user  = userService.findUserById(userId);
 
         userRepository.delete(user);

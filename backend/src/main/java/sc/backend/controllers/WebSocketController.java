@@ -1,6 +1,7 @@
 package sc.backend.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -18,13 +19,13 @@ public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
 
-    @MessageMapping("/chat")
-    @SendTo("/topic/messages")
-    public MessageDTO sendMessage(@Payload SendMessageDTO message, Principal principal) {
+    @MessageMapping("/chat/{roomId}")
+    @SendTo("/topic/{roomId}/messages")
+    public MessageDTO sendMessage(@DestinationVariable int roomId, @Payload SendMessageDTO message, Principal principal) {
         if (principal == null) {
             throw new AccessDeniedException("Not authenticated");
         }
 
-        return chatMessageService.createMessage(message, principal.getName());
+        return chatMessageService.createMessage(roomId, message, principal.getName());
     }
 }

@@ -29,6 +29,7 @@ public class TokenService {
         Map<String, Object> claims = new HashMap<>();
 
         //TODO: what should be in the token?
+        claims.put("userId", user.getUserId());
         claims.put("email", user.getEmail());
         claims.put("displayName", user.getDisplayName());
         claims.put("isAdmin", user.isAdmin());
