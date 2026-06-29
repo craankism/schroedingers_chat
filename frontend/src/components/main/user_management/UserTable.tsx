@@ -1,10 +1,9 @@
 import { DataGrid } from "@mui/x-data-grid";
-import Paper from "@mui/material/Paper";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { useUserStore } from "../../../stores/UserStore";
 import { useEffect } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import type {
   GridColDef,
   GridRenderCellParams,
@@ -95,17 +94,17 @@ const UserTable = (): JSX.Element => {
   // }];
 
   return (
-    <Paper sx={{ height: 400, width: "100%" }}>
-      <DataGrid
-        rows={users}
-        getRowId={(row) => row.userId}
-        columns={columns}
-        initialState={{ pagination: { paginationModel } }}
-        pageSizeOptions={[5, 10, 20, 30]}
-        processRowUpdate={handleRowUpdate}
-        sx={{ border: 0 }}
-      />
-    </Paper>
+      <Box sx={{ height: 400, maxWidth: {xs: "90vw", md: "100vw"}, mt: 1 }}>
+        <DataGrid
+          rows={users}
+          getRowId={(row) => row.userId}
+          columns={columns}
+          initialState={{ pagination: { paginationModel } }}
+          pageSizeOptions={[5, 10, 20, 30]}
+          processRowUpdate={handleRowUpdate}
+          sx={{ border: 0 }}
+        />
+      </Box>
   );
 };
 

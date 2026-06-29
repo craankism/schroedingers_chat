@@ -1,31 +1,52 @@
-import { List, ListItem, ListItemButton, ListItemText, useMediaQuery, useTheme } from "@mui/material";
+import {
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import React from "react";
+import type { RoomType } from "../../../types/RoomType";
 
 const SidebarHelper: React.FC<{
   items: string[];
+  itemNames: string[];
+  rooms?: RoomType[];
   activeView: string;
   setActiveView: (view: string) => void;
+  setRoomId: (roomId: number) => void;
   setOpen: (open: boolean) => void;
-}> = ({ items, activeView, setActiveView, setOpen }) => {
+}> = ({
+  items,
+  itemNames,
+  activeView,
+  setActiveView,
+  setOpen,
+  rooms,
+  setRoomId,
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
-  <List>
-    {items.map((item) => (
-      <ListItem key={item} disablePadding>
-        <ListItemButton
-          selected={activeView === item}
-          onClick={() => {
-            setActiveView(item);
-            if (isMobile) setOpen(false);
-          }}
-        >
-          <ListItemText primary={item} />
-        </ListItemButton>
-      </ListItem>
-    ))}
-  </List>
+    <List>
+      {items.map((item, index) => (
+        <ListItem key={item} disablePadding>
+          <ListItemButton
+            selected={activeView === item}
+            onClick={() => {
+              if (rooms) setRoomId(rooms.at(index)?.roomId || 0);
+              if (itemNames.includes(item)) setActiveView(item);
+              else setActiveView("Chats");
+              if (isMobile) setOpen(false);
+            }}
+          >
+            <ListItemText primary={item} />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </List>
   );
 };
 

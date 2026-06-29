@@ -8,20 +8,25 @@ import UserManagement from "../main/user_management/UserManagement";
 import { Box } from "@mui/material";
 import Announcement from "../main/Announcement";
 
-const Active = {
-  Chats: <Chat />,
-  Userverwaltung: <UserManagement />,
-  Dateiverwaltung: <FileManagement />,
-  Kursmaterialien: <Files />,
-  Ankündigungen: <Announcement />,
-};
-
 const MainView = (): JSX.Element => {
-  const [activeView, setActiveView] = useState<string>("Chats");
+  const [activeView, setActiveView] = useState<string>("Ankündigungen");
+  const [roomId, setRoomId] = useState<number>(0);
+
+  const Active = {
+    Chats: <Chat roomId={roomId} />,
+    Userverwaltung: <UserManagement />,
+    Dateiverwaltung: <FileManagement />,
+    Kursmaterialien: <Files />,
+    Ankündigungen: <Announcement />,
+  };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <Sidebar activeView={activeView} setActiveView={setActiveView} />
+    <Box sx={{ display: "flex", maxWidth: "100vw" }}>
+      <Sidebar
+        activeView={activeView}
+        setActiveView={setActiveView}
+        setRoomId={setRoomId}
+      />
       {Active[activeView as keyof typeof Active]}
     </Box>
   );

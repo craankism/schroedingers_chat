@@ -4,8 +4,9 @@ import type { AuthLoginType, CodeValidationType } from "../types/AuthType.ts";
 import { useNotificationStore } from "./NotificationStore.ts";
 import { authApi } from "../services/apiCalls.ts";
 
-export function decodeJwt(token: string): UserType | null {
+export function decodeJwt(): UserType | null {
   try {
+    const token = localStorage.getItem("jwt") || "";
     const payload = JSON.parse(atob(token.split(".")[1]));
     return {
       userId: payload.userId,
@@ -36,7 +37,7 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set) => ({
   error: null,
   token: localStorage.getItem("jwt"),
-  currentUser: decodeJwt(localStorage.getItem("jwt")!),
+  currentUser: decodeJwt(),
   isAuthenticated: !!localStorage.getItem("jwt"),
 
   login: async (login: AuthLoginType) => {

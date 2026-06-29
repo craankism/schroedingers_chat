@@ -1,25 +1,48 @@
 import { Box, Divider, Drawer, IconButton, Toolbar } from "@mui/material";
-import React, { useState } from "react";
-import AddIcon from "@mui/icons-material/Add";
+import React, { useEffect, useState } from "react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SidebarHelper from "./SidebarHelper";
 import { decodeJwt } from "../../../stores/AuthStore";
+import NewRoomModal from "./NewRoomModal";
+import { useRoomStore } from "../../../stores/RoomStore";
+import type { RoomType } from "../../../types/RoomType";
 
-const drawerWidth = 240;
+export const drawerWidth = 240;
 
 type SidebarProps = {
   activeView: string;
   setActiveView(view: string): void;
+  setRoomId(roomId: number): void;
 };
 
 const adminItems = ["Userverwaltung", "Dateiverwaltung"];
 const navItems = ["Ankündigungen", "Kursmaterialien"];
-const chatItems = ["Chats"];
+const itemNames = [...adminItems, ...navItems];
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  activeView,
+  setActiveView,
+  setRoomId,
+}) => {
   const [open, setOpen] = useState<boolean>(true);
-  const isAdmin = decodeJwt(localStorage.getItem("jwt") || "")?.isAdmin;
+  const isAdmin = decodeJwt()?.isAdmin;
+  const userId = decodeJwt()?.userId || 1;
+  const { getAllRooms, rooms } = useRoomStore();
+
+  useEffect(() => {
+    getAllRooms();
+  }, [getAllRooms]);
+
+  const roomItems: string[] = [];
+  const userRooms: RoomType[] = [];
+
+  rooms.map((room) => {
+    if (room.members.includes(userId)) {
+      roomItems.push(room.name);
+      userRooms.push(room);
+    }
+  });
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -41,6 +64,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
             <>
               <SidebarHelper
                 items={adminItems}
+                itemNames={itemNames}
+                setRoomId={setRoomId}
                 activeView={activeView}
                 setActiveView={setActiveView}
                 setOpen={setOpen}
@@ -50,20 +75,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
           )}
           <SidebarHelper
             items={navItems}
+            itemNames={itemNames}
+            setRoomId={setRoomId}
             activeView={activeView}
             setActiveView={setActiveView}
             setOpen={setOpen}
           />
           <Divider />
-          <AddIcon
-            sx={{ cursor: "pointer", ml: drawerWidth / 10, mt: 1 }}
-            onClick={() => {
-              /*neuen Chat erstellen*/
-            }}
-          />
-          {/* Code unten ist Placeholder für Chats */}
+          <NewRoomModal />
           <SidebarHelper
-            items={chatItems}
+            items={roomItems}
+            itemNames={itemNames}
+            rooms={userRooms}
+            setRoomId={setRoomId}
             activeView={activeView}
             setActiveView={setActiveView}
             setOpen={setOpen}

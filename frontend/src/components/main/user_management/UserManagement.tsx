@@ -9,7 +9,6 @@ const UserManagement = (): JSX.Element => {
       <Toolbar />
       <Typography variant="h5">Userverwaltung</Typography>
       <InviteModal />
-
       <UserTable />
     </Box>
   );
