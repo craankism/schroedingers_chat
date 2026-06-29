@@ -1,7 +1,7 @@
 export type RoomType = {
     roomId: number,
     name: string,
-    members: number[],
+    userList: number[],
 }
 
 export type RoomInput ={

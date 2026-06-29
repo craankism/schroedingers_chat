@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [open, setOpen] = useState<boolean>(true);
   const isAdmin = decodeJwt()?.isAdmin;
-  const userId = decodeJwt()?.userId || 1;
+  const userId = decodeJwt()?.userId || 0;
   const { getAllRooms, rooms } = useRoomStore();
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const userRooms: RoomType[] = [];
 
   rooms.map((room) => {
-    if (room.members.includes(userId)) {
+    if (room.userList.includes(userId)) {
       roomItems.push(room.name);
       userRooms.push(room);
     }

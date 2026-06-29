@@ -11,31 +11,24 @@ type MemberSidebarProps = {
 };
 
 const MemberSidebar: React.FC<MemberSidebarProps> = (roomId) => {
-  console.log(roomId);
-  const { getAllUsers, users } = useUserStore();
-  const { getAllRooms, rooms } = useRoomStore();
+  const { getAllUsers } = useUserStore();
+  const { getAllRooms, getRoom } = useRoomStore();
 
-  const [userList, setUserList] = useState<string[]>([]);
-  const displayMembers = () => {
-    console.log(users);
-    console.log(rooms);
-    console.log(roomId);
-    rooms.map((room) => {
-      if (room.roomId === roomId.roomId) {
-        room.members.map((memberId) => {
-          console.log(room);
-          users.map((user) => {
-            console.log(user.userId);
-            console.log(memberId);
-            if (user.userId === memberId) {
-              console.log("test");
-              setUserList([...userList, user.displayName]);
-            }
-          });
+  const [userDisplay, setUserDisplay] = useState<string[]>([]);
+  const displayMembers = async () => {
+    const result = await getRoom(roomId.roomId);
+    const allUsers = await getAllUsers();
+    if (result) {
+      if (allUsers) {
+        const newUsers = allUsers.filter((user) => {
+          if (result.userList.find((userId) => userId == user.userId) != null) {
+            return true;
+          }
+          return false;
         });
+        newUsers.forEach((user) => setUserDisplay([...userDisplay, user.displayName]))
       }
-    });
-    return null;
+    }
   };
 
   useEffect(() => {
@@ -57,11 +50,11 @@ const MemberSidebar: React.FC<MemberSidebarProps> = (roomId) => {
         },
       }}
     >
-      <ListItem>
+      <ListItem sx={{ mt: 1 }}>
         <ListItemText primary={"Members:"} />
       </ListItem>
       <ListItem>
-        {userList.map((username, index) => (
+        {userDisplay.map((username, index) => (
           <ListItemText key={index} primary={username} />
         ))}
       </ListItem>

@@ -7,7 +7,7 @@ type RoomState = {
     rooms: RoomType[],
     error: string | null,
     createRoom: (roomData: RoomInput) => void;
-    getRoom: (roomId: number) => void;
+    getRoom: (roomId: number) => Promise<RoomType | undefined>;
     getAllRooms: () => void;
     deleteRoom: (roomId: number) => void;
 }
@@ -40,6 +40,8 @@ export const useRoomStore = create<RoomState>(
                 set((state: RoomState) => ({
                     rooms: state.rooms.map(room => room.roomId === roomId ? {...room, ...data} : room)
                 }));
+                console.log(data);
+                return data;
             } catch (e) {
                 set({error: "Fehler" + e});
                 useNotificationStore.getState().addNotification("Fehler beim Laden des Raums", "error");

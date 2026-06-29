@@ -29,6 +29,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         flexGrow: 1,
         overflow: "hidden",
         p: 3,
+        mr: 30,
       }}
     >
       <Typography sx={{ mb: 2 }}>
@@ -46,7 +47,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         {messageHistory.map((message, id) => (
           <Box
             key={id}
-            sx={{ display: "flex", mb: 2 }}
+            sx={{ display: "flex"}}
             ref={id === messageHistory.length - 1 ? lastMessageRef : null}
           >
             {currentUser?.displayName === message.sender ? (
