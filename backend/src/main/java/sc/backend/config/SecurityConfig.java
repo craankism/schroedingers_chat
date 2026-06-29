@@ -39,6 +39,9 @@ public class SecurityConfig {
                         .requestMatchers(paths.matcher("/api/admin/**")).hasRole("ADMIN")
                         .requestMatchers(paths.matcher("/h2/**")).permitAll() //Test
                         .requestMatchers(paths.matcher("/ws"), paths.matcher("/ws/**")).permitAll()
+                        .requestMatchers(paths.matcher("/api/file/**")).permitAll() //TEST
+                        .requestMatchers(paths.matcher("/actuator/health")).permitAll()
+                        .requestMatchers(paths.matcher("/error")).permitAll()
                         .anyRequest().authenticated()
                         //TODO: change permissions
                 )

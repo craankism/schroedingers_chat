@@ -7,13 +7,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import sc.backend.dtos.res.StoredFileDTO;
+import sc.backend.dtos.res.StoredFileMetaDTO;
 import sc.backend.entities.StoredFile;
 import sc.backend.repositories.StoredFileRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,7 +32,7 @@ public class FileStorageService {
     /**
      * Upload: Datei direkt (unverschluesselt) nach MinIO streamen
      */
-    public StoredFileDTO uploadFile(MultipartFile file, String userName) throws Exception {
+    public StoredFileMetaDTO uploadFile(MultipartFile file, String userName) throws Exception {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Datei darf nicht leer sein");
         }
@@ -78,20 +80,27 @@ public class FileStorageService {
         );
     }
 
-    /**
-     * Metadaten abrufen (fuer Dateiliste im Frontend)
-     */
-    public StoredFileDTO getFileMetadata(Integer fileId) {
+    public StoredFileMetaDTO getFileMetadata(Integer fileId) {
         return convertStoredFileToDto(storedFileRepository.findById(fileId).orElseThrow(() -> new RuntimeException("Datei nicht gefunden")));
     }
 
-    private StoredFileDTO convertStoredFileToDto(StoredFile storedFile) {
-        return StoredFileDTO.builder()
+    public List<StoredFileMetaDTO> getAllFilesMetaDate() {
+        List<StoredFileMetaDTO> fileDtoList = new ArrayList<>();
+
+        for (StoredFile file: storedFileRepository.findAll()) {
+            fileDtoList.add(convertStoredFileToDto(file));
+        }
+        return fileDtoList;
+    }
+
+    private StoredFileMetaDTO convertStoredFileToDto(StoredFile storedFile) {
+        return StoredFileMetaDTO.builder()
                 .fileId(storedFile.getFileId())
                 .filename(storedFile.getFilename())
                 .uploadedById(storedFile.getUploadedBy().getUserId())
                 .size(storedFile.getSize())
                 .uploadDate(storedFile.getUploadDate())
+                .mimeType(storedFile.getMimeType())
                 .build();
     }
 }

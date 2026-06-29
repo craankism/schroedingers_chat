@@ -1,5 +1,7 @@
 package sc.backend.config;
 
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,5 +27,23 @@ public class MinioConfig {
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
+    }
+
+    @Bean
+    public Boolean createBucketIfNeeded(MinioClient minioClient,
+                                        @Value("${minio.bucket.name}") String bucketName) {
+        try {
+            boolean exists = minioClient.bucketExists(
+                    BucketExistsArgs.builder().bucket(bucketName).build()
+            );
+            if (!exists) {
+                minioClient.makeBucket(
+                        MakeBucketArgs.builder().bucket(bucketName).build()
+                );
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Konnte MinIO Bucket nicht erstellen: " + bucketName, e);
+        }
     }
 }
