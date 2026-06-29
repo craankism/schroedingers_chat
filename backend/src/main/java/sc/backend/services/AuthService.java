@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sc.backend.dtos.req.LoginDTO;
@@ -12,10 +11,12 @@ import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.res.AuthDTO;
 import sc.backend.dtos.res.CodeDTO;
 import sc.backend.entities.Registration;
+import sc.backend.entities.Room;
 import sc.backend.entities.User;
 import sc.backend.exceptions.EmptyOptionalException;
 import sc.backend.exceptions.KeyInvalidException;
 import sc.backend.repositories.RegistrationRepository;
+import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.util.Optional;
@@ -27,9 +28,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
-    private final ConversionService conversionService;
     private final AuthenticationManager authenticationManager;
     private final RegistrationRepository registrationRepository;
+    private final RoomRepository roomRepository;
+    private final UserService userService;
 
     @Transactional
     public AuthDTO register(String registryKey, RegisterDTO registerDTO) {
@@ -49,9 +51,15 @@ public class AuthService {
                 .isActive(true)
                 .build();
 
-        userRepository.save(user);
+        Room room = roomRepository.findById(1).orElseThrow(() ->
+                new EmptyOptionalException("Room not found!"));
+        room.getUserList().add(user);
+        user.getRoomList().add(room);
+        roomRepository.save(room);
         registration.setUsedBy(user);
         registrationRepository.save(registration);
+        user.setRegistration(registration);
+        userRepository.save(user);
 
         String jwt = tokenService.generateTokenWithClaims(user);
 
@@ -69,7 +77,7 @@ public class AuthService {
     }
 
     public AuthDTO login(LoginDTO loginDTO) {
-        User user = getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
+        User user = userService.getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
         String email = user.getEmail();
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, loginDTO.getPassword()));
@@ -77,17 +85,6 @@ public class AuthService {
         String jwt = tokenService.generateTokenWithClaims(user);
 
         return convertToAuthDTO(user, jwt);
-    }
-
-    public User getUserByEmail(Optional<User> userOptional) {
-        User user;
-
-        try {
-            user = conversionService.getEntityFromOptional(userOptional);
-        } catch (EmptyOptionalException e) {
-            throw new UsernameNotFoundException("Email not found!");
-        }
-        return user;
     }
 
     private AuthDTO convertToAuthDTO(User user, String jwt) {
