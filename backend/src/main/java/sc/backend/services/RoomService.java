@@ -1,6 +1,7 @@
 package sc.backend.services;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sc.backend.dtos.req.AddUsersToRoomDTO;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class RoomService {
@@ -80,8 +82,7 @@ public class RoomService {
     }
 
     public Room findRoomById(int roomId) {
-        return roomRepository.findById(roomId).orElseThrow(() ->
-                new EntityNotFoundException("Room not found"));
+        return roomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room not found"));
     }
 
     public int[] getUserList(Room room) {

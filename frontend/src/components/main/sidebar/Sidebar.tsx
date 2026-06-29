@@ -8,8 +8,6 @@ import NewRoomModal from "./NewRoomModal";
 import { useRoomStore } from "../../../stores/RoomStore";
 import type { RoomType } from "../../../types/RoomType";
 
-export const drawerWidth = 240;
-
 type SidebarProps = {
   activeView: string;
   setActiveView(view: string): void;
@@ -50,10 +48,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         variant="persistent"
         open={open}
         sx={{
-          width: open ? drawerWidth : 0,
+          width: open ? { xs: "100vw", md: 240 } : 0,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: {
-            width: drawerWidth,
+            width: { xs: "100vw", md: 240 },
             boxSizing: "border-box",
           },
         }}
@@ -100,8 +98,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         sx={{
           display: { xs: "flex", md: "none" },
           position: "fixed",
-          left: open ? drawerWidth : 0,
-          top: "50%",
+          left: open ? "calc(100vw - 10vw)" : "0",
+          top: "45%",
           transform: "translateY(-50%)",
           zIndex: 1300,
           bgcolor: "background.paper",

@@ -29,7 +29,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         flexGrow: 1,
         overflow: "hidden",
         p: 3,
-        mr: 30,
+        mr: { xs: "0", md: 30 },
       }}
     >
       <Typography sx={{ mb: 2 }}>

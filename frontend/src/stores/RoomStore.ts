@@ -40,7 +40,6 @@ export const useRoomStore = create<RoomState>(
                 set((state: RoomState) => ({
                     rooms: state.rooms.map(room => room.roomId === roomId ? {...room, ...data} : room)
                 }));
-                console.log(data);
                 return data;
             } catch (e) {
                 set({error: "Fehler" + e});

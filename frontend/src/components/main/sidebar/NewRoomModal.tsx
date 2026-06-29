@@ -6,7 +6,6 @@ import Modal from "@mui/material/Modal";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { Grid, ListItemButton, ListItemText, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { drawerWidth } from "./Sidebar";
 import { useUserStore } from "../../../stores/UserStore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useRoomStore } from "../../../stores/RoomStore";
@@ -48,7 +47,7 @@ const NewRoomModal = (): JSX.Element => {
   return (
     <div>
       <AddIcon
-        sx={{ cursor: "pointer", ml: drawerWidth / 10, mt: 1 }}
+        sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
         onClick={() => {
           handleOpen();
           getAllUsers();
