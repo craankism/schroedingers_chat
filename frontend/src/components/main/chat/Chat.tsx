@@ -1,14 +1,18 @@
-import type { JSX } from "@emotion/react/jsx-runtime";
 import { Client } from "@stomp/stompjs";
 import { Box } from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "./MessagesDisplay";
 import Message from "./Message";
 import { heightMinusTopNav } from "../../../types/constants/constants";
 import type { MessageInput, MessageType } from "../../../types/MessageType";
 import { roomApi } from "../../../services/apiCalls";
+import MemberSidebar from "./MemberSidebar";
 
-const Chat = (): JSX.Element => {
+type ChatProps = {
+  roomId: number;
+};
+
+const Chat: React.FC<ChatProps> = (roomId) => {
   const clientRef = useRef<Client | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
@@ -27,13 +31,16 @@ const Chat = (): JSX.Element => {
       onConnect: () => {
         setConnectionStatus("Open");
         roomApi.getMessages().then((messages) => setMessageHistory(messages));
-        client.subscribe("/topic/messages", (incomingMessage) => {
-          console.log(incomingMessage.body);
-          setMessageHistory((prev) => [
-            ...prev,
-            JSON.parse(incomingMessage.body),
-          ]);
-        });
+        client.subscribe(
+          "/topic/" + roomId.roomId + "/messages",
+          (incomingMessage) => {
+            console.log(incomingMessage.body);
+            setMessageHistory((prev) => [
+              ...prev,
+              JSON.parse(incomingMessage.body),
+            ]);
+          },
+        );
       },
       onWebSocketClose: handleConnectionClose,
       onWebSocketError: handleConnectionClose,
@@ -46,7 +53,7 @@ const Chat = (): JSX.Element => {
     return () => {
       void client.deactivate();
     };
-  }, []);
+  }, [roomId]);
 
   const handleClickSendMessage = useCallback(() => {
     const trimmedMessage = message.trim();
@@ -55,13 +62,13 @@ const Chat = (): JSX.Element => {
     }
 
     clientRef.current.publish({
-      destination: "/app/chat",
+      destination: "/app/chat/" + roomId.roomId,
       body: JSON.stringify({
         content: trimmedMessage,
       } as MessageType),
     });
     setMessage("");
-  }, [message]);
+  }, [message, roomId]);
 
   const isConnected = connectionStatus === "Open";
 
@@ -81,6 +88,7 @@ const Chat = (): JSX.Element => {
         connectionStatus={connectionStatus}
         messageHistory={messageHistory}
       />
+      <MemberSidebar roomId={roomId.roomId} />
       <Message
         message={message}
         setMessage={setMessage}
