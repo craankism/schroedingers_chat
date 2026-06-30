@@ -39,10 +39,6 @@ public class ChatMessageService {
                 .build();
 
         chatMessageRepository.save(chatMessage);
-        creator.getChatMessageList().add(chatMessage);
-        userRepository.save(creator);
-        room.getChatMessageList().add(chatMessage);
-        roomRepository.save(room);
 
         return convertToDTO(chatMessage);
     }

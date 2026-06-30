@@ -33,7 +33,6 @@ public class RoomService {
                 .createdBy(creator)
                 .build();
 
-        room.getUserList().add(creator);
         roomRepository.save(room);
         creator.getCreatedRoomList().add(room);
         userRepository.save(creator);
@@ -76,9 +75,7 @@ public class RoomService {
     public RoomDTO addUsersToRoom(Room room, Set<Integer> userIdSet) {
         for (Integer userId : userIdSet) {
             User user = userService.findUserById(userId);
-            room.getUserList().add(user);
             user.getRoomList().add(room);
-            roomRepository.save(room);
             userRepository.save(user);
         }
 
@@ -86,7 +83,8 @@ public class RoomService {
     }
 
     public Room findRoomById(int roomId) {
-        return roomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room not found"));
+        return roomRepository.findById(roomId).orElseThrow(() ->
+                new EntityNotFoundException("Room not found"));
     }
 
     public int[] getUserList(Room room) {
@@ -103,7 +101,7 @@ public class RoomService {
         return RoomDTO.builder()
                 .roomId(room.getRoomId())
                 .name(room.getName())
-                .createdBy(room.getCreatedBy().getDisplayName())
+                .createdBy(room.getCreatedBy().getUserId())
                 .userList(getUserList(room))
                 .build();
     }

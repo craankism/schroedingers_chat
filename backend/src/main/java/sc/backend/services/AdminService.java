@@ -35,14 +35,14 @@ public class AdminService {
                 .createdBy(creator)
                 .build();
 
-        Registration savedRegistration = registrationRepository.save(registration);
+        registrationRepository.save(registration);
 
         return RegistrationDTO.builder()
-                .registrationId(savedRegistration.getRegistrationId())
-                .isTrainer(savedRegistration.isTrainer())
-                .createdAt(savedRegistration.getCreatedAt())
-                .registrationCode(savedRegistration.getRegistrationCode())
-                .createdBy(savedRegistration.getCreatedBy().getUserId())
+                .registrationId(registration.getRegistrationId())
+                .isTrainer(registration.isTrainer())
+                .createdAt(registration.getCreatedAt())
+                .registrationCode(registration.getRegistrationCode())
+                .createdBy(registration.getCreatedBy().getUserId())
                 .build();
     }
 
