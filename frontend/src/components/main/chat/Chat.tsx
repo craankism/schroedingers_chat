@@ -19,11 +19,17 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   const [messageHistory, setMessageHistory] = useState<MessageInput[]>([]);
   const [message, setMessage] = useState<string>("");
 
+  const getWsUrl = () => {
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const host = window.location.host;
+    return `${protocol}://${host}/ws`;
+  };
+
   useEffect(() => {
     const handleConnectionClose = () => setConnectionStatus("Closed");
 
     const client = new Client({
-      brokerURL: "ws://localhost:8080/ws",
+      brokerURL: getWsUrl(),
       reconnectDelay: 5000,
       connectHeaders: {
         Authorization: "Bearer " + localStorage.getItem("jwt"),

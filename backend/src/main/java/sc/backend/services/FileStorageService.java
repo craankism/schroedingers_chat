@@ -3,6 +3,7 @@ package sc.backend.services;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -93,6 +94,19 @@ public class FileStorageService {
             fileDtoList.add(convertStoredFileToDto(file));
         }
         return fileDtoList;
+    }
+
+    public void deleteFile(Integer fileId) throws Exception {
+        StoredFile file = storedFileRepository.findById(fileId).orElseThrow();
+
+        storedFileRepository.delete(file);
+
+        minioClient.removeObject(
+                RemoveObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(file.getStoredFilename())
+                        .build()
+        );
     }
 
     private StoredFileMetaDTO convertStoredFileToDto(StoredFile storedFile) {
