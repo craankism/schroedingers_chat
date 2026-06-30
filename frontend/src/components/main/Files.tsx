@@ -32,9 +32,6 @@ const Files = (): JSX.Element => {
             <Typography variant="h5">Kursmaterialien</Typography>
 
             <Box sx={{maxWidth: 600, mx: "auto", mt: 4, p: 3}}>
-                <Typography variant="h5" gutterBottom>
-                    File Upload Test
-                </Typography>
 
                 <Box sx={{display: "flex", gap: 2, mb: 3}}>
                     <Button

@@ -64,5 +64,11 @@ public class StoredFileController {
     public ResponseEntity<List<StoredFileMetaDTO>> getAllFilesMetadata() {
         return new ResponseEntity<>(fileStorageService.getAllFilesMetaDate(), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<?> deleteFileById(@PathVariable int fileId) throws Exception{
+        fileStorageService.deleteFile(fileId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
 
