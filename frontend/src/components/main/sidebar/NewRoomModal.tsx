@@ -7,6 +7,7 @@ import { Grid, ListItemButton, ListItemText, TextField } from "@mui/material";
 import { useUserStore } from "../../../stores/UserStore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useRoomStore } from "../../../stores/RoomStore";
+import { decodeJwt } from "../../../stores/AuthStore";
 
 const style = {
   position: "absolute",
@@ -64,6 +65,10 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
       setName(room.name);
       setUserIdSet(room.userList);
       setEditMode(true);
+    } else {
+      const currentUserId = decodeJwt()?.userId;
+      setUserIdSet(currentUserId ? [currentUserId] : []);
+      setEditMode(false);
     }
     // eslint-disable-next-line
   }, [openModal]);
@@ -106,7 +111,9 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
               <Grid container spacing={1} size={12}>
                 {users.length > 0 ? (
                   users.map((user, index) => {
-                    const isSelected = userIdSet.includes(user.userId);
+                    const isSelected =
+                      userIdSet.includes(user.userId) ||
+                      decodeJwt()?.userId == user.userId;
                     return (
                       <Grid size={{ xs: 4, md: 3 }} key={index}>
                         <ListItemButton
@@ -115,6 +122,7 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
                             p: 1,
                           }}
                           selected={isSelected}
+                          disabled={decodeJwt()?.userId == user.userId}
                           onClick={() => {
                             if (isSelected) {
                               setUserIdSet((prev) =>
