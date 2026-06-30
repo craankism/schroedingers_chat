@@ -58,10 +58,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "createdBy")
     private List<ChatMessage> chatMessageList = new ArrayList<>();
 
-    @OneToOne
-    @JoinColumn(name = "registrationId")
-    private Registration registration;
-
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
     private List<Registration> registrationList = new ArrayList<>();
