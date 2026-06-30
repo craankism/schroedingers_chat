@@ -36,7 +36,7 @@ export const fileApi = {
     const formData = new FormData();
     formData.append("file", fileInput.file);
 
-    const response = await api.post<FileType>(fileUrl + '/upload', formData, {
+    const response = await api.post<FileType>(fileUrl + "/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -46,7 +46,7 @@ export const fileApi = {
     const response = await api.get(`${fileUrl}/download/${fileId}`, {
       responseType: "blob",
     });
-   return response.data;
+    return response.data;
   },
 
   delete: async (fileId: number): Promise<void> => {
@@ -99,6 +99,11 @@ export const roomApi = {
 
   create: async (room: RoomInput): Promise<RoomType> => {
     const response = await api.post<RoomType>(roomUrl, room);
+    return response.data;
+  },
+
+  update: async (room: RoomInput, roomId: number): Promise<RoomType> => {
+    const response = await api.put<RoomType>(`${roomUrl}/${roomId}`, room);
     return response.data;
   },
 

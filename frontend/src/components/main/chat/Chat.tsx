@@ -36,7 +36,9 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
-        roomApi.getMessages(roomId.roomId).then((messages) => setMessageHistory(messages));
+        roomApi
+          .getMessages(roomId.roomId)
+          .then((messages) => setMessageHistory(messages));
         client.subscribe(
           "/topic/" + roomId.roomId + "/messages",
           (incomingMessage) => {
@@ -59,7 +61,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     return () => {
       void client.deactivate();
     };
-  }, [roomId]);
+  }, [roomId.roomId]);
 
   const handleClickSendMessage = useCallback(() => {
     const trimmedMessage = message.trim();

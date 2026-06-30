@@ -1,6 +1,7 @@
 export type RoomType = {
     roomId: number,
     name: string,
+    createdBy: string,
     userList: number[],
 }
 
