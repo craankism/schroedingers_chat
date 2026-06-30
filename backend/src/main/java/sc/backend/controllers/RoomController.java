@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sc.backend.dtos.req.AddUsersToRoomDTO;
+import sc.backend.dtos.req.EditRoomDTO;
 import sc.backend.dtos.req.CreateRoomDTO;
 import sc.backend.dtos.res.RoomDTO;
 import sc.backend.services.RoomService;
@@ -35,8 +35,8 @@ public class RoomController {
     }
 
     @PutMapping("{roomId}")
-    public ResponseEntity<RoomDTO> addNewUsers(@PathVariable int roomId, @RequestBody AddUsersToRoomDTO addUserToRoomDTO) {
-        return new ResponseEntity<>(roomService.addNewUsers(roomId, addUserToRoomDTO), HttpStatus.OK);
+    public ResponseEntity<RoomDTO> editRoom(@PathVariable int roomId, @RequestBody EditRoomDTO addUserToRoomDTO) {
+        return new ResponseEntity<>(roomService.editRoom(roomId, addUserToRoomDTO), HttpStatus.OK);
     }
 
     @DeleteMapping("{roomId}")
