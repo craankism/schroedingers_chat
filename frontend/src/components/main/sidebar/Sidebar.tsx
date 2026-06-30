@@ -11,6 +11,8 @@ import type { RoomType } from "../../../types/RoomType";
 type SidebarProps = {
   activeView: string;
   setActiveView(view: string): void;
+  select: string;
+  setSelect(selection: string): void;
   setRoomId(roomId: number): void;
 };
 
@@ -21,6 +23,8 @@ const itemNames = [...adminItems, ...navItems];
 const Sidebar: React.FC<SidebarProps> = ({
   activeView,
   setActiveView,
+  select,
+  setSelect,
   setRoomId,
 }) => {
   const [open, setOpen] = useState<boolean>(true);
@@ -66,6 +70,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 setRoomId={setRoomId}
                 activeView={activeView}
                 setActiveView={setActiveView}
+                select={select}
+                setSelect={setSelect}
                 setOpen={setOpen}
               />
               <Divider />
@@ -77,6 +83,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             setRoomId={setRoomId}
             activeView={activeView}
             setActiveView={setActiveView}
+            select={select}
+            setSelect={setSelect}
             setOpen={setOpen}
           />
           <Divider />
@@ -88,6 +96,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             setRoomId={setRoomId}
             activeView={activeView}
             setActiveView={setActiveView}
+            select={select}
+            setSelect={setSelect}
             setOpen={setOpen}
           />
         </Box>

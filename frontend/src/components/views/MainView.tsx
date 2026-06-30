@@ -10,6 +10,7 @@ import Announcement from "../main/Announcement";
 
 const MainView = (): JSX.Element => {
   const [activeView, setActiveView] = useState<string>("Ankündigungen");
+  const [select, setSelect] = useState<string>("Ankündigungen");
   const [roomId, setRoomId] = useState<number>(0);
 
   const Active = {
@@ -25,6 +26,8 @@ const MainView = (): JSX.Element => {
       <Sidebar
         activeView={activeView}
         setActiveView={setActiveView}
+        select={select}
+        setSelect={setSelect}
         setRoomId={setRoomId}
       />
       {Active[activeView as keyof typeof Active]}
