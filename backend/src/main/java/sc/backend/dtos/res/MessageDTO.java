@@ -2,7 +2,7 @@ package sc.backend.dtos.res;
 
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -14,5 +14,5 @@ public class MessageDTO {
     private int messageId;
     private String content;
     private String sender;
-    private Date creationDate;
+    private LocalDateTime creationDate;
 }

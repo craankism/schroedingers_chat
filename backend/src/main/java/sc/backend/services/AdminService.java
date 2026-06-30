@@ -10,7 +10,7 @@ import sc.backend.entities.User;
 import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.UserRepository;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -30,7 +30,7 @@ public class AdminService {
 
         Registration registration = Registration.builder()
                 .isTrainer(registerUserKeyDTO.isTrainer())
-                .createdAt(new Date(System.currentTimeMillis()))
+                .createdAt(LocalDateTime.now())
                 .registrationCode(registryKey)
                 .createdBy(creator)
                 .build();

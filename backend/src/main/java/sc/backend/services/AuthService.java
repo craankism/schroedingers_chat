@@ -39,7 +39,8 @@ public class AuthService {
         Registration registration = registrationRepository.findByRegistrationCode(registryKey).orElseThrow(() ->
                         new KeyInvalidException("Key is not valid!"));
 
-        if (registration.getCreatedAt().isAfter(LocalDateTime.now())) {
+        if (registration.getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
+            registrationRepository.delete(registration);
             throw new KeyInvalidException("Registration has expired!");
         }
 

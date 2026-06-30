@@ -9,11 +9,10 @@ import sc.backend.entities.ChatMessage;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
 import sc.backend.repositories.ChatMessageRepository;
-import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -23,7 +22,6 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final RoomService roomService;
-    private final RoomRepository roomRepository;
     private final UserService userService;
 
     @Transactional
@@ -33,7 +31,7 @@ public class ChatMessageService {
 
         ChatMessage chatMessage = ChatMessage.builder()
                 .content(request.getContent())
-                .creationDate(new Date(System.currentTimeMillis()))
+                .creationDate(LocalDateTime.now())
                 .createdBy(creator)
                 .room(room)
                 .build();
