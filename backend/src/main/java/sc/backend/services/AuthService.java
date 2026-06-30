@@ -19,6 +19,7 @@ import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -37,6 +38,10 @@ public class AuthService {
     public AuthDTO register(String registryKey, RegisterDTO registerDTO) {
         Registration registration = registrationRepository.findByRegistrationCode(registryKey).orElseThrow(() ->
                         new KeyInvalidException("Key is not valid!"));
+
+        if (registration.getCreatedAt().isAfter(LocalDateTime.now())) {
+            throw new KeyInvalidException("Registration has expired!");
+        }
 
         User user = User.builder()
                 .email(registerDTO.getEmail())
