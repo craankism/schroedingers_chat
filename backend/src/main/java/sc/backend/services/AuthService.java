@@ -61,7 +61,7 @@ public class AuthService {
     public CodeDTO checkValidity(String code) {
         Optional<Registration> registration = registrationRepository.findByRegistrationCode(code);
 
-        boolean valid = registration.isPresent(); //&& registration.get().getUsedBy() == null;
+        boolean valid = registration.isPresent();
 
         return CodeDTO.builder()
                 .isValid(valid)

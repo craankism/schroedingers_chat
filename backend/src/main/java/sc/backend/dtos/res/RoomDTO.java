@@ -11,6 +11,6 @@ public class RoomDTO {
 
     private int roomId;
     private String name;
-    private String createdBy;
+    private int createdBy;
     private int[] userList;
 }
