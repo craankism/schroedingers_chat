@@ -15,12 +15,13 @@ import {
 import { heightMinusTopNav } from "../../../types/constants/constants";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import EditChat from "./EditChat";
 
 type MemberSidebarProps = {
   roomId: number;
 };
 
-const MemberSidebar: React.FC<MemberSidebarProps> = (roomId) => {
+const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
   const { getAllUsers } = useUserStore();
   const { getAllRooms, getRoom } = useRoomStore();
   const theme = useTheme();
@@ -28,7 +29,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = (roomId) => {
   const [open, setOpen] = useState<boolean>(false);
   const [userDisplay, setUserDisplay] = useState<string[]>([]);
   const displayMembers = async () => {
-    const result = await getRoom(roomId.roomId);
+    const result = await getRoom(roomId);
     const allUsers = await getAllUsers();
     if (result) {
       if (allUsers) {
@@ -68,6 +69,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = (roomId) => {
       >
         <ListItem sx={{ mt: 1 }}>
           <ListItemText primary={"Members:"} />
+          <EditChat roomId={roomId} />
         </ListItem>
         <Divider />
         {userDisplay.map((username, index) => (

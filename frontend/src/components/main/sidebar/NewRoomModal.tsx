@@ -3,9 +3,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import type { JSX } from "@emotion/react/jsx-runtime";
 import { Grid, ListItemButton, ListItemText, TextField } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import { useUserStore } from "../../../stores/UserStore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useRoomStore } from "../../../stores/RoomStore";
@@ -22,39 +20,58 @@ const style = {
   p: 4,
 };
 
-const NewRoomModal = (): JSX.Element => {
-  const [name, setName] = React.useState<string>("");
-  const [open, setOpen] = React.useState(false);
-  const [userIdSet, setuserIdSet] = React.useState<number[]>([]);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setuserIdSet([]);
-    setName("");
-  };
+type NewRoomModalProps = {
+  roomId?: number;
+  roomEdit: boolean;
+  openModal: boolean;
+  closeModal: (setOpenModal: boolean) => void;
+};
 
-  const { getAllUsers, users } = useUserStore();
-  const { createRoom } = useRoomStore();
+const NewRoomModal: React.FC<NewRoomModalProps> = ({
+  roomId,
+  roomEdit,
+  openModal,
+  closeModal,
+}) => {
+  const { users } = useUserStore();
+  const { createRoom, updateRoom, rooms } = useRoomStore();
+
+  const [name, setName] = React.useState<string>("");
+  const [userIdSet, setUserIdSet] = React.useState<number[]>([]);
+  const [editMode, setEditMode] = React.useState<boolean>(false);
+  const handleClose = () => {
+    closeModal(false);
+  };
 
   const submitHandler = async (
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    createRoom({ name, userIdSet });
+    if (editMode) {
+      updateRoom({ name, userIdSet }, roomId || 0);
+    } else {
+      createRoom({ name, userIdSet });
+      setUserIdSet([]);
+      setName("");
+    }
     handleClose();
   };
 
+  React.useEffect(() => {
+    const room = rooms.find((room) => room.roomId === roomId);
+    if (room) {
+      // eslint-disable-next-line
+      setName(room.name);
+      setUserIdSet(room.userList);
+      setEditMode(true);
+    }
+    // eslint-disable-next-line
+  }, [openModal]);
+
   return (
     <div>
-      <AddIcon
-        sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
-        onClick={() => {
-          handleOpen();
-          getAllUsers();
-        }}
-      />
       <Modal
-        open={open}
+        open={openModal}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
@@ -64,7 +81,7 @@ const NewRoomModal = (): JSX.Element => {
             <Grid container spacing={2} sx={{ alignItems: "center" }}>
               <Grid size={12}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
-                  Raum erstellen:
+                  Room:
                 </Typography>
               </Grid>
               <Grid size={12}>
@@ -72,6 +89,7 @@ const NewRoomModal = (): JSX.Element => {
                   id="roomName"
                   type="text"
                   label="Name"
+                  disabled={roomEdit}
                   required
                   fullWidth
                   value={name}
@@ -82,7 +100,7 @@ const NewRoomModal = (): JSX.Element => {
               </Grid>
               <Grid size={12}>
                 <Typography id="modal-modal-title" component="h2">
-                  Personen einladen:
+                  Invite Users:
                 </Typography>
               </Grid>
               <Grid container spacing={1} size={12}>
@@ -99,11 +117,11 @@ const NewRoomModal = (): JSX.Element => {
                           selected={isSelected}
                           onClick={() => {
                             if (isSelected) {
-                              setuserIdSet((prev) =>
+                              setUserIdSet((prev) =>
                                 prev.filter((id) => id !== user.userId),
                               );
                             } else {
-                              setuserIdSet((prev) => [...prev, user.userId]);
+                              setUserIdSet((prev) => [...prev, user.userId]);
                             }
                           }}
                         >
@@ -118,12 +136,14 @@ const NewRoomModal = (): JSX.Element => {
                     );
                   })
                 ) : (
-                  <Typography>Keine User gefunden</Typography>
+                  <Typography>No Users found</Typography>
                 )}
               </Grid>
               <Grid size={12}>
-                <Button type="submit">Raum erstellen</Button>
-                <Button sx={{ml: 1}} onClick={handleClose}>Zurück</Button>
+                <Button type="submit">Save</Button>
+                <Button sx={{ ml: 1 }} onClick={handleClose}>
+                  Back
+                </Button>
               </Grid>
             </Grid>
           </form>

@@ -7,6 +7,8 @@ import { decodeJwt } from "../../../stores/AuthStore";
 import NewRoomModal from "./NewRoomModal";
 import { useRoomStore } from "../../../stores/RoomStore";
 import type { RoomType } from "../../../types/RoomType";
+import AddIcon from "@mui/icons-material/Add";
+import { useUserStore } from "../../../stores/UserStore";
 
 type SidebarProps = {
   activeView: string;
@@ -28,9 +30,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   setRoomId,
 }) => {
   const [open, setOpen] = useState<boolean>(true);
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const isAdmin = decodeJwt()?.isAdmin;
   const userId = decodeJwt()?.userId || 0;
   const { getAllRooms, rooms } = useRoomStore();
+    const { getAllUsers } = useUserStore();
+  
 
   useEffect(() => {
     getAllRooms();
@@ -45,6 +50,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       userRooms.push(room);
     }
   });
+
+  const openModalFunc = () => {
+    setOpenModal(!openModal);
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -88,7 +97,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             setOpen={setOpen}
           />
           <Divider />
-          <NewRoomModal />
+          <AddIcon
+            sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
+            onClick={() => {
+              openModalFunc();
+              getAllUsers();
+            }}
+          />
+          <NewRoomModal openModal={openModal} closeModal={setOpenModal} roomEdit={false} />
           <SidebarHelper
             items={roomItems}
             itemNames={itemNames}
