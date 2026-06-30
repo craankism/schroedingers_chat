@@ -9,7 +9,8 @@ import java.util.Set;
 @AllArgsConstructor
 @Getter
 @Setter
-public class AddUsersToRoomDTO {
+public class EditRoomDTO {
 
-    Set<Integer> userIdSet;
+    private String name;
+    private Set<Integer> userIdSet;
 }

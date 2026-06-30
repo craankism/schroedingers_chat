@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sc.backend.dtos.req.AddUsersToRoomDTO;
+import sc.backend.dtos.req.EditRoomDTO;
 import sc.backend.dtos.req.CreateRoomDTO;
 import sc.backend.dtos.res.RoomDTO;
 import sc.backend.entities.Room;
@@ -57,10 +57,14 @@ public class RoomService {
         return roomDTOList;
     }
 
-    public RoomDTO addNewUsers(int roomId, AddUsersToRoomDTO addUserToRoomDTO) {
+    public RoomDTO editRoom(int roomId, EditRoomDTO editRoomDTO) {
         Room room = findRoomById(roomId);
+        if (!room.getName().equals(editRoomDTO.getName())) {
+            room.setName(editRoomDTO.getName());
+            roomRepository.save(room);
+        }
 
-        return addUsersToRoom(room, addUserToRoomDTO.getUserIdSet());
+        return addUsersToRoom(room, editRoomDTO.getUserIdSet());
     }
 
     public void deleteRoom(int roomId) {
