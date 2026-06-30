@@ -38,10 +38,6 @@ public class AuthService {
         Registration registration = registrationRepository.findByRegistrationCode(registryKey).orElseThrow(() ->
                         new KeyInvalidException("Key is not valid!"));
 
-        if (registration.getUsedBy() != null) {
-            throw new KeyInvalidException("Registration code has already been used!");
-        }
-
         User user = User.builder()
                 .email(registerDTO.getEmail())
                 .password(passwordEncoder.encode(registerDTO.getPassword()))
@@ -53,12 +49,8 @@ public class AuthService {
 
         Room room = roomRepository.findById(1).orElseThrow(() ->
                 new EmptyOptionalException("Room not found!"));
-        room.getUserList().add(user);
         user.getRoomList().add(room);
-        roomRepository.save(room);
-        registration.setUsedBy(user);
-        registrationRepository.save(registration);
-        user.setRegistration(registration);
+        registrationRepository.delete(registration);
         userRepository.save(user);
 
         String jwt = tokenService.generateTokenWithClaims(user);
@@ -69,7 +61,7 @@ public class AuthService {
     public CodeDTO checkValidity(String code) {
         Optional<Registration> registration = registrationRepository.findByRegistrationCode(code);
 
-        boolean valid = registration.isPresent() && registration.get().getUsedBy() == null;
+        boolean valid = registration.isPresent(); //&& registration.get().getUsedBy() == null;
 
         return CodeDTO.builder()
                 .isValid(valid)

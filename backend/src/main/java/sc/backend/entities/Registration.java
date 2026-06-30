@@ -26,10 +26,6 @@ public class Registration {
 
     private String registrationCode;
 
-    @OneToOne
-    @JoinColumn(name = "registration", nullable = true)
-    private User usedBy;
-
     @ManyToOne
     @JoinColumn(name = "userId")
     private User createdBy;
