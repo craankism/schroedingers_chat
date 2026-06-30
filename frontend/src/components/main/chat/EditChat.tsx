@@ -35,7 +35,7 @@ const EditChat: React.FC<EditChatProps> = (roomId) => {
   const roomCreatorHandle = async () => {
     const room = await getRoom(roomId.roomId);
     if (room) {
-      setCreator(room.createdBy == decodeJwt()?.displayName);
+      setCreator(room.createdBy == decodeJwt()?.userId);
     }
   };
 

@@ -8,7 +8,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @NoArgsConstructor
@@ -48,7 +50,7 @@ public class User implements UserDetails {
     @JoinTable(name = "room_member",
             joinColumns = @JoinColumn(name = "userId"),
             inverseJoinColumns = @JoinColumn(name = "roomId"))
-    private List<Room> roomList = new ArrayList<>();
+    private Set<Room> roomList = new HashSet<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "uploadedBy")
