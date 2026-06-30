@@ -15,6 +15,8 @@ const SidebarHelper: React.FC<{
   rooms?: RoomType[];
   activeView: string;
   setActiveView: (view: string) => void;
+  select: string;
+  setSelect: (selection: string) => void;
   setRoomId: (roomId: number) => void;
   setOpen: (open: boolean) => void;
 }> = ({
@@ -22,6 +24,8 @@ const SidebarHelper: React.FC<{
   itemNames,
   activeView,
   setActiveView,
+  select,
+  setSelect,
   setOpen,
   rooms,
   setRoomId,
@@ -29,13 +33,20 @@ const SidebarHelper: React.FC<{
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+  const selectionFilter = (item: string) => {
+    if (activeView === item) return true;
+    else if (select === item) return true;
+    else return false;
+  }
+
   return (
     <List>
       {items.map((item, index) => (
         <ListItem key={item} disablePadding>
           <ListItemButton
-            selected={activeView === item}
+            selected={selectionFilter(item)}
             onClick={() => {
+              setSelect(item);
               if (rooms) setRoomId(rooms.at(index)?.roomId || 0);
               if (itemNames.includes(item)) setActiveView(item);
               else setActiveView("Chats");
