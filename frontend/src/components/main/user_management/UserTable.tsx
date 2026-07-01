@@ -83,18 +83,8 @@ const UserTable = (): JSX.Element => {
 
   const paginationModel = { page: 0, pageSize: 10 };
 
-  // const test = [{
-  //   id: 1,
-  //   userId: 1,
-  //   email: "sa@xd.de",
-  //   displayName: "Craankism",
-  //   isAdmin: false,
-  //   isTrainer: false,
-  //   isActive: false,
-  // }];
-
   return (
-      <Box sx={{ height: 400, maxWidth: {xs: "90vw", md: "100vw"}, mt: 1 }}>
+      <Box sx={{ height: 630, maxWidth: {xs: "90vw", md: "100vw"}, mt: 1 }}>
         <DataGrid
           rows={users}
           getRowId={(row) => row.userId}

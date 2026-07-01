@@ -27,9 +27,9 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         display: "flex",
         flexDirection: "column",
         flexGrow: 1,
-        overflow: "hidden",
-        p: 3,
+        p: 2,
         mr: { xs: "0", md: 30 },
+        mb: 7,
       }}
     >
       <Typography sx={{ mb: 2 }}>
@@ -39,8 +39,6 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         sx={{
           display: "flex",
           flexDirection: "column",
-          flexGrow: 1,
-          overflowY: "auto",
           pr: 1,
         }}
       >
