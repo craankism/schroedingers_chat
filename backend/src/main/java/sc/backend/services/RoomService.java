@@ -13,6 +13,7 @@ import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -33,11 +34,11 @@ public class RoomService {
                 .createdBy(creator)
                 .build();
 
+        Set<User> members = convertIdsToUsers(createRoomDTO.getUserIdSet());
+        room.setUserList(members);
         roomRepository.save(room);
-        creator.getCreatedRoomList().add(room);
-        userRepository.save(creator);
 
-        return addUsersToRoom(room, createRoomDTO.getUserIdSet());
+        return convertToDTO(room);
     }
 
     public RoomDTO getRoom(int roomId) {
@@ -60,10 +61,13 @@ public class RoomService {
         Room room = findRoomById(roomId);
         if (!room.getName().equals(editRoomDTO.getName())) {
             room.setName(editRoomDTO.getName());
-            roomRepository.save(room);
         }
 
-        return addUsersToRoom(room, editRoomDTO.getUserIdSet());
+        Set<User> members = convertIdsToUsers(editRoomDTO.getUserIdSet());
+        room.setUserList(members);
+        roomRepository.save(room);
+
+        return convertToDTO(room);
     }
 
     public void deleteRoom(int roomId) {
@@ -72,14 +76,15 @@ public class RoomService {
         roomRepository.delete(room);
     }
 
-    public RoomDTO addUsersToRoom(Room room, Set<Integer> userIdSet) {
+    public Set<User> convertIdsToUsers(Set<Integer> userIdSet) {
+        Set<User> users = new HashSet<>();
+
         for (Integer userId : userIdSet) {
             User user = userService.findUserById(userId);
-            user.getRoomList().add(room);
-            userRepository.save(user);
+            users.add(user);
         }
 
-        return convertToDTO(room);
+        return users;
     }
 
     public Room findRoomById(int roomId) {
@@ -88,13 +93,14 @@ public class RoomService {
     }
 
     public int[] getUserList(Room room) {
-        int[] userList = new int[room.getUserList().size()];
+        int[] userArray = new int[room.getUserList().size()];
+        Object[] userList = room.getUserList().toArray();
 
-        for (int i = 0; i < room.getUserList().size(); i++) {
-            userList[i] = room.getUserList().get(i).getUserId();
+        for (int i = 0; i < userList.length; i++) {
+            userArray[i] = (int) userList[i];
         }
 
-        return userList;
+        return userArray;
     }
 
     public RoomDTO convertToDTO(Room room) {

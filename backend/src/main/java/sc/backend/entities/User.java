@@ -46,10 +46,7 @@ public class User implements UserDetails {
     private List<Room> createdRoomList = new ArrayList<>();
 
     @Builder.Default
-    @ManyToMany
-    @JoinTable(name = "room_member",
-            joinColumns = @JoinColumn(name = "userId"),
-            inverseJoinColumns = @JoinColumn(name = "roomId"))
+    @ManyToMany(mappedBy = "userList")
     private Set<Room> roomList = new HashSet<>();
 
     @Builder.Default

@@ -32,6 +32,8 @@ public class SuperAdminInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        String[] users = {"pascal", "matthias", "sascha", "kevin", "rene", "philipp", "julia", "haru"};
+
         if (!userRepository.existsByEmail(adminEmail)) {
             User admin = User.builder()
                 .email(adminEmail)
@@ -41,14 +43,26 @@ public class SuperAdminInitializer implements CommandLineRunner {
                 .isTrainer(false)
                 .isActive(true)
                 .build();
+            userRepository.save(admin);
 
             Room room = Room.builder()
                     .name("Schroedingers Box")
-                    .createdBy(admin)
                     .build();
+            room.getUserList().add(admin);
+
+            for (int i = 0; i < users.length; i++) {
+                User user = User.builder()
+                        .email(users[i] + "@gmail.com")
+                        .password(passwordEncoder.encode("123"))
+                        .displayName(users[i])
+                        .isAdmin(false)
+                        .isTrainer(false)
+                        .isActive(true)
+                        .build();
+                userRepository.save(user);
+                room.getUserList().add(user);
+            }
             roomRepository.save(room);
-            admin.getRoomList().add(room);
-            userRepository.save(admin);
 
             System.out.println("SuperAdmin erstellt: " + adminEmail);
         } else {

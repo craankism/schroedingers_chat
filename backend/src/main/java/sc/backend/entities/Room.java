@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @NoArgsConstructor
@@ -26,8 +28,11 @@ public class Room {
     private User createdBy;
 
     @Builder.Default
-    @ManyToMany(mappedBy = "roomList")
-    private List<User> userList = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(name = "room_member",
+            joinColumns = @JoinColumn(name = "roomId"),
+            inverseJoinColumns = @JoinColumn(name = "userId"))
+    private Set<User> userList = new HashSet<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "room")
