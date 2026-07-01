@@ -47,6 +47,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
 
             Room room = Room.builder()
                     .name("Schroedingers Box")
+                    .createdBy(admin)
                     .build();
             room.getUserList().add(admin);
 
