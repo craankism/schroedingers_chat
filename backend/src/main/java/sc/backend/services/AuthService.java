@@ -52,12 +52,12 @@ public class AuthService {
                 .isTrainer(registration.isTrainer())
                 .isActive(true)
                 .build();
+        userRepository.save(user);
 
         Room room = roomRepository.findById(1).orElseThrow(() ->
                 new EmptyOptionalException("Room not found!"));
-        user.getRoomList().add(room);
+        room.getUserList().add(user);
         registrationRepository.delete(registration);
-        userRepository.save(user);
 
         String jwt = tokenService.generateTokenWithClaims(user);
 
