@@ -17,7 +17,8 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int messageId;
 
-    @Column(nullable = false)
+    //TODO: length?
+    @Column(nullable = false, length = 2000)
     private String content;
 
     //TODO: best date type?

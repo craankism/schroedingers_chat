@@ -1,11 +1,11 @@
 package sc.backend.services;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.res.AuthDTO;
@@ -22,6 +22,7 @@ import sc.backend.repositories.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class AuthService {
@@ -54,9 +55,14 @@ public class AuthService {
                 .build();
         userRepository.save(user);
 
-        Room room = roomRepository.findById(1).orElseThrow(() ->
+        Room announcements = roomRepository.findById(1).orElseThrow(() ->
                 new EmptyOptionalException("Room not found!"));
-        room.getUserList().add(user);
+
+        Room room = roomRepository.findById(2).orElseThrow(() ->
+                new EmptyOptionalException("Room not found!"));
+
+        announcements.addUser(user);
+        room.addUser(user);
         registrationRepository.delete(registration);
 
         String jwt = tokenService.generateTokenWithClaims(user);

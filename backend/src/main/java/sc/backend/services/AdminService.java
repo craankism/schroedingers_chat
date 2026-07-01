@@ -2,16 +2,20 @@ package sc.backend.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.entities.Registration;
+import sc.backend.entities.Room;
 import sc.backend.entities.User;
 import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class AdminService {
@@ -35,6 +39,7 @@ public class AdminService {
                 .createdBy(creator)
                 .build();
 
+        creator.addCreatedRegistration(registration);
         registrationRepository.save(registration);
 
         return RegistrationDTO.builder()
@@ -49,9 +54,7 @@ public class AdminService {
     public UserDTO setAdmin(int userId) {
         User user = userService.findUserById(userId);
 
-        boolean admin = user.isAdmin();
-        user.setAdmin(!admin);
-        userRepository.save(user);
+        user.setAdmin(!user.isAdmin());
 
         return userService.convertToDTO(user);
     }
@@ -59,9 +62,7 @@ public class AdminService {
     public UserDTO setTrainer(int userId) {
         User user = userService.findUserById(userId);
 
-        boolean trainer = user.isTrainer();
-        user.setTrainer(!trainer);
-        userRepository.save(user);
+        user.setTrainer(!user.isTrainer());
 
         return userService.convertToDTO(user);
     }
@@ -69,15 +70,18 @@ public class AdminService {
     public UserDTO setActive(int userId) {
         User user = userService.findUserById(userId);
 
-        boolean active = user.isActive();
-        user.setActive(!active);
-        userRepository.save(user);
+        user.setActive(!user.isActive());
 
         return userService.convertToDTO(user);
     }
 
+    //TODO: relationships entfernen vor dem Löschen
     public void deleteUser(int userId) {
         User user  = userService.findUserById(userId);
+
+        for (Room room : new HashSet<>(user.getRoomSet())) {
+            room.removeUser(user);
+        }
 
         userRepository.delete(user);
     }

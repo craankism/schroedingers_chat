@@ -15,8 +15,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Service
 public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
@@ -32,10 +33,10 @@ public class ChatMessageService {
         ChatMessage chatMessage = ChatMessage.builder()
                 .content(request.getContent())
                 .creationDate(LocalDateTime.now())
-                .createdBy(creator)
-                .room(room)
                 .build();
 
+        creator.addChatMessage(chatMessage);
+        room.addChatMessage(chatMessage);
         chatMessageRepository.save(chatMessage);
 
         return convertToDTO(chatMessage);
