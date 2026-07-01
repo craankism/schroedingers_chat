@@ -31,7 +31,7 @@ type SidebarProps = {
   setOpenSidebar: (open: boolean) => void;
 };
 
-const adminItems = ["Userverwaltung", "Dateiverwaltung"];
+const adminItems = ["Userverwaltung", "Dateiverwaltung", "Raumverwaltung"];
 const navItems = ["Ankündigungen", "Kursmaterialien"];
 const itemNames = [...adminItems, ...navItems];
 
