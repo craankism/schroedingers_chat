@@ -1,8 +1,6 @@
 package sc.backend.components;
 
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -12,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 
-@Profile("prod")
 @Component
 public class CryptoUtil {
 
@@ -57,7 +54,7 @@ public class CryptoUtil {
         }
     }
 
-    public byte[] decrypt(byte[] ciphertext, byte[]  iv) {
+    public byte[] decrypt(byte[] ciphertext, byte[] iv) {
         try {
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE,
@@ -69,5 +66,6 @@ public class CryptoUtil {
         }
     }
 
-    public record EncryptionResult(byte[] ciphertext, byte[] iv) {}
+    public record EncryptionResult(byte[] ciphertext, byte[] iv) {
+    }
 }

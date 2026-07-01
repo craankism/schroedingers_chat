@@ -31,4 +31,7 @@ public class ChatMessage {
     @ManyToOne
     @JoinColumn(name = "roomId")
     private Room room;
+
+    @Column(nullable = false)
+    private byte[] iv;
 }
