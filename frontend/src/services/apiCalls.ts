@@ -74,7 +74,7 @@ export const userApi = {
     return response.data;
   },
   update: async (userId: number, role: string): Promise<void> => {
-    await api.get(`${changeUserUrl}/${role}/${userId}`);
+    await api.put(`${changeUserUrl}/${role}/${userId}`);
   },
   delete: async (userId: number): Promise<void> => {
     await api.delete(`${changeUserUrl}/${userId}`);
