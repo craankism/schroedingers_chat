@@ -1,37 +1,23 @@
 import * as React from "react";
 import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Container from "@mui/material/Container";
-import Button from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
-import { useAuthStore } from "../../stores/AuthStore";
 
-const pages = ["files", "chats"];
+type NavTopProps = {
+  isLoggedIn: boolean;
+  handleAuthAction: () => void;
+  openSidebar: boolean;
+  setOpenSidebar: (open: boolean) => void;
+};
 
-function NavTop() {
-  const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuthStore();
-
-  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(isAuthenticated);
-
-  const handleAuthAction = () => {
-    if (isLoggedIn) {
-      logout();
-      setIsLoggedIn(false);
-      navigate("/");
-    } else {
-      navigate("/login");
-    }
-  };
-
-  React.useEffect(() => {
-    // eslint-disable-next-line
-    setIsLoggedIn(isAuthenticated)
-  }, [isAuthenticated]);
-
+const NavTop: React.FC<NavTopProps> = ({
+  isLoggedIn,
+  handleAuthAction,
+  openSidebar,
+  setOpenSidebar,
+}) => {
   return (
     <AppBar
       position="fixed"
@@ -40,17 +26,17 @@ function NavTop() {
     >
       <Container maxWidth={false}>
         <Toolbar disableGutters>
-          <DesktopNav pages={pages} />
-          <MobileNav pages={pages} />
-          {/* Desktop + Mobile */}
-          <Box sx={{ flexGrow: 0 }}>
-            <Button color="inherit" onClick={handleAuthAction}>
-              {isLoggedIn ? "Logout" : "Login"}
-            </Button>
-          </Box>
+          <DesktopNav
+            isLoggedIn={isLoggedIn}
+            handleAuthAction={handleAuthAction}
+          />
+          <MobileNav
+            openSidebar={openSidebar}
+            setOpenSidebar={setOpenSidebar}
+          />
         </Toolbar>
       </Container>
     </AppBar>
   );
-}
+};
 export default NavTop;

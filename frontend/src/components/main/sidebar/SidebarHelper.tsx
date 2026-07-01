@@ -1,5 +1,4 @@
 import {
-  List,
   ListItem,
   ListItemButton,
   ListItemText,
@@ -37,10 +36,10 @@ const SidebarHelper: React.FC<{
     if (activeView === item) return true;
     else if (select === item) return true;
     else return false;
-  }
+  };
 
   return (
-    <List>
+    <>
       {items.map((item, index) => (
         <ListItem key={item} disablePadding>
           <ListItemButton
@@ -57,7 +56,7 @@ const SidebarHelper: React.FC<{
           </ListItemButton>
         </ListItem>
       ))}
-    </List>
+    </>
   );
 };
 
