@@ -37,9 +37,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(paths.matcher("/api/auth/**")).permitAll()
                         .requestMatchers(paths.matcher("/api/admin/**")).hasRole("ADMIN")
-                        .requestMatchers(paths.matcher("/h2/**")).permitAll() //Test
+                        .requestMatchers(paths.matcher("/h2/**")).permitAll() //TODO: remove before production
                         .requestMatchers(paths.matcher("/ws"), paths.matcher("/ws/**")).permitAll()
-                        .requestMatchers(paths.matcher("/api/file/**")).permitAll() //TEST
+                        .requestMatchers(paths.matcher("/api/file/**")).permitAll() //TODO: remove before production
                         .requestMatchers(paths.matcher("/actuator/health")).permitAll()
                         .requestMatchers(paths.matcher("/error")).permitAll()
                         .anyRequest().authenticated()
