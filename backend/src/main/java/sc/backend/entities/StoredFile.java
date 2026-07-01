@@ -34,4 +34,10 @@ public class StoredFile {
     @ManyToOne
     @JoinColumn(name = "userId")
     private User uploadedBy;
+
+    @Column(nullable = false)
+    private byte[] iv;
+
+    @Column
+    private byte[] encryptedDek;
 }
