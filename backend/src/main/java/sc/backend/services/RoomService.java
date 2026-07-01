@@ -94,10 +94,11 @@ public class RoomService {
 
     public int[] getUserList(Room room) {
         int[] userArray = new int[room.getUserList().size()];
-        Object[] userList = room.getUserList().toArray();
 
-        for (int i = 0; i < userList.length; i++) {
-            userArray[i] = (int) userList[i];
+        int i = 0;
+        for (User user : room.getUserList()) {
+            userArray[i] = user.getUserId();
+            i++;
         }
 
         return userArray;
