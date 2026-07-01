@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import sc.backend.components.CryptoUtil;
 import sc.backend.dtos.res.StoredFileMetaDTO;
 import sc.backend.entities.StoredFile;
 import sc.backend.repositories.StoredFileRepository;
 import sc.backend.repositories.UserRepository;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,13 +30,11 @@ public class FileStorageService {
     private final MinioClient minioClient;
     private final UserRepository userRepository;
     private final StoredFileRepository storedFileRepository;
+    private final CryptoUtil cryptoUtil;
 
     @Value("${minio.bucket.name}")
     private String bucketName;
 
-    /**
-     * Upload: Datei direkt (unverschluesselt) nach MinIO streamen
-     */
     public StoredFileMetaDTO uploadFile(MultipartFile file, String userName) throws Exception {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Datei darf nicht leer sein");
@@ -47,12 +47,18 @@ public class FileStorageService {
         }
         String storedFileName = UUID.randomUUID() + extension;
 
+        byte [] plaintext = file.getBytes();
+
+        CryptoUtil.EncryptionResult encryptionResult = cryptoUtil.encrypt(plaintext);
+        byte[] ciphertext = encryptionResult.ciphertext();
+        byte[] iv = encryptionResult.iv();
+
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucketName)
                         .object(storedFileName)
-                        .stream(file.getInputStream(), file.getSize(), (long) -1)
-                        .contentType(file.getContentType())
+                        .stream(new ByteArrayInputStream(ciphertext), (long) ciphertext.length, (long) -1)
+                        .contentType("application/octet-stream")
                         .build()
         );
 
@@ -63,24 +69,29 @@ public class FileStorageService {
                 .mimeType(file.getContentType())
                 .uploadDate(LocalDateTime.now())
                 .uploadedBy(userRepository.findByEmail(userName).orElseThrow(() -> new RuntimeException("User nicht gefunden")))
+                .iv(iv)
+                .encryptedDek(null)
                 .build();
 
         return convertStoredFileToDto(storedFileRepository.save(storedFile));
     }
 
-    /**
-     * Download: Datei direkt aus MinIO streamen
-     */
     public InputStream downloadFile(Integer fileId) throws Exception {
         StoredFile file = storedFileRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("Datei nicht gefunden"));
 
-        return minioClient.getObject(
+        InputStream encryptedStream = minioClient.getObject(
                 GetObjectArgs.builder()
                         .bucket(bucketName)
                         .object(file.getStoredFilename())
                         .build()
         );
+
+        byte[] ciphertext = encryptedStream.readAllBytes();
+
+        byte[] decrypted = cryptoUtil.decrypt(ciphertext, file.getIv());
+
+        return new ByteArrayInputStream(decrypted);
     }
 
     public StoredFileMetaDTO getFileMetadata(Integer fileId) {

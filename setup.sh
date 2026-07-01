@@ -112,6 +112,21 @@ minio_bucket=${minio_bucket:-schroedinger-files}
 # AI API Key (Optional - aber wenn gesetzt, nicht leer)
 # read -p "OpenAI API Key (leer lassen, falls nicht benötigt): " ai_key
 
+echo "[REQUIRED] Encryption Master Key eingeben:"
+while true; do
+    read -rsp "Master Key (mindestens 32 Zeichen): " enc_master_key
+    echo ""
+    if [ -z "$enc_master_key" ]; then
+        echo "FEHLER: Master Key darf nicht leer sein!"
+        continue
+    fi
+    if [ ${#enc_master_key} -lt 32 ]; then
+        echo "FEHLER: Master Key muss mindestens 32 Zeichen lang sein!"
+        continue
+    fi
+    break
+done
+
 echo ""
 echo "Schreibe $ENV_FILE ..."
 
@@ -135,6 +150,9 @@ SUPERADMIN_PASSWORD=$admin_password
 MINIO_ROOT_USER=$minio_user
 MINIO_ROOT_PASSWORD=$minio_password
 MINIO_BUCKET=$minio_bucket
+
+# AES Encryption Key
+ENCRYPTION_MASTER_KEY=$enc_master_key
 
 EOF
 
