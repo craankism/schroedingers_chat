@@ -31,10 +31,45 @@ public class Room {
     @ManyToMany
     @JoinTable(name = "room_member",
             joinColumns = @JoinColumn(name = "roomId"),
-            inverseJoinColumns = @JoinColumn(name = "userId"))
-    private Set<User> userList = new HashSet<>();
+            inverseJoinColumns = @JoinColumn(name = "userId"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"room_id", "user_id"}))
+    private Set<User> userSet = new HashSet<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "room")
     private List<ChatMessage> chatMessageList = new ArrayList<>();
+
+    public void addUser(User user) {
+        userSet.add(user);
+        user.getRoomSet().add(this);
+    }
+
+    public void removeUser(User user) {
+        userSet.remove(user);
+        user.getRoomSet().remove(this);
+    }
+
+    public void clearUsers() {
+        for (User user : new HashSet<>(userSet)) {
+            removeUser(user);
+        }
+    }
+
+    public void addChatMessage(ChatMessage message) {
+        chatMessageList.add(message);
+        message.setRoom(this);
+
+        if (message.getCreatedBy() != null) {
+            message.getCreatedBy().getChatMessageList().add(message);
+        }
+    }
+
+    public void removeChatMessage(ChatMessage message) {
+        chatMessageList.remove(message);
+        message.setRoom(null);
+
+        if (message.getCreatedBy() != null) {
+            message.getCreatedBy().getChatMessageList().remove(message);
+        }
+    }
 }

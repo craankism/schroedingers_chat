@@ -18,8 +18,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-@Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Service
 public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
@@ -42,10 +43,10 @@ public class ChatMessageService {
                 .content(ciphertextBase64)
                 .iv(result.iv())
                 .creationDate(LocalDateTime.now())
-                .createdBy(creator)
-                .room(room)
                 .build();
 
+        creator.addChatMessage(chatMessage);
+        room.addChatMessage(chatMessage);
         chatMessageRepository.save(chatMessage);
 
         return convertToDTO(chatMessage);

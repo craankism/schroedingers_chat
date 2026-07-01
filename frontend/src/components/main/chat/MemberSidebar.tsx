@@ -50,7 +50,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
     // eslint-disable-next-line
     displayMembers();
     // eslint-disable-next-line
-  }, []);
+  }, [roomId]);
 
   return (
     <Box sx={{ display: "flex" }}>

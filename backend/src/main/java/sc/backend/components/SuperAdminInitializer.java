@@ -45,11 +45,19 @@ public class SuperAdminInitializer implements CommandLineRunner {
                 .build();
             userRepository.save(admin);
 
+            Room announcements = Room.builder()
+                    .name("Ankündigungen")
+                    .build();
+            admin.addCreatedRoom(announcements);
+            announcements.addUser(admin);
+            roomRepository.save(announcements);
+
             Room room = Room.builder()
                     .name("Schroedingers Box")
-                    .createdBy(admin)
                     .build();
-            room.getUserList().add(admin);
+            admin.addCreatedRoom(room);
+            room.addUser(admin);
+            roomRepository.save(room);
 
             for (int i = 0; i < users.length; i++) {
                 User user = User.builder()
@@ -61,9 +69,9 @@ public class SuperAdminInitializer implements CommandLineRunner {
                         .isActive(true)
                         .build();
                 userRepository.save(user);
-                room.getUserList().add(user);
+                announcements.addUser(user);
+                room.addUser(user);
             }
-            roomRepository.save(room);
 
             System.out.println("SuperAdmin erstellt: " + adminEmail);
         } else {

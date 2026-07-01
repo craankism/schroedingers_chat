@@ -25,9 +25,10 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
     private String displayName;
@@ -43,11 +44,11 @@ public class User implements UserDetails {
 
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
-    private List<Room> createdRoomList = new ArrayList<>();
+    private Set<Room> createdRoomSet = new HashSet<>();
 
     @Builder.Default
-    @ManyToMany(mappedBy = "userList")
-    private Set<Room> roomList = new HashSet<>();
+    @ManyToMany(mappedBy = "userSet")
+    private Set<Room> roomSet = new HashSet<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "uploadedBy")
@@ -59,7 +60,45 @@ public class User implements UserDetails {
 
     @Builder.Default
     @OneToMany(mappedBy = "createdBy")
-    private List<Registration> registrationList = new ArrayList<>();
+    private Set<Registration> registrationSet = new HashSet<>();
+
+    public void addCreatedRoom(Room room) {
+        createdRoomSet.add(room);
+        room.setCreatedBy(this);
+    }
+
+    public void removeCreatedRoom(Room room) {
+        createdRoomSet.remove(room);
+        room.setCreatedBy(null);
+    }
+
+    public void joinRoom(Room room) {
+        room.addUser(this);
+    }
+
+    public void leaveRoom(Room room) {
+        room.removeUser(this);
+    }
+
+    public void addChatMessage(ChatMessage chatMessage) {
+        chatMessageList.add(chatMessage);
+        chatMessage.setCreatedBy(this);
+    }
+
+    public void removeChatMessage(ChatMessage chatMessage) {
+        chatMessageList.remove(chatMessage);
+        chatMessage.setCreatedBy(null);
+    }
+
+    public void addCreatedRegistration(Registration registration) {
+        registrationSet.add(registration);
+        registration.setCreatedBy(this);
+    }
+
+    public void removeRegistration(Registration registration) {
+        registrationSet.remove(registration);
+        registration.setCreatedBy(null);
+    }
 
     @Override
     public String getUsername() {
