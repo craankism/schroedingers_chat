@@ -1,7 +1,16 @@
-import { Box, Divider, Drawer, IconButton, Toolbar } from "@mui/material";
+import {
+  Box,
+  Divider,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SidebarHelper from "./SidebarHelper";
 import { decodeJwt } from "../../../stores/AuthStore";
 import NewRoomModal from "./NewRoomModal";
@@ -16,6 +25,10 @@ type SidebarProps = {
   select: string;
   setSelect(selection: string): void;
   setRoomId(roomId: number): void;
+  isLoggedIn: boolean;
+  handleAuthAction: () => void;
+  openSidebar: boolean;
+  setOpenSidebar: (open: boolean) => void;
 };
 
 const adminItems = ["Userverwaltung", "Dateiverwaltung"];
@@ -28,14 +41,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   select,
   setSelect,
   setRoomId,
+  isLoggedIn,
+  handleAuthAction,
+  openSidebar,
+  setOpenSidebar,
 }) => {
-  const [open, setOpen] = useState<boolean>(true);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const isAdmin = decodeJwt()?.isAdmin;
   const userId = decodeJwt()?.userId || 0;
   const { getAllRooms, rooms } = useRoomStore();
-    const { getAllUsers } = useUserStore();
-  
+  const { getAllUsers } = useUserStore();
 
   useEffect(() => {
     getAllRooms();
@@ -55,16 +70,34 @@ const Sidebar: React.FC<SidebarProps> = ({
     setOpenModal(!openModal);
   };
 
+  const [variant, setVariant] = useState<"permanent" | "temporary">(
+    "permanent",
+  );
+  const theme = useTheme();
+  const md = useMediaQuery(theme.breakpoints.up("md"));
+
+  useEffect(() => {
+    if (md) {
+      // eslint-disable-next-line
+      setVariant("permanent");
+    } else {
+      setVariant("temporary");
+    }
+    // eslint-disable-next-line
+  }, []);
+
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", maxHeight: "100vh" }}>
       <Drawer
-        variant="persistent"
-        open={open}
+        variant={variant}
+        open={openSidebar}
+        onClose={() => setOpenSidebar(false)}
         sx={{
-          width: open ? { xs: "100vw", md: 240 } : 0,
+          width: openSidebar ? { xs: "100vw", md: 240 } : 0,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: {
             width: { xs: "100vw", md: 240 },
+            height: "100vh",
             boxSizing: "border-box",
           },
         }}
@@ -81,62 +114,75 @@ const Sidebar: React.FC<SidebarProps> = ({
                 setActiveView={setActiveView}
                 select={select}
                 setSelect={setSelect}
-                setOpen={setOpen}
+                setOpen={setOpenSidebar}
               />
               <Divider />
             </>
           )}
-          <SidebarHelper
-            items={navItems}
-            itemNames={itemNames}
-            setRoomId={setRoomId}
-            activeView={activeView}
-            setActiveView={setActiveView}
-            select={select}
-            setSelect={setSelect}
-            setOpen={setOpen}
-          />
-          <Divider />
-          <AddIcon
-            sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
-            onClick={() => {
-              openModalFunc();
-              getAllUsers();
-            }}
-          />
-          <NewRoomModal openModal={openModal} closeModal={setOpenModal} roomEdit={false} />
-          <SidebarHelper
-            items={roomItems}
-            itemNames={itemNames}
-            rooms={userRooms}
-            setRoomId={setRoomId}
-            activeView={activeView}
-            setActiveView={setActiveView}
-            select={select}
-            setSelect={setSelect}
-            setOpen={setOpen}
-          />
+          <List>
+            <SidebarHelper
+              items={navItems}
+              itemNames={itemNames}
+              setRoomId={setRoomId}
+              activeView={activeView}
+              setActiveView={setActiveView}
+              select={select}
+              setSelect={setSelect}
+              setOpen={setOpenSidebar}
+            />
+            <Divider />
+            <AddIcon
+              sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
+              onClick={() => {
+                openModalFunc();
+                getAllUsers();
+              }}
+            />
+            <NewRoomModal
+              openModal={openModal}
+              closeModal={setOpenModal}
+              roomEdit={false}
+            />
+            <SidebarHelper
+              items={roomItems}
+              itemNames={itemNames}
+              rooms={userRooms}
+              setRoomId={setRoomId}
+              activeView={activeView}
+              setActiveView={setActiveView}
+              select={select}
+              setSelect={setSelect}
+              setOpen={setOpenSidebar}
+            />
+            {!md ? (
+              <div>
+                <Divider
+                  sx={{
+                    position: "fixed",
+                    bottom: 48,
+                    width: "100vw",
+                  }}
+                />
+                <ListItem disablePadding>
+                  <ListItemButton
+                    sx={{
+                      position: "fixed",
+                      bottom: 4,
+                      zIndex: 12,
+                      width: "100vw",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Typography onClick={handleAuthAction}>
+                      {isLoggedIn ? "Logout" : "Login"}
+                    </Typography>
+                  </ListItemButton>
+                </ListItem>
+              </div>
+            ) : null}
+          </List>
         </Box>
       </Drawer>
-      <IconButton
-        onClick={() => setOpen(!open)}
-        size="small"
-        sx={{
-          display: { xs: "flex", md: "none" },
-          position: "fixed",
-          left: open ? "calc(100vw - 10vw)" : "0",
-          top: "45%",
-          transform: "translateY(-50%)",
-          zIndex: 1300,
-          bgcolor: "background.paper",
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: "0 4px 4px 0",
-          "&:hover": { bgcolor: "action.hover" },
-        }}
-      >
-        {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-      </IconButton>
     </Box>
   );
 };
