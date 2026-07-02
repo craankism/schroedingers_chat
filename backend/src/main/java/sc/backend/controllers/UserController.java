@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sc.backend.dtos.req.EditUserDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.services.UserService;
 
+import java.security.Principal;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -21,8 +23,19 @@ public class UserController {
         return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("{userId}")
     public ResponseEntity<UserDTO> getUser(@PathVariable int userId) {
         return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
+    }
+
+    @PutMapping("{userId}")
+    public ResponseEntity<UserDTO> editUser(@PathVariable int userId, @RequestBody EditUserDTO editUserDTO, Principal principal) {
+        return new ResponseEntity<>(userService.editUser(userId, editUserDTO, principal.getName()), HttpStatus.OK);
+    }
+
+    @DeleteMapping("{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable int userId, Principal principal) {
+        userService.deleteUser(userId, principal.getName());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
