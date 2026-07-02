@@ -5,12 +5,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.entities.RefreshToken;
 import sc.backend.entities.User;
+import sc.backend.exceptions.TokenInvalidException;
 import sc.backend.repositories.RefreshTokenRepository;
 
 import java.nio.charset.StandardCharsets;
@@ -105,6 +108,7 @@ public class TokenService {
 
     }
 
+    @Transactional
     public String generateRefreshToken(User user) {
         String rawToken = generateSecureRandomToken();
         String hash = hashToken(rawToken);
@@ -120,23 +124,24 @@ public class TokenService {
         return rawToken;
     }
 
+    @Transactional
     public RefreshToken validateRefreshToken(String rawToken) {
         String hash = hashToken(rawToken);
         RefreshToken token = refreshTokenRepository.findByTokenHash(hash).orElse(null);
 
         if(token == null || token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            //TODO: create clean ExceptionHandling
-            throw new RuntimeException("Refresh Toke invalid or expired.");
+            throw new TokenInvalidException("Refresh Token invalid or expired.");
         }
 
         if(!token.getUser().isActive()) {
             refreshTokenRepository.delete(token);
-            throw new RuntimeException("User is deactivated");
+            throw new TokenInvalidException("User is deactivated");
         }
 
         return token;
     }
 
+    @Transactional
     public String rotateRefreshToken(String rawToken) {
         RefreshToken oldToken = validateRefreshToken(rawToken);
         User user = oldToken.getUser();
@@ -144,6 +149,7 @@ public class TokenService {
         return generateRefreshToken(user);
     }
 
+    @Transactional
     public void deleteRefreshToken(String rawToken) {
         String hash = hashToken(rawToken);
         refreshTokenRepository.findByTokenHash(hash).ifPresent(refreshTokenRepository::delete);
@@ -162,7 +168,7 @@ public class TokenService {
             byte[] hashBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashBytes);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 not available", e);
+            throw new IllegalStateException("SHA-256 not available", e);
         }
     }
 }

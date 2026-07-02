@@ -1,11 +1,11 @@
 package sc.backend.services;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.res.AuthDTO;
@@ -89,6 +89,7 @@ public class AuthService {
         return convertToAuthDTO(user, jwt, refreshToken);
     }
 
+    @Transactional
     public AuthDTO refresh(String rawRefreshToken) {
         RefreshToken validateToken = tokenService.validateRefreshToken(rawRefreshToken);
         User user = validateToken.getUser();
