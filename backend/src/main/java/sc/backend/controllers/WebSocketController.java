@@ -5,10 +5,12 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import sc.backend.dtos.req.DeleteMessageDTO;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
+import sc.backend.dtos.res.UpdateEventDTO;
 import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -19,6 +21,7 @@ import java.security.Principal;
 public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/{roomId}/messages")
@@ -41,5 +44,9 @@ public class WebSocketController {
 
         chatMessageService.deleteMessage(deleteMessageDTO.getMessageId());
         return deleteMessageDTO;
+    }
+
+    public void broadcastUpdate(String updateType) {
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType));
     }
 }
