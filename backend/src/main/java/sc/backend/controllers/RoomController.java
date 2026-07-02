@@ -18,10 +18,17 @@ import java.util.List;
 public class RoomController {
 
     private final RoomService roomService;
+    private final WebSocketController webSocketController;
+
+    private void broadcastRoomUpdate() {
+        webSocketController.broadcastUpdate("ROOM_UPDATE");
+    }
 
     @PostMapping
     public ResponseEntity<RoomDTO> createRoom(@RequestBody CreateRoomDTO createRoomDTO, Principal principal) {
-        return new ResponseEntity<>(roomService.createRoom(createRoomDTO, principal.getName()), HttpStatus.CREATED);
+        RoomDTO room = roomService.createRoom(createRoomDTO, principal.getName());
+        broadcastRoomUpdate();
+        return new ResponseEntity<>(room, HttpStatus.CREATED);
     }
 
     @GetMapping("{roomId}")
@@ -36,12 +43,15 @@ public class RoomController {
 
     @PutMapping("{roomId}")
     public ResponseEntity<RoomDTO> editRoom(@PathVariable int roomId, @RequestBody EditRoomDTO addUserToRoomDTO) {
-        return new ResponseEntity<>(roomService.editRoom(roomId, addUserToRoomDTO), HttpStatus.OK);
+        RoomDTO room = roomService.editRoom(roomId, addUserToRoomDTO);
+        broadcastRoomUpdate();
+        return new ResponseEntity<>(room, HttpStatus.OK);
     }
 
     @DeleteMapping("{roomId}")
     public ResponseEntity<?> deleteRoom(@PathVariable int roomId) {
         roomService.deleteRoom(roomId);
+        broadcastRoomUpdate();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
