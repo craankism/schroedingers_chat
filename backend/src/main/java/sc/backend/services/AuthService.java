@@ -82,6 +82,7 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
     public AuthDTO login(LoginDTO loginDTO) {
         User user = userService.getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
         String email = user.getEmail();
