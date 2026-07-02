@@ -20,7 +20,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   const [message, setMessage] = useState<string>("");
 
   const getWsUrl = () => {
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const host = window.location.host;
     return `${protocol}://${host}/ws`;
   };
@@ -49,6 +49,17 @@ const Chat: React.FC<ChatProps> = (roomId) => {
             ]);
           },
         );
+        client.subscribe(
+          "/topic/" + roomId.roomId + "/delete",
+          (incomingMessage) => {
+            const { messageId } = JSON.parse(incomingMessage.body) as {
+              messageId: number;
+            };
+            setMessageHistory((prev) =>
+              prev.filter((m) => m.messageId !== messageId),
+            );
+          },
+        );
       },
       onWebSocketClose: handleConnectionClose,
       onWebSocketError: handleConnectionClose,
@@ -62,6 +73,19 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       void client.deactivate();
     };
   }, [roomId.roomId]);
+
+  const handleDeleteMessage = useCallback(
+    (messageId: number) => {
+      if (!clientRef.current?.connected) {
+        return;
+      }
+      clientRef.current.publish({
+        destination: "/app/chat/" + roomId.roomId + "/delete",
+        body: JSON.stringify({ messageId }),
+      });
+    },
+    [roomId],
+  );
 
   const handleClickSendMessage = useCallback(() => {
     const trimmedMessage = message.trim();
@@ -94,6 +118,8 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       <MessagesDisplay
         connectionStatus={connectionStatus}
         messageHistory={messageHistory}
+        handleDeleteMessage={handleDeleteMessage}
+        announcement={false}
       />
       <MemberSidebar roomId={roomId.roomId} />
       <Message
@@ -101,6 +127,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         setMessage={setMessage}
         handleClickSendMessage={handleClickSendMessage}
         isConnected={isConnected}
+        announcement={false}
       />
     </Box>
   );

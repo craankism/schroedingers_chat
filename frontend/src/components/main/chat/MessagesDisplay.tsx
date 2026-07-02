@@ -1,25 +1,34 @@
 import { Box, List, Typography } from "@mui/material";
 import type React from "react";
-import { useEffect, useRef } from "react";
-import { useAuthStore } from "../../../stores/AuthStore";
-import type {MessageInput} from "../../../types/MessageType.ts";
-
+import { useEffect, useRef, useState } from "react";
+import { decodeJwt } from "../../../stores/AuthStore";
+import type { MessageInput } from "../../../types/MessageType.ts";
+import { Clear } from "@mui/icons-material";
 type MessagesDisplayProps = {
   connectionStatus: string;
   messageHistory: MessageInput[];
+  handleDeleteMessage: (messageId: number) => void;
+  announcement: boolean;
 };
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   connectionStatus,
   messageHistory,
+  handleDeleteMessage,
+  announcement,
 }) => {
-  const { currentUser } = useAuthStore();
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   // Scroll to the last message when messageHistory changes
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messageHistory]);
+
+  let md = 30;
+  if (announcement) {
+    md = 0;
+  }
 
   return (
     <Box
@@ -28,7 +37,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         flexDirection: "column",
         flexGrow: 1,
         p: 2,
-        mr: { xs: "0", md: 30 },
+        mr: { xs: "0", md: md },
         mb: 7,
       }}
     >
@@ -45,21 +54,33 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         {messageHistory.map((message, id) => (
           <Box
             key={id}
-            sx={{ display: "flex"}}
+            sx={{ display: "flex" }}
             ref={id === messageHistory.length - 1 ? lastMessageRef : null}
           >
-            {currentUser?.displayName === message.sender ? (
-              <Box sx={{ marginLeft: "auto", textAlign: "right" }}>
-                <Typography sx={{ color: "cyan" }}>
-                  {message.sender}
-                </Typography>
-                <Typography>{message.content}</Typography>
+            {decodeJwt()?.displayName === message.sender ? (
+              <Box
+                sx={{ marginLeft: "auto", textAlign: "right" }}
+                onMouseEnter={() => setHoveredId(id)}
+                onMouseLeave={() => setHoveredId(null)}
+              >
+                <Box>
+                  <Typography sx={{ color: "cyan" }}>
+                    {message.sender}
+                  </Typography>
+                  <Typography>{message.content}</Typography>
+                </Box>
+                <Box
+                  sx={{ visibility: hoveredId === id ? "visible" : "hidden" }}
+                >
+                  <Clear
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => handleDeleteMessage(message.messageId)}
+                  />
+                </Box>
               </Box>
             ) : (
               <Box>
-                <Typography sx={{ color: "red" }}>
-                  {message.sender}
-                </Typography>
+                <Typography sx={{ color: "red" }}>{message.sender}</Typography>
                 <Typography>{message.content}</Typography>
               </Box>
             )}
