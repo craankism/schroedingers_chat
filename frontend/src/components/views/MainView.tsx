@@ -6,6 +6,7 @@ import Files from "../main/Files";
 import UserManagement from "../main/user_management/UserManagement";
 import { Box } from "@mui/material";
 import Announcement from "../main/Announcement";
+import RoomManagement from "../main/RoomManagement";
 
 type MainViewProps = {
   isLoggedIn: boolean;
@@ -28,6 +29,7 @@ const MainView: React.FC<MainViewProps> = ({
     Chats: <Chat roomId={roomId} />,
     Userverwaltung: <UserManagement />,
     Dateiverwaltung: <FileManagement />,
+    Raumverwaltung: <RoomManagement />,
     Kursmaterialien: <Files />,
     Ankündigungen: <Announcement />,
   };

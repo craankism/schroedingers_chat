@@ -74,6 +74,11 @@ export const useRoomStore = create<RoomState>((set) => ({
 
   updateRoom: async (room: RoomInput, roomId: number) => {
     useNotificationStore.getState().startLoading();
+    if (!Array.isArray(room.userIdSet)) {
+      const roomStringToArray = JSON.parse("[" + room.userIdSet + "]");
+      room.userIdSet = roomStringToArray;
+    }
+
     try {
       const data = await roomApi.update(room, roomId);
       set((state: RoomState) => ({

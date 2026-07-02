@@ -23,6 +23,7 @@ import sc.backend.repositories.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class AuthService {
@@ -55,10 +56,14 @@ public class AuthService {
                 .build();
         userRepository.save(user);
 
-        Room room = roomRepository.findById(1).orElseThrow(() ->
+        Room announcements = roomRepository.findById(1).orElseThrow(() ->
                 new EmptyOptionalException("Room not found!"));
-        room.getUserList().add(user);
 
+        Room room = roomRepository.findById(2).orElseThrow(() ->
+                new EmptyOptionalException("Room not found!"));
+
+        announcements.addUser(user);
+        room.addUser(user);
         registrationRepository.delete(registration);
 
         String jwt = tokenService.generateTokenWithClaims(user);

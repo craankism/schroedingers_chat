@@ -22,35 +22,24 @@ type MemberSidebarProps = {
 };
 
 const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
-  const { getAllUsers } = useUserStore();
-  const { getAllRooms, getRoom } = useRoomStore();
+  const { getAllUsers, users } = useUserStore();
+  const { getAllRooms, rooms } = useRoomStore();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [open, setOpen] = useState<boolean>(false);
-  const [userDisplay, setUserDisplay] = useState<string[]>([]);
-  const displayMembers = async () => {
-    const result = await getRoom(roomId);
-    const allUsers = await getAllUsers();
-    if (result) {
-      if (allUsers) {
-        const newUsers = allUsers.filter((user) => {
-          if (result.userList.find((userId) => userId == user.userId) != null) {
-            return true;
-          }
-          return false;
-        });
-        setUserDisplay(newUsers.map((user) => user.displayName));
-      }
-    }
-  };
 
   useEffect(() => {
     getAllUsers();
     getAllRooms();
-    // eslint-disable-next-line
-    displayMembers();
-    // eslint-disable-next-line
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId]);
+
+  const currentRoom = rooms.find((r) => r.roomId === roomId);
+  const userDisplay = currentRoom
+    ? users
+        .filter((user) => currentRoom.userList.includes(user.userId))
+        .map((user) => user.displayName)
+    : [];
 
   return (
     <Box sx={{ display: "flex" }}>

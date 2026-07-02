@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationBanner from "./components/NotificationBanner";
 import React, { useState } from "react";
 import { useAuthStore } from "./stores/AuthStore";
+import LiveUpdates from "./components/main/LiveUpdates";
 
 const App = (): JSX.Element => {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ const App = (): JSX.Element => {
 
   return (
     <>
+      <LiveUpdates />
       <NavTop
         isLoggedIn={isLoggedIn}
         handleAuthAction={handleAuthAction}

@@ -12,7 +12,7 @@ import api from "./axiosConfig.ts";
 const fileUrl = "/file";
 const userUrl = "/user";
 const roomUrl = "/room";
-const messageUrl = "/message";
+const messageUrl = "/messages";
 
 const authUrl = "/auth";
 const adminUrl = "/admin"

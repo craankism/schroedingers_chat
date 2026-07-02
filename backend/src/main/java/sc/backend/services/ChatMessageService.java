@@ -1,8 +1,11 @@
 package sc.backend.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import sc.backend.components.CryptoUtil;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
@@ -18,8 +21,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-@Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Service
 public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
@@ -42,10 +46,10 @@ public class ChatMessageService {
                 .content(ciphertextBase64)
                 .iv(result.iv())
                 .creationDate(LocalDateTime.now())
-                .createdBy(creator)
-                .room(room)
                 .build();
 
+        creator.addChatMessage(chatMessage);
+        room.addChatMessage(chatMessage);
         chatMessageRepository.save(chatMessage);
 
         return convertToDTO(chatMessage);
@@ -60,6 +64,29 @@ public class ChatMessageService {
         }
 
         return messageDTOList;
+    }
+
+    @Transactional
+    public void deleteMessage(int messageId, String authenticatedEmail) {
+        User authenticatedUser = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+
+        ChatMessage chatMessage = chatMessageRepository.findById(messageId).orElseThrow(() ->
+                new EntityNotFoundException("Message with id " + messageId + " not found"));
+
+        User user = chatMessage.getCreatedBy();
+        Room room = chatMessage.getRoom();
+
+        if (authenticatedUser.getUserId() != user.getUserId() && !authenticatedUser.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this message");
+        }
+
+        user.removeChatMessage(chatMessage);
+
+        if (room != null) {
+            room.removeChatMessage(chatMessage);
+        }
+
+        chatMessageRepository.delete(chatMessage);
     }
 
     private MessageDTO convertToDTO(ChatMessage message) {

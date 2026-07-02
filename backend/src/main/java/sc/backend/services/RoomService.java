@@ -1,9 +1,10 @@
 package sc.backend.services;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.EditRoomDTO;
 import sc.backend.dtos.req.CreateRoomDTO;
 import sc.backend.dtos.res.RoomDTO;
@@ -17,7 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class RoomService {
@@ -26,16 +27,22 @@ public class RoomService {
     private final UserRepository userRepository;
     private final UserService userService;
 
+    @Transactional
     public RoomDTO createRoom(CreateRoomDTO createRoomDTO, String authenticatedEmail) {
         User creator = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
 
         Room room = Room.builder()
                 .name(createRoomDTO.getName())
-                .createdBy(creator)
                 .build();
 
+        creator.addCreatedRoom(room);
         Set<User> members = convertIdsToUsers(createRoomDTO.getUserIdSet());
-        room.setUserList(members);
+
+        for (User member : members) {
+            room.addUser(member);
+        }
+
+        room.addUser(creator);
         roomRepository.save(room);
 
         return convertToDTO(room);
@@ -57,21 +64,36 @@ public class RoomService {
         return roomDTOList;
     }
 
+    @Transactional
     public RoomDTO editRoom(int roomId, EditRoomDTO editRoomDTO) {
         Room room = findRoomById(roomId);
+
         if (!room.getName().equals(editRoomDTO.getName())) {
             room.setName(editRoomDTO.getName());
         }
 
-        Set<User> members = convertIdsToUsers(editRoomDTO.getUserIdSet());
-        room.setUserList(members);
-        roomRepository.save(room);
+        Set<User> desiredMembers = convertIdsToUsers(editRoomDTO.getUserIdSet());
+
+        for (User currentMember : new HashSet<>(room.getUserSet())) {
+            if (!desiredMembers.contains(currentMember)) {
+                room.removeUser(currentMember);
+            }
+        }
+
+        for (User desiredMember : desiredMembers) {
+            if (!room.getUserSet().contains(desiredMember)) {
+                room.addUser(desiredMember);
+            }
+        }
 
         return convertToDTO(room);
     }
 
+    @Transactional
     public void deleteRoom(int roomId) {
         Room room = findRoomById(roomId);
+
+        room.clearUsers();
 
         roomRepository.delete(room);
     }
@@ -93,10 +115,10 @@ public class RoomService {
     }
 
     public int[] getUserList(Room room) {
-        int[] userArray = new int[room.getUserList().size()];
+        int[] userArray = new int[room.getUserSet().size()];
 
         int i = 0;
-        for (User user : room.getUserList()) {
+        for (User user : room.getUserSet()) {
             userArray[i] = user.getUserId();
             i++;
         }

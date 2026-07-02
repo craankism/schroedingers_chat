@@ -10,6 +10,8 @@ import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.services.AdminService;
 
+import java.security.Principal;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/admin")
@@ -22,24 +24,24 @@ public class AdminController {
         return new ResponseEntity<>(adminService.registerUserKey(registerUserKeyDTO, authentication.getName()), HttpStatus.CREATED);
     }
 
-    @GetMapping("/user/setAdmin/{userId}")
+    @PutMapping("/user/setAdmin/{userId}")
     public ResponseEntity<UserDTO> setAdmin(@PathVariable int userId) {
         return new ResponseEntity<>(adminService.setAdmin(userId), HttpStatus.OK);
     }
 
-    @GetMapping("/user/setTrainer/{userId}")
+    @PutMapping("/user/setTrainer/{userId}")
     public ResponseEntity<UserDTO> setTrainer(@PathVariable int userId) {
         return new ResponseEntity<>(adminService.setTrainer(userId), HttpStatus.OK);
     }
 
-    @GetMapping("/user/setActive/{userId}")
+    @PutMapping("/user/setActive/{userId}")
     public ResponseEntity<UserDTO> setActive(@PathVariable int userId) {
         return new ResponseEntity<>(adminService.setActive(userId), HttpStatus.OK);
     }
 
     @DeleteMapping("/user/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable int userId) {
-        adminService.deleteUser(userId);
+    public ResponseEntity<?> deleteUser(@PathVariable int userId, Principal principal) {
+        adminService.deleteUser(userId, principal.getName());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
