@@ -48,7 +48,9 @@ const SidebarHelper: React.FC<{
               setSelect(item);
               if (rooms) setRoomId(rooms.at(index)?.roomId || 0);
               if (itemNames.includes(item)) setActiveView(item);
-              else setActiveView("Chats");
+              else {
+                setActiveView("Chats");
+              }
               if (isMobile) setOpen(false);
             }}
           >

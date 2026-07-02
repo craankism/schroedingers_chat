@@ -1,8 +1,10 @@
 package sc.backend.services;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import sc.backend.components.CryptoUtil;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
@@ -61,6 +63,11 @@ public class ChatMessageService {
         }
 
         return messageDTOList;
+    }
+
+    @Transactional
+    public void deleteMessage(int messageId) {
+        chatMessageRepository.deleteById(messageId);
     }
 
     private MessageDTO convertToDTO(ChatMessage message) {
