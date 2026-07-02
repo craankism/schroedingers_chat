@@ -61,10 +61,14 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   rooms.map((room) => {
     if (room.userList.includes(userId)) {
+      // So Announcement doesn't show up twice
+      if (room.roomId === 1) return;
+
       roomItems.push(room.name);
       userRooms.push(room);
     }
   });
+  console.log(rooms);
 
   const openModalFunc = () => {
     setOpenModal(!openModal);

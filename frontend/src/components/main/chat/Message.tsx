@@ -6,6 +6,7 @@ type MessageProps = {
   setMessage(message: string): void;
   handleClickSendMessage(): void;
   isConnected: boolean;
+  announcement: boolean;
 };
 
 const Message: React.FC<MessageProps> = ({
@@ -13,14 +14,19 @@ const Message: React.FC<MessageProps> = ({
   setMessage,
   handleClickSendMessage,
   isConnected,
+  announcement,
 }) => {
+  let md = "240px";
+  if (announcement) {
+    md = "0px";
+  }
   return (
     <Box
       sx={{
         position: "fixed",
         bottom: 0,
         left: { xs: 0, md: "240px" },
-        right: { xs: 0, md: "240px" },
+        right: { xs: 0, md: md },
         zIndex: 1200,
         display: "flex",
         gap: 1,
