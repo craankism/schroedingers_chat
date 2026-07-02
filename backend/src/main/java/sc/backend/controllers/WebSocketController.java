@@ -36,13 +36,13 @@ public class WebSocketController {
 
     @MessageMapping("/chat/{roomId}/delete")
     @SendTo("/topic/{roomId}/delete")
-    public DeleteMessageDTO deleteMessage(@DestinationVariable int roomId, @Payload DeleteMessageDTO deleteMessageDTO,
+    public DeleteMessageDTO deleteMessage(@Payload DeleteMessageDTO deleteMessageDTO,
             Principal principal) {
         if (principal == null) {
             throw new AccessDeniedException("Not authenticated");
         }
 
-        chatMessageService.deleteMessage(deleteMessageDTO.getMessageId());
+        chatMessageService.deleteMessage(deleteMessageDTO.getMessageId(),  principal.getName());
         return deleteMessageDTO;
     }
 
