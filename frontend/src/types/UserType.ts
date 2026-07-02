@@ -12,3 +12,9 @@ export type UserInput = {
     password: string,
     displayName: string
 }
+
+export type UserChange = {
+    displayName: string,
+    oldPassword: string,
+    newPassword: string,
+}

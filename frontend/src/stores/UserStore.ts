@@ -1,4 +1,4 @@
-import type { UserInput, UserType } from "../types/UserType.ts";
+import type { UserChange, UserInput, UserType } from "../types/UserType.ts";
 import { create } from "zustand/react";
 import { userApi } from "../services/apiCalls.ts";
 import { useNotificationStore } from "./NotificationStore.ts";
@@ -7,9 +7,10 @@ type UserState = {
   users: UserType[];
   error: string | null;
   addUser: (inviteKey: string, userInput: UserInput) => void;
-  getUser: (userId: number) => void;
+  getUser: (userId: number) => Promise<UserType | undefined>;
   getAllUsers: () => Promise<UserType[] | undefined>;
-  updateUser: (userId: number, role: string) => void;
+  updateUserRoles: (userId: number, role: string) => void;
+  updateUser: (userId: number, updatedUser: UserChange) => void;
   deleteUser: (userId: number) => void;
 };
 
@@ -46,6 +47,7 @@ export const useUserStore = create<UserState>((set) => ({
           user.userId === userId ? { ...user, ...data } : user,
         ),
       }));
+      return data;
     } catch (e) {
       set({ error: "Fehler" + e });
       useNotificationStore
@@ -72,10 +74,10 @@ export const useUserStore = create<UserState>((set) => ({
     }
   },
 
-  updateUser: async (userId: number, role: string) => {
+  updateUserRoles: async (userId: number, role: string) => {
     useNotificationStore.getState().startLoading();
     try {
-      await userApi.update(userId, role);
+      await userApi.updateRole(userId, role);
       const data = await userApi.getById(userId);
       set((state: UserState) => ({
         users: state.users.map((user) =>
@@ -90,6 +92,29 @@ export const useUserStore = create<UserState>((set) => ({
       useNotificationStore
         .getState()
         .addNotification("Fehler beim ändern", "error");
+    } finally {
+      useNotificationStore.getState().stopLoading();
+    }
+  },
+
+  updateUser: async (userId: number, updatedUser: UserChange) => {
+    useNotificationStore.getState().startLoading();
+    try {
+      await userApi.updateUser(userId, updatedUser);
+      const data = await userApi.getById(userId);
+      set((state: UserState) => ({
+        users: state.users.map((user) =>
+          user.userId === userId ? { ...user, ...data } : user,
+        ),
+      }));
+      useNotificationStore
+        .getState()
+        .addNotification("Profil erfolgreich geändert", "success");
+    } catch (e) {
+      set({ error: "Fehler" + e });
+      useNotificationStore
+        .getState()
+        .addNotification("Fehler beim ändern des Profils", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
