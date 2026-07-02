@@ -26,9 +26,9 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<RoomDTO> createRoom(@RequestBody CreateRoomDTO createRoomDTO, Principal principal) {
-        RoomDTO room = roomService.createRoom(createRoomDTO, principal.getName());
+        RoomDTO roomDTO = roomService.createRoom(createRoomDTO, principal.getName());
         broadcastRoomUpdate();
-        return new ResponseEntity<>(room, HttpStatus.CREATED);
+        return new ResponseEntity<>(roomDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("{roomId}")
@@ -49,8 +49,8 @@ public class RoomController {
     }
 
     @DeleteMapping("{roomId}")
-    public ResponseEntity<?> deleteRoom(@PathVariable int roomId) {
-        roomService.deleteRoom(roomId);
+    public ResponseEntity<?> deleteRoom(@PathVariable int roomId, Principal principal) {
+        roomService.deleteRoom(roomId, principal.getName());
         broadcastRoomUpdate();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
