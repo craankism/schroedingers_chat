@@ -3,8 +3,10 @@ package sc.backend.services;
 import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import sc.backend.dtos.req.EditRoomDTO;
 import sc.backend.dtos.req.CreateRoomDTO;
 import sc.backend.dtos.res.RoomDTO;
@@ -90,10 +92,18 @@ public class RoomService {
     }
 
     @Transactional
-    public void deleteRoom(int roomId) {
+    public void deleteRoom(int roomId, String authenticatedEmail) {
         Room room = findRoomById(roomId);
+        User authenticatedUser = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+
+        User creator = room.getCreatedBy();
+
+        if (authenticatedUser.getUserId() != creator.getUserId() && !authenticatedUser.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this room");
+        }
 
         room.clearUsers();
+        creator.removeCreatedRoom(room);
 
         roomRepository.delete(room);
     }

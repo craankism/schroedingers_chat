@@ -17,6 +17,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final WebSocketController webSocketController;
+
+    private void broadcastUserUpdate() {
+        webSocketController.broadcastUpdate("USER_UPDATE");
+    }
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
@@ -30,12 +35,15 @@ public class UserController {
 
     @PutMapping("{userId}")
     public ResponseEntity<UserDTO> editUser(@PathVariable int userId, @RequestBody EditUserDTO editUserDTO, Principal principal) {
-        return new ResponseEntity<>(userService.editUser(userId, editUserDTO, principal.getName()), HttpStatus.OK);
+        UserDTO user = userService.editUser(userId, editUserDTO, principal.getName());
+        broadcastUserUpdate();
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @DeleteMapping("{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable int userId, Principal principal) {
         userService.deleteUser(userId, principal.getName());
+        broadcastUserUpdate();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

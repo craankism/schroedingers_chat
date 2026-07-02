@@ -5,7 +5,7 @@ import type { MessageInput, MessageType } from "../types/MessageType.ts";
 import type {
   AuthLoginType,
   registrationReturn,
-  CodeValidationType,
+  CodeValidationType, AuthResponseType,
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
 
@@ -14,11 +14,8 @@ const userUrl = "/user";
 const roomUrl = "/room";
 const messageUrl = "/messages";
 
-const registrationUrl = "/auth/register";
-const validationUrl = "/auth/register/validation";
-const loginUrl = "/auth/login";
-const createCodeUrl = "/admin/invite";
-const changeUserUrl = "/admin/user";
+const authUrl = "/auth";
+const adminUrl = "/admin"
 const websocket = "/messages";
 
 export const fileApi = {
@@ -68,13 +65,13 @@ export const userApi = {
     user: UserInput,
   ): Promise<UserType> => {
     const response = await api.post<UserType>(
-      `${registrationUrl}/${registrationCode}`,
+      `${authUrl}/registration/${registrationCode}`,
       user,
     );
     return response.data;
   },
-  updateRole: async (userId: number, role: string): Promise<void> => {
-    await api.put(`${changeUserUrl}/${role}/${userId}`);
+  update: async (userId: number, role: string): Promise<void> => {
+    await api.put(`${adminUrl}/user/${role}/${userId}`);
   },
   updateUser: async (
     userId: number,
@@ -83,7 +80,7 @@ export const userApi = {
     await api.put(`${userUrl}/${userId}`, updatedUser);
   },
   delete: async (userId: number): Promise<void> => {
-    await api.delete(`${changeUserUrl}/${userId}`);
+    await api.delete(`${adminUrl}/user/${userId}`);
   },
 };
 
@@ -144,14 +141,14 @@ export const authApi = {
     registration: boolean,
   ): Promise<registrationReturn> => {
     const response = await api.post<registrationReturn>(
-      createCodeUrl,
+        `${adminUrl}/invite`,
       registration,
     );
     return response.data;
   },
 
-  login: async (credentials: AuthLoginType): Promise<UserType> => {
-    const response = await api.post<UserType>(loginUrl, credentials);
+  login: async (credentials: AuthLoginType): Promise<AuthResponseType> => {
+    const response = await api.post<AuthResponseType>(`${authUrl}/login`, credentials);
     return response.data;
   },
 
@@ -159,8 +156,17 @@ export const authApi = {
     registrationCode: string,
   ): Promise<CodeValidationType> => {
     const response = await api.get<CodeValidationType>(
-      `${validationUrl}/${registrationCode}`,
+      `${authUrl}/regist/validation/${registrationCode}`,
     );
     return response.data;
+  },
+
+  refresh: async (refreshToken: string): Promise<AuthResponseType> => {
+    const response = await api.post(`${authUrl}/refresh`, {refreshToken});
+    return response.data;
+  },
+
+  logout: async (refreshToken: string) => {
+    await api.post(`${authUrl}/logout`, {refreshToken})
   },
 };

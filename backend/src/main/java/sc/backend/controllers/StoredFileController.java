@@ -21,6 +21,11 @@ import java.util.List;
 public class StoredFileController {
 
     private final FileStorageService fileStorageService;
+    private final WebSocketController webSocketController;
+
+    private void broadcastFileUpdate() {
+        webSocketController.broadcastUpdate("FILE_UPDATE");
+    }
 
 
     /**
@@ -32,7 +37,9 @@ public class StoredFileController {
     public ResponseEntity<StoredFileMetaDTO> uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
-        return new ResponseEntity<>(fileStorageService.uploadFile(file, userName), HttpStatus.OK);
+        StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName);
+        broadcastFileUpdate();
+        return new ResponseEntity<>(storedFileMetaDTO, HttpStatus.OK);
     }
 
     /**
@@ -68,6 +75,7 @@ public class StoredFileController {
     @DeleteMapping("/{fileId}")
     public ResponseEntity<?> deleteFileById(@PathVariable int fileId) throws Exception{
         fileStorageService.deleteFile(fileId);
+        broadcastFileUpdate();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

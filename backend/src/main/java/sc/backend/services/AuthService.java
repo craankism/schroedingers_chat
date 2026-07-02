@@ -10,6 +10,7 @@ import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.res.AuthDTO;
 import sc.backend.dtos.res.CodeDTO;
+import sc.backend.entities.RefreshToken;
 import sc.backend.entities.Registration;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
@@ -66,8 +67,9 @@ public class AuthService {
         registrationRepository.delete(registration);
 
         String jwt = tokenService.generateTokenWithClaims(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
 
-        return convertToAuthDTO(user, jwt);
+        return convertToAuthDTO(user, jwt, refreshToken);
     }
 
     public CodeDTO checkValidity(String code) {
@@ -80,6 +82,7 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
     public AuthDTO login(LoginDTO loginDTO) {
         User user = userService.getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
         String email = user.getEmail();
@@ -87,11 +90,25 @@ public class AuthService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, loginDTO.getPassword()));
 
         String jwt = tokenService.generateTokenWithClaims(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
 
-        return convertToAuthDTO(user, jwt);
+        return convertToAuthDTO(user, jwt, refreshToken);
     }
 
-    private AuthDTO convertToAuthDTO(User user, String jwt) {
+    @Transactional
+    public AuthDTO refresh(String rawRefreshToken) {
+        RefreshToken validateToken = tokenService.validateRefreshToken(rawRefreshToken);
+        User user = validateToken.getUser();
+        String newRefreshTokenStr = tokenService.rotateRefreshToken(rawRefreshToken);
+        String newJwt = tokenService.generateTokenWithClaims(user);
+        return convertToAuthDTO(user, newJwt, newRefreshTokenStr);
+    }
+
+    public void logout(String rawRefreshToken) {
+        tokenService.deleteRefreshToken(rawRefreshToken);
+    }
+
+    private AuthDTO convertToAuthDTO(User user, String jwt, String refreshToken) {
         return AuthDTO.builder()
                 .userId(user.getUserId())
                 .email(user.getEmail())
@@ -100,6 +117,7 @@ public class AuthService {
                 .isTrainer(user.isTrainer())
                 .isActive(user.isActive())
                 .jwt(jwt)
+                .refreshToken(refreshToken)
                 .build();
     }
 }
