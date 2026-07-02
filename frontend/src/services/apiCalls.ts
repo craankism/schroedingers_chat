@@ -70,7 +70,7 @@ export const userApi = {
     );
     return response.data;
   },
-  update: async (userId: number, role: string): Promise<void> => {
+  updateRole: async (userId: number, role: string): Promise<void> => {
     await api.put(`${adminUrl}/user/${role}/${userId}`);
   },
   updateUser: async (
