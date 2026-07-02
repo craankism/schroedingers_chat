@@ -16,4 +16,5 @@ public class AuthDTO {
     private boolean isTrainer;
     private boolean isActive;
     private String jwt;
+    private String refreshToken;
 }

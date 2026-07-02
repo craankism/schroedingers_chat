@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import sc.backend.dtos.req.LoginDTO;
+import sc.backend.dtos.req.RefreshRequestDTO;
 import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.res.AuthDTO;
 import sc.backend.dtos.res.CodeDTO;
@@ -40,6 +41,17 @@ public class AuthController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(authDTO, HttpStatus.OK);
+    }
+
+    @PostMapping("/refresh")
+    public AuthDTO refresh(@RequestBody RefreshRequestDTO request) {
+        return authService.refresh(request.getRefreshToken());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody RefreshRequestDTO request) {
+        authService.logout(request.getRefreshToken());
+        return ResponseEntity.noContent().build();
     }
 
 }
