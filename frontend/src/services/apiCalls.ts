@@ -1,5 +1,5 @@
 import type { FileInput, FileType } from "../types/FileType.ts";
-import type { UserInput, UserType } from "../types/UserType.ts";
+import type { UserChange, UserInput, UserType } from "../types/UserType.ts";
 import type { RoomInput, RoomType } from "../types/RoomType.ts";
 import type { MessageInput, MessageType } from "../types/MessageType.ts";
 import type {
@@ -72,6 +72,12 @@ export const userApi = {
   },
   update: async (userId: number, role: string): Promise<void> => {
     await api.put(`${adminUrl}/user/${role}/${userId}`);
+  },
+  updateUser: async (
+    userId: number,
+    updatedUser: UserChange,
+  ): Promise<void> => {
+    await api.put(`${userUrl}/${userId}`, updatedUser);
   },
   delete: async (userId: number): Promise<void> => {
     await api.delete(`${adminUrl}/user/${userId}`);

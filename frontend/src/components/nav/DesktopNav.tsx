@@ -1,6 +1,7 @@
-import { Box, Button, Typography } from "@mui/material";
-import type React from "react";
+import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
+import React from "react";
 import IconSC from "../../assets/iconSC.png";
+import ProfileModal from "../main/user_management/ProfileModal";
 
 type DesktopNavProps = {
   isLoggedIn: boolean;
@@ -11,6 +12,7 @@ const DesktopNav: React.FC<DesktopNavProps> = ({
   isLoggedIn,
   handleAuthAction,
 }) => {
+  const [open, setOpen] = React.useState(false);
   return (
     <>
       <Box
@@ -49,11 +51,27 @@ const DesktopNav: React.FC<DesktopNavProps> = ({
           </Typography>
         </Box>
         <Box sx={{ flexGrow: 0 }}>
+          {isLoggedIn ? (
+            <IconButton
+              onClick={() => setOpen(!open)}
+              sx={{
+                p: 0,
+                mr: 4,
+                "&:hover": {
+                  background: "none",
+                  "&::after": { content: "none" },
+                },
+              }}
+            >
+              <Avatar alt="Profile" src="" />
+            </IconButton>
+          ) : null}
           <Button color="inherit" onClick={handleAuthAction}>
             {isLoggedIn ? "Logout" : "Login"}
           </Button>
         </Box>
       </Box>
+      {open ? <ProfileModal open={open} setOpen={setOpen} /> : null}
     </>
   );
 };

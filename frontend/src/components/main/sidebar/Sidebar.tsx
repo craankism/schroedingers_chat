@@ -68,7 +68,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       userRooms.push(room);
     }
   });
-  console.log(rooms);
 
   const openModalFunc = () => {
     setOpenModal(!openModal);

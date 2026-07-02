@@ -11,18 +11,18 @@ import type {
 } from "@mui/x-data-grid";
 
 const UserTable = (): JSX.Element => {
-  const { getAllUsers, deleteUser, users, updateUser } = useUserStore();
+  const { getAllUsers, deleteUser, users, updateUserRoles } = useUserStore();
 
   const handleRowUpdate = async (
     updatedRow: GridRowModel,
     originalRow: GridRowModel,
   ): Promise<GridRowModel> => {
     if (updatedRow.admin !== originalRow.admin) {
-      await updateUser(updatedRow.userId, "setAdmin");
+      await updateUserRoles(updatedRow.userId, "setAdmin");
     } else if (updatedRow.trainer !== originalRow.trainer) {
-      await updateUser(updatedRow.userId, "setTrainer");
+      await updateUserRoles(updatedRow.userId, "setTrainer");
     } else if (updatedRow.active !== originalRow.active) {
-      await updateUser(updatedRow.userId, "setActive");
+      await updateUserRoles(updatedRow.userId, "setActive");
     }
     return updatedRow;
   };
@@ -84,17 +84,17 @@ const UserTable = (): JSX.Element => {
   const paginationModel = { page: 0, pageSize: 10 };
 
   return (
-      <Box sx={{ height: 630, maxWidth: {xs: "90vw", md: "100vw"}, mt: 1 }}>
-        <DataGrid
-          rows={users}
-          getRowId={(row) => row.userId}
-          columns={columns}
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[5, 10, 20, 30]}
-          processRowUpdate={handleRowUpdate}
-          sx={{ border: 0 }}
-        />
-      </Box>
+    <Box sx={{ height: 630, maxWidth: { xs: "90vw", md: "100vw" }, mt: 1 }}>
+      <DataGrid
+        rows={users}
+        getRowId={(row) => row.userId}
+        columns={columns}
+        initialState={{ pagination: { paginationModel } }}
+        pageSizeOptions={[5, 10, 20, 30]}
+        processRowUpdate={handleRowUpdate}
+        sx={{ border: 0 }}
+      />
+    </Box>
   );
 };
 
