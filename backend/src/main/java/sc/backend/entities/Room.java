@@ -32,11 +32,11 @@ public class Room {
     @JoinTable(name = "room_member",
             joinColumns = @JoinColumn(name = "roomId"),
             inverseJoinColumns = @JoinColumn(name = "userId"),
-            uniqueConstraints = @UniqueConstraint(columnNames = {"room_id", "user_id"}))
+            uniqueConstraints = @UniqueConstraint(columnNames = {"roomId", "userId"}))
     private Set<User> userSet = new HashSet<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "room")
+    @OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ChatMessage> chatMessageList = new ArrayList<>();
 
     public void addUser(User user) {
@@ -58,18 +58,10 @@ public class Room {
     public void addChatMessage(ChatMessage message) {
         chatMessageList.add(message);
         message.setRoom(this);
-
-        if (message.getCreatedBy() != null) {
-            message.getCreatedBy().getChatMessageList().add(message);
-        }
     }
 
     public void removeChatMessage(ChatMessage message) {
         chatMessageList.remove(message);
         message.setRoom(null);
-
-        if (message.getCreatedBy() != null) {
-            message.getCreatedBy().getChatMessageList().remove(message);
-        }
     }
 }

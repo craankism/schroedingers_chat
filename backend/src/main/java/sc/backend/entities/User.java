@@ -72,14 +72,6 @@ public class User implements UserDetails {
         room.setCreatedBy(null);
     }
 
-    public void joinRoom(Room room) {
-        room.addUser(this);
-    }
-
-    public void leaveRoom(Room room) {
-        room.removeUser(this);
-    }
-
     public void addChatMessage(ChatMessage chatMessage) {
         chatMessageList.add(chatMessage);
         chatMessage.setCreatedBy(this);
