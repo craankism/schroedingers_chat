@@ -6,16 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
-import sc.backend.entities.ChatMessage;
 import sc.backend.entities.Registration;
-import sc.backend.entities.Room;
 import sc.backend.entities.User;
 import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
 
 @Transactional
 @RequiredArgsConstructor
@@ -77,25 +73,7 @@ public class AdminService {
         return userService.convertToDTO(user);
     }
 
-    public void deleteUser(int userId) {
-        User user = userService.findUserById(userId);
-
-        for (Room room : new HashSet<>(user.getRoomSet())) {
-            room.removeUser(user);
-        }
-
-        for (Room room : new HashSet<>(user.getCreatedRoomSet())) {
-            user.removeCreatedRoom(room);
-        }
-
-        for (ChatMessage message : new ArrayList<>(user.getChatMessageList())) {
-            user.removeChatMessage(message);
-        }
-
-        for (Registration registration : new HashSet<>(user.getRegistrationSet())) {
-            user.removeRegistration(registration);
-        }
-
-        userRepository.delete(user);
+    public void deleteUser(int userId, String authenticatedEmail) {
+        userService.deleteUser(userId, authenticatedEmail);
     }
 }

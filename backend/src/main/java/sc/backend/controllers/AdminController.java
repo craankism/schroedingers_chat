@@ -10,6 +10,8 @@ import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.services.AdminService;
 
+import java.security.Principal;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/admin")
@@ -38,8 +40,8 @@ public class AdminController {
     }
 
     @DeleteMapping("/user/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable int userId) {
-        adminService.deleteUser(userId);
+    public ResponseEntity<?> deleteUser(@PathVariable int userId, Principal principal) {
+        adminService.deleteUser(userId, principal.getName());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
