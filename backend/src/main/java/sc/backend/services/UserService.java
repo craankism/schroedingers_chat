@@ -58,15 +58,15 @@ public class UserService {
 
         User user = findUserById(userId);
 
+        if (!passwordEncoder.matches(editUserDTO.getOldPassword(), user.getPassword())) {
+            throw new AccessDeniedException("Old password is incorrect");
+        }
+
         if (editUserDTO.getDisplayName() != null && !editUserDTO.getDisplayName().isBlank()) {
             user.setDisplayName(editUserDTO.getDisplayName());
         }
 
         if (editUserDTO.getNewPassword() != null && !editUserDTO.getNewPassword().isBlank()) {
-            if (!passwordEncoder.matches(editUserDTO.getOldPassword(), user.getPassword())) {
-                throw new AccessDeniedException("Current password is incorrect");
-            }
-
             user.setPassword(passwordEncoder.encode(editUserDTO.getNewPassword()));
         }
 
