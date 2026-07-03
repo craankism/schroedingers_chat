@@ -46,7 +46,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
             userRepository.save(admin);
 
             Room announcements = Room.builder()
-                    .name("Ankündigungen")
+                    .name("Announcement")
                     .build();
             admin.addCreatedRoom(announcements);
             announcements.addUser(admin);

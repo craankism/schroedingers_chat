@@ -1,7 +1,7 @@
 import { DataGrid } from "@mui/x-data-grid";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { useUserStore } from "../../../stores/UserStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button } from "@mui/material";
 import type {
@@ -9,9 +9,13 @@ import type {
   GridRenderCellParams,
   GridRowModel,
 } from "@mui/x-data-grid";
+import ConfirmationModal from "./ConfirmationModal";
+import { usePropStore } from "../../../stores/PropStore";
 
 const UserTable = (): JSX.Element => {
   const { getAllUsers, deleteUser, users, updateUserRoles } = useUserStore();
+  const { setOpenConfirmation, confirmation, setConfirmation } = usePropStore();
+  const [deleteId, setDeleteId] = useState<number>(0);
 
   const handleRowUpdate = async (
     updatedRow: GridRowModel,
@@ -30,6 +34,16 @@ const UserTable = (): JSX.Element => {
   useEffect(() => {
     getAllUsers();
   }, [getAllUsers]);
+
+  useEffect(() => {
+    if (confirmation == true && deleteId > 0) {
+      deleteUser(deleteId);
+      setConfirmation(false);
+      // eslint-disable-next-line
+      setDeleteId(0);
+    }
+    // eslint-disable-next-line
+  }, [confirmation]);
 
   const columns: GridColDef[] = [
     { field: "userId", headerName: "ID", minWidth: 70, flex: 0.5 },
@@ -72,7 +86,10 @@ const UserTable = (): JSX.Element => {
       flex: 0.9,
       renderCell: (params: GridRenderCellParams) => (
         <Button
-          onClick={() => deleteUser(params.row.userId)}
+          onClick={() => {
+            setOpenConfirmation(true);
+            setDeleteId(params.row.userId);
+          }}
           sx={{ border: "none", boxShadow: "none" }}
         >
           <DeleteIcon />
@@ -94,6 +111,7 @@ const UserTable = (): JSX.Element => {
         processRowUpdate={handleRowUpdate}
         sx={{ border: 0 }}
       />
+      <ConfirmationModal />
     </Box>
   );
 };
