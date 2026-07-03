@@ -20,7 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketChannelInterceptor webSocketChannelInterceptor;
 
     @Value("${websocket.allowed-origins}")
-    private List<String> allowedOrigions;
+    private List<String> allowedOrigins;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -31,7 +31,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(allowedOrigions.toArray(new String[0]));
+                .setAllowedOrigins(allowedOrigins.toArray(new String[0]));
     }
 
     @Override
