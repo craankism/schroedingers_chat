@@ -66,7 +66,7 @@ export const userApi = {
     user: UserInput,
   ): Promise<UserType> => {
     const response = await api.post<UserType>(
-      `${authUrl}/registration/${registrationCode}`,
+      `${authUrl}/register/${registrationCode}`,
       user,
     );
     return response.data;
