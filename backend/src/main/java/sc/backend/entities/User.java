@@ -62,6 +62,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "createdBy")
     private Set<Registration> registrationSet = new HashSet<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<RefreshToken> refreshTokenList = new ArrayList<>();
+
     public void addCreatedRoom(Room room) {
         createdRoomSet.add(room);
         room.setCreatedBy(this);
