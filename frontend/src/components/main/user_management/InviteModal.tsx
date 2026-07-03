@@ -14,7 +14,7 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
+  width: 350,
   bgcolor: "background.paper",
   border: "2px solid #000",
   boxShadow: 24,
@@ -51,40 +51,46 @@ const InviteModal = (): JSX.Element => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <Grid container spacing={2} sx={{ alignItems: "center" }}>
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              Create Invite:
-            </Typography>
-            <form onSubmit={submitHandler}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value={{ isTrainer }}
-                    onChange={() => setIsTrainer(!isTrainer)}
-                  />
-                }
-                label="Trainer"
-              />
-              <br />
-              <Button type="submit">Create Link</Button>
-            </form>
-            {link !== "" ? (
-              <>
-                <TextField value={link} />{" "}
-                <ContentCopyIcon
-                  sx={{ cursor: "pointer" }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(link);
-                    handleClose();
-                    setIsTrainer(false);
-                    setLink("");
-                  }}
+        <form onSubmit={submitHandler}>
+          <Box sx={style}>
+            <Grid container spacing={2} sx={{ alignItems: "center" }}>
+              <Grid size={12}>
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                  Create Invite:
+                </Typography>
+              </Grid>
+              <Grid size={12}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      value={{ isTrainer }}
+                      onChange={() => setIsTrainer(!isTrainer)}
+                    />
+                  }
+                  label="Trainer"
                 />
-              </>
-            ) : null}
-          </Grid>
-        </Box>
+              </Grid>
+              <Grid size={12}>
+                <Button type="submit">Create Link</Button>
+              </Grid>
+
+              {link !== "" ? (
+                <>
+                  <TextField value={link} />{" "}
+                  <ContentCopyIcon
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(link);
+                      handleClose();
+                      setIsTrainer(false);
+                      setLink("");
+                    }}
+                  />
+                </>
+              ) : null}
+            </Grid>
+          </Box>
+        </form>
       </Modal>
     </div>
   );
