@@ -16,6 +16,7 @@ import { useUserStore } from "../../../stores/UserStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { usePropStore } from "../../../stores/PropStore";
 import { useNotificationStore } from "../../../stores/NotificationStore";
+import ConfirmationModal from "./ConfirmationModal";
 
 const style = {
   position: "absolute",
@@ -30,7 +31,7 @@ const style = {
 };
 
 const ProfileModal = (): JSX.Element => {
-  const { updateUser, getUser, getAllUsers } = useUserStore();
+  const { updateUser, getUser, getAllUsers, deleteUser } = useUserStore();
 
   const [displayName, setDisplayName] = React.useState<string>("");
   const [oldPassword, setOldPassword] = React.useState<string>("");
@@ -40,7 +41,13 @@ const ProfileModal = (): JSX.Element => {
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
   const [isTrainer, setIsTrainer] = React.useState<boolean>(false);
   const [userId, setUserId] = React.useState<number>(0);
-  const { openProfile, setOpenProfile } = usePropStore();
+  const {
+    openProfile,
+    setOpenProfile,
+    setOpenConfirmation,
+    confirmation,
+    setConfirmation,
+  } = usePropStore();
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -78,6 +85,15 @@ const ProfileModal = (): JSX.Element => {
         .addNotification("Passwords don't match", "error");
     }
   };
+
+  React.useEffect(() => {
+    if (confirmation == true && openProfile == true) {
+      deleteUser(userId);
+      setOpenProfile(false);
+      setConfirmation(false);
+    }
+    // eslint-disable-next-line
+  }, [confirmation]);
 
   return (
     <Modal
@@ -173,8 +189,15 @@ const ProfileModal = (): JSX.Element => {
                   control={<Checkbox checked={isAdmin} />}
                   label="Admin"
                 />
+                <Button
+                  onClick={() => setOpenConfirmation(true)}
+                  sx={{ borderColor: "red", backgroundColor: "#ff000088" }}
+                >
+                  Delete Account
+                </Button>
                 <Button onClick={() => setOpenProfile(false)}>Back</Button>
                 <Button type="submit">Save</Button>
+                <ConfirmationModal />
               </Stack>
             </Grid>
           </Grid>

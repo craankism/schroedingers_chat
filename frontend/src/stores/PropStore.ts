@@ -7,12 +7,18 @@ type PropState = {
   setOpenProfile: (open: boolean) => void;
   roomId: number;
   setRoomId: (roomId: number) => void;
+  openConfirmation: boolean;
+  setOpenConfirmation: (open: boolean) => void;
+  confirmation: boolean;
+  setConfirmation: (yes: boolean) => void;
 };
 
 export const usePropStore = create<PropState>((set) => ({
   openSidebar: false,
   openProfile: false,
   roomId: 2,
+  confirmation: false,
+  openConfirmation: false,
 
   setOpenSidebar: (open: boolean) => {
     set({ openSidebar: open });
@@ -24,5 +30,13 @@ export const usePropStore = create<PropState>((set) => ({
 
   setRoomId: (roomId: number) => {
     set({ roomId: roomId });
+  },
+
+  setOpenConfirmation: (open: boolean) => {
+    set({ openConfirmation: open });
+  },
+
+  setConfirmation: (yes: boolean) => {
+    set({ confirmation: yes });
   },
 }));

@@ -79,10 +79,9 @@ export const userApi = {
     updatedUser: UserChange,
   ): Promise<void> => {
     await api.put(`${userUrl}/${userId}`, updatedUser);
-    
   },
   delete: async (userId: number): Promise<void> => {
-    await api.delete(`${adminUrl}/user/${userId}`);
+    await api.delete(`${userUrl}/${userId}`);
   },
 };
 

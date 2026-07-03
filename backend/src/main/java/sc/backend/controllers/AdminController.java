@@ -10,8 +10,6 @@ import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.services.AdminService;
 
-import java.security.Principal;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/admin")
@@ -37,11 +35,5 @@ public class AdminController {
     @PutMapping("/user/setActive/{userId}")
     public ResponseEntity<UserDTO> setActive(@PathVariable int userId) {
         return new ResponseEntity<>(adminService.setActive(userId), HttpStatus.OK);
-    }
-
-    @DeleteMapping("/user/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable int userId, Principal principal) {
-        adminService.deleteUser(userId, principal.getName());
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
