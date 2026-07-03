@@ -9,6 +9,6 @@ RUN mkdir -p /etc/nginx/ssl/certs /etc/nginx/ssl/private && \
         -subj "/CN=localhost"
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
