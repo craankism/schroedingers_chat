@@ -15,6 +15,7 @@ import { decodeJwt } from "../../../stores/AuthStore";
 import { useUserStore } from "../../../stores/UserStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { usePropStore } from "../../../stores/PropStore";
+import { useNotificationStore } from "../../../stores/NotificationStore";
 
 const style = {
   position: "absolute",
@@ -62,11 +63,19 @@ const ProfileModal = (): JSX.Element => {
   ): Promise<void> => {
     e.preventDefault();
     if (newPassword === repeatNewPassword) {
-      updateUser(userId, {
+      const response = await updateUser(userId, {
         displayName,
         oldPassword,
         newPassword,
       });
+      console.log(response);
+      if (response === true) {
+        setOpenProfile(false);
+      }
+    } else {
+      useNotificationStore
+        .getState()
+        .addNotification("Passwords don't match", "error");
     }
   };
 

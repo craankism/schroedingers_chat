@@ -9,6 +9,7 @@ import { Typography } from "@mui/material";
 import NewRoomModal from "../sidebar/NewRoomModal";
 import { useRoomStore } from "../../../stores/RoomStore";
 import { decodeJwt } from "../../../stores/AuthStore";
+import { usePropStore } from "../../../stores/PropStore";
 
 type EditChatProps = {
   roomId: number;
@@ -20,6 +21,7 @@ const EditChat: React.FC<EditChatProps> = (roomId) => {
   const [creator, setCreator] = React.useState<boolean>(false);
   const [edit, setEdit] = React.useState<boolean>(true);
   const { deleteRoom, getRoom } = useRoomStore();
+  const { setRoomId } = usePropStore();
   const open = Boolean(anchorEl);
 
   const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
@@ -39,10 +41,10 @@ const EditChat: React.FC<EditChatProps> = (roomId) => {
     }
   };
 
-//   React.useEffect(() => {
-//     // eslint-disable-next-line
-//     roomCreatorHandle();
-//   }, [roomId.roomId]);
+  //   React.useEffect(() => {
+  //     // eslint-disable-next-line
+  //     roomCreatorHandle();
+  //   }, [roomId.roomId]);
 
   const roomEditHandle = (addUser: boolean) => {
     if (addUser) setEdit(true);
@@ -131,9 +133,10 @@ const EditChat: React.FC<EditChatProps> = (roomId) => {
         <MenuItem
           onClick={() => {
             deleteRoom(roomId.roomId);
+            setRoomId(2);
             handleClose();
           }}
-          disabled={!creator}
+          disabled={!creator || roomId.roomId === 2}
         >
           <ListItemIcon>
             <Delete sx={{ color: "red" }} fontSize="small" />

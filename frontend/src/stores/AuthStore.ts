@@ -55,12 +55,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem("refreshToken", data.refreshToken);
       useNotificationStore
         .getState()
-        .addNotification("Login Erfolgreich", "success");
+        .addNotification("Login successful", "success");
     } catch (e) {
       set({ error: "Fehler" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Login", "error");
+        .addNotification("Login error", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -74,9 +74,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         await authApi.logout(refreshToken);
         useNotificationStore
           .getState()
-          .addNotification("Logout erfolgreich", "success");
+          .addNotification("Logout successful", "success");
       } catch (e) {
-        set({ error: "Fehler" + e });
+        set({ error: "Error" + e });
       } finally {
         useNotificationStore.getState().stopLoading();
       }
@@ -107,11 +107,11 @@ export const useAuthStore = create<AuthState>((set) => ({
         token: null,
         currentUser: null,
         isAuthenticated: false,
-        error: "Fehler" + e,
+        error: "Error" + e,
       });
       useNotificationStore
         .getState()
-        .addNotification("Session abgelaufen, bitte erneut anmelden", "error");
+        .addNotification("Session expired, please log in again.", "error");
       return null;
     } finally {
       useNotificationStore.getState().stopLoading();
@@ -124,13 +124,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       const data = await authApi.createRegistrationCode(registration);
       useNotificationStore
         .getState()
-        .addNotification("Einladung erfolgreich angelegt", "success");
+        .addNotification("Invitation successfully created", "success");
       return data.registrationCode;
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Erstellen der Einladung", "error");
+        .addNotification("Error creating invitation", "error");
       return null;
     } finally {
       useNotificationStore.getState().stopLoading();
@@ -144,18 +144,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (data.valid) {
         useNotificationStore
           .getState()
-          .addNotification("Code ist korrekt", "success");
+          .addNotification("Code is correct", "success");
       } else {
         useNotificationStore
           .getState()
-          .addNotification("Code ist ungültig", "error");
+          .addNotification("Code is invalid", "error");
       }
       return data;
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Validieren des Codes", "error");
+        .addNotification("Error validating the code", "error");
       return { valid: false };
     } finally {
       useNotificationStore.getState().stopLoading();

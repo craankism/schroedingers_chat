@@ -17,7 +17,6 @@ const SidebarHelper: React.FC<{
   setActiveView: (view: string) => void;
   select: string;
   setSelect: (selection: string) => void;
-  setRoomId: (roomId: number) => void;
 }> = ({
   items,
   itemNames,
@@ -26,11 +25,10 @@ const SidebarHelper: React.FC<{
   select,
   setSelect,
   rooms,
-  setRoomId,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { setOpenSidebar } = usePropStore();
+  const { setOpenSidebar, setRoomId } = usePropStore();
 
   const selectionFilter = (item: string) => {
     if (activeView === item) return true;

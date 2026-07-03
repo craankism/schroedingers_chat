@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { decodeJwt } from "../../../stores/AuthStore";
 import type { MessageInput } from "../../../types/MessageType.ts";
 import { Clear } from "@mui/icons-material";
+import { widthMinusSidebar } from "../../../types/constants/constants.ts";
 type MessagesDisplayProps = {
   connectionStatus: string;
   messageHistory: MessageInput[];
@@ -38,7 +39,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         flexGrow: 1,
         p: 2,
         mr: { xs: "0", md: md },
-        ml: { xs: "0", md: 30 },
+        ml: widthMinusSidebar,
         mb: 7,
       }}
     >
