@@ -8,11 +8,12 @@ import { Box } from "@mui/material";
 import Announcement from "../main/Announcement";
 import RoomManagement from "../main/RoomManagement";
 import type { JSX } from "@emotion/react/jsx-runtime";
+import { usePropStore } from "../../stores/PropStore";
 
 const MainView = (): JSX.Element => {
   const [activeView, setActiveView] = useState<string>("Announcement");
   const [select, setSelect] = useState<string>("Announcement");
-  const [roomId, setRoomId] = useState<number>(0);
+  const { roomId } = usePropStore();
 
   const Active = {
     Chats: <Chat roomId={roomId} />,
@@ -30,7 +31,6 @@ const MainView = (): JSX.Element => {
         setActiveView={setActiveView}
         select={select}
         setSelect={setSelect}
-        setRoomId={setRoomId}
       />
       {Active[activeView as keyof typeof Active]}
     </Box>

@@ -10,7 +10,7 @@ type UserState = {
   getUser: (userId: number) => Promise<UserType | undefined>;
   getAllUsers: () => Promise<UserType[] | undefined>;
   updateUserRoles: (userId: number, role: string) => void;
-  updateUser: (userId: number, updatedUser: UserChange) => void;
+  updateUser: (userId: number, updatedUser: UserChange) => Promise<boolean>;
   deleteUser: (userId: number) => void;
 };
 
@@ -27,12 +27,12 @@ export const useUserStore = create<UserState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("User erfolgreich angelegt", "success");
+        .addNotification("User successfully created", "success");
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Anlegen des Nutzers", "error");
+        .addNotification("Error creating user", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -49,10 +49,10 @@ export const useUserStore = create<UserState>((set) => ({
       }));
       return data;
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Laden des Users", "error");
+        .addNotification("Error loading user", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -65,10 +65,10 @@ export const useUserStore = create<UserState>((set) => ({
       set({ users: data });
       return data;
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Laden der User", "error");
+        .addNotification("Error loading user", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -86,12 +86,12 @@ export const useUserStore = create<UserState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("User erfolgreich geändert", "success");
+        .addNotification("User successfully changed", "success");
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim ändern", "error");
+        .addNotification("Error while changing", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -109,12 +109,22 @@ export const useUserStore = create<UserState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("Profil erfolgreich geändert", "success");
+        .addNotification("Profile successfully changed", "success");
+        return true;
     } catch (e) {
-      set({ error: "Fehler" + e });
-      useNotificationStore
-        .getState()
-        .addNotification("Fehler beim ändern des Profils", "error");
+      set({ error: "Error" + e });
+      // eslint-disable-next-line
+      const status = (e as any)?.response?.status;
+      if (status === 403) {
+        useNotificationStore
+          .getState()
+          .addNotification("Old password is wrong", "error");
+      } else {
+        useNotificationStore
+          .getState()
+          .addNotification("Error changing profile", "error");
+      }
+      return false;
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -129,12 +139,12 @@ export const useUserStore = create<UserState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("User erfolgreich gelöscht", "success");
+        .addNotification("User successfully deleted", "success");
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Löschen", "error");
+        .addNotification("Error during deletion", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }

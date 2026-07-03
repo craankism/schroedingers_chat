@@ -26,12 +26,12 @@ export const useRoomStore = create<RoomState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("Raum erfolgreich erstellt", "success");
+        .addNotification("Room successfully created", "success");
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Erstellen des Raums", "error");
+        .addNotification("Error creating the room", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -48,10 +48,10 @@ export const useRoomStore = create<RoomState>((set) => ({
       }));
       return data;
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Laden des Raums", "error");
+        .addNotification("Error loading the room", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -63,10 +63,10 @@ export const useRoomStore = create<RoomState>((set) => ({
       const data = await roomApi.getAll();
       set({ rooms: data });
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Laden der Räume", "error");
+        .addNotification("Error loading rooms", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -86,10 +86,14 @@ export const useRoomStore = create<RoomState>((set) => ({
           room.roomId === roomId ? data : room,
         ),
       }));
-      useNotificationStore.getState().addNotification("Erfolgreich", "success");
+      useNotificationStore
+        .getState()
+        .addNotification("Room successfully updated", "success");
     } catch (e) {
-      set({ error: "Fehler" + e });
-      useNotificationStore.getState().addNotification("Fehler", "error");
+      set({ error: "Error" + e });
+      useNotificationStore
+        .getState()
+        .addNotification("Error updating Room", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -104,12 +108,12 @@ export const useRoomStore = create<RoomState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("Raum erfolgreich gelöscht", "success");
+        .addNotification("Room successfully deleted", "success");
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Löschen des Raums", "error");
+        .addNotification("Error deleting the room", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }

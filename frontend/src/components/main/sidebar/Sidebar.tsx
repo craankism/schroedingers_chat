@@ -26,7 +26,6 @@ type SidebarProps = {
   setActiveView(view: string): void;
   select: string;
   setSelect(selection: string): void;
-  setRoomId(roomId: number): void;
 };
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
@@ -38,7 +37,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   setActiveView,
   select,
   setSelect,
-  setRoomId,
 }) => {
   const [openModal, setOpenModal] = useState<boolean>(false);
   const isAdmin = decodeJwt()?.isAdmin;
@@ -108,7 +106,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               <SidebarHelper
                 items={adminItems}
                 itemNames={itemNames}
-                setRoomId={setRoomId}
                 activeView={activeView}
                 setActiveView={setActiveView}
                 select={select}
@@ -121,7 +118,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <SidebarHelper
               items={navItems}
               itemNames={itemNames}
-              setRoomId={setRoomId}
               activeView={activeView}
               setActiveView={setActiveView}
               select={select}
@@ -144,7 +140,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               items={roomItems}
               itemNames={itemNames}
               rooms={userRooms}
-              setRoomId={setRoomId}
               activeView={activeView}
               setActiveView={setActiveView}
               select={select}

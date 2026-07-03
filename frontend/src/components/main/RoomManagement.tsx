@@ -10,6 +10,7 @@ import type {
 } from "@mui/x-data-grid";
 import { useEffect } from "react";
 import { useRoomStore } from "../../stores/RoomStore";
+import { widthMinusSidebar } from "../../types/constants/constants";
 
 const RoomManagement = (): JSX.Element => {
   const { getAllRooms, deleteRoom, rooms, updateRoom } = useRoomStore();
@@ -71,7 +72,7 @@ const RoomManagement = (): JSX.Element => {
   const paginationModel = { page: 0, pageSize: 10 };
 
   return (
-    <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+    <Box component="main" sx={{ flexGrow: 1, p: 3, ml: widthMinusSidebar }}>
       <Toolbar />
       <Typography variant="h5">User Management</Typography>
       <Box sx={{ height: 630, maxWidth: { xs: "90vw", md: "100vw" }, mt: 1 }}>

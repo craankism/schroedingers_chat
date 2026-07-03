@@ -28,12 +28,12 @@ export const useMessageStore = create<MessageState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("Nachricht erfolgreich gesendet", "success");
+        .addNotification("Message successfully sent", "success");
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Senden der Nachricht", "error");
+        .addNotification("Error sending message", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -61,10 +61,10 @@ export const useMessageStore = create<MessageState>((set) => ({
       const data = await messageApi.getAll();
       set({ messages: data });
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Laden der Nachrichten", "error");
+        .addNotification("Error loading messages", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -76,12 +76,12 @@ export const useMessageStore = create<MessageState>((set) => ({
       await messageApi.delete(messageId);
       useNotificationStore
         .getState()
-        .addNotification("Nachricht erfolgreich gelöscht", "success");
+        .addNotification("Message successfully deleted", "success");
     } catch (e) {
       set({ error: "Fehler" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Löschen der Nachricht", "error");
+        .addNotification("Error deleting message", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }

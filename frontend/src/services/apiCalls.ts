@@ -5,7 +5,8 @@ import type { MessageInput, MessageType } from "../types/MessageType.ts";
 import type {
   AuthLoginType,
   registrationReturn,
-  CodeValidationType, AuthResponseType,
+  CodeValidationType,
+  AuthResponseType,
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
 
@@ -15,7 +16,7 @@ const roomUrl = "/room";
 const messageUrl = "/messages";
 
 const authUrl = "/auth";
-const adminUrl = "/admin"
+const adminUrl = "/admin";
 const websocket = "/messages";
 
 export const fileApi = {
@@ -78,6 +79,7 @@ export const userApi = {
     updatedUser: UserChange,
   ): Promise<void> => {
     await api.put(`${userUrl}/${userId}`, updatedUser);
+    
   },
   delete: async (userId: number): Promise<void> => {
     await api.delete(`${adminUrl}/user/${userId}`);
@@ -141,14 +143,17 @@ export const authApi = {
     registration: boolean,
   ): Promise<registrationReturn> => {
     const response = await api.post<registrationReturn>(
-        `${adminUrl}/invite`,
+      `${adminUrl}/invite`,
       registration,
     );
     return response.data;
   },
 
   login: async (credentials: AuthLoginType): Promise<AuthResponseType> => {
-    const response = await api.post<AuthResponseType>(`${authUrl}/login`, credentials);
+    const response = await api.post<AuthResponseType>(
+      `${authUrl}/login`,
+      credentials,
+    );
     return response.data;
   },
 
@@ -162,11 +167,11 @@ export const authApi = {
   },
 
   refresh: async (refreshToken: string): Promise<AuthResponseType> => {
-    const response = await api.post(`${authUrl}/refresh`, {refreshToken});
+    const response = await api.post(`${authUrl}/refresh`, { refreshToken });
     return response.data;
   },
 
   logout: async (refreshToken: string) => {
-    await api.post(`${authUrl}/logout`, {refreshToken})
+    await api.post(`${authUrl}/logout`, { refreshToken });
   },
 };
