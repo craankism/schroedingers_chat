@@ -2,18 +2,12 @@ import { Box, Typography } from "@mui/material";
 import IconSC from "../../assets/iconSC.png";
 import { useNavigate } from "react-router-dom";
 import { Menu } from "@mui/icons-material";
-import type React from "react";
+import type { JSX } from "@emotion/react/jsx-runtime";
+import { usePropStore } from "../../stores/PropStore";
 
-type MobileNavProps = {
-  openSidebar: boolean;
-  setOpenSidebar: (open: boolean) => void;
-};
-
-const MobileNav: React.FC<MobileNavProps> = ({
-  openSidebar,
-  setOpenSidebar,
-}) => {
+const MobileNav = (): JSX.Element => {
   const navigate = useNavigate();
+  const { openSidebar, setOpenSidebar } = usePropStore();
 
   return (
     <>
@@ -57,7 +51,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
             right: 20,
             scale: 2,
             cursor: "pointer",
-            display: "flex"
+            display: "flex",
           }}
           onClick={() => setOpenSidebar(!openSidebar)}
         >

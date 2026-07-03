@@ -1,23 +1,11 @@
-import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Container from "@mui/material/Container";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
+import type { JSX } from "@emotion/react/jsx-runtime";
 
-type NavTopProps = {
-  isLoggedIn: boolean;
-  handleAuthAction: () => void;
-  openSidebar: boolean;
-  setOpenSidebar: (open: boolean) => void;
-};
-
-const NavTop: React.FC<NavTopProps> = ({
-  isLoggedIn,
-  handleAuthAction,
-  openSidebar,
-  setOpenSidebar,
-}) => {
+const NavTop = (): JSX.Element => {
   return (
     <AppBar
       position="fixed"
@@ -26,14 +14,8 @@ const NavTop: React.FC<NavTopProps> = ({
     >
       <Container maxWidth={false}>
         <Toolbar disableGutters>
-          <DesktopNav
-            isLoggedIn={isLoggedIn}
-            handleAuthAction={handleAuthAction}
-          />
-          <MobileNav
-            openSidebar={openSidebar}
-            setOpenSidebar={setOpenSidebar}
-          />
+          <DesktopNav />
+          <MobileNav />
         </Toolbar>
       </Container>
     </AppBar>

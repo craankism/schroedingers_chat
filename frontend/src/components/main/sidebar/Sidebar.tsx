@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Divider,
   Drawer,
@@ -12,12 +13,13 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import SidebarHelper from "./SidebarHelper";
-import { decodeJwt } from "../../../stores/AuthStore";
+import { decodeJwt, useAuthStore } from "../../../stores/AuthStore";
 import NewRoomModal from "./NewRoomModal";
 import { useRoomStore } from "../../../stores/RoomStore";
 import type { RoomType } from "../../../types/RoomType";
 import AddIcon from "@mui/icons-material/Add";
 import { useUserStore } from "../../../stores/UserStore";
+import { usePropStore } from "../../../stores/PropStore";
 
 type SidebarProps = {
   activeView: string;
@@ -25,14 +27,10 @@ type SidebarProps = {
   select: string;
   setSelect(selection: string): void;
   setRoomId(roomId: number): void;
-  isLoggedIn: boolean;
-  handleAuthAction: () => void;
-  openSidebar: boolean;
-  setOpenSidebar: (open: boolean) => void;
 };
 
-const adminItems = ["Userverwaltung", "Dateiverwaltung", "Raumverwaltung"];
-const navItems = ["Ankündigungen", "Kursmaterialien"];
+const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
+const navItems = ["Announcement", "Files"];
 const itemNames = [...adminItems, ...navItems];
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -41,16 +39,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   select,
   setSelect,
   setRoomId,
-  isLoggedIn,
-  handleAuthAction,
-  openSidebar,
-  setOpenSidebar,
 }) => {
   const [openModal, setOpenModal] = useState<boolean>(false);
   const isAdmin = decodeJwt()?.isAdmin;
   const userId = decodeJwt()?.userId || 0;
   const { getAllRooms, rooms } = useRoomStore();
   const { getAllUsers } = useUserStore();
+  const { isAuthenticated, logout, currentUser } = useAuthStore();
+  const { openSidebar, setOpenSidebar, setOpenProfile } = usePropStore();
 
   useEffect(() => {
     getAllRooms();
@@ -117,7 +113,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 setActiveView={setActiveView}
                 select={select}
                 setSelect={setSelect}
-                setOpen={setOpenSidebar}
               />
               <Divider />
             </>
@@ -131,7 +126,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               setActiveView={setActiveView}
               select={select}
               setSelect={setSelect}
-              setOpen={setOpenSidebar}
             />
             <Divider />
             <AddIcon
@@ -155,7 +149,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               setActiveView={setActiveView}
               select={select}
               setSelect={setSelect}
-              setOpen={setOpenSidebar}
             />
             {!md ? (
               <div>
@@ -166,18 +159,38 @@ const Sidebar: React.FC<SidebarProps> = ({
                     width: "100vw",
                   }}
                 />
-                <ListItem disablePadding>
+                <ListItem
+                  disablePadding
+                  sx={{
+                    position: "fixed",
+                    bottom: 55,
+                    zIndex: 12,
+                    width: "100vw",
+                  }}
+                >
                   <ListItemButton
-                    sx={{
-                      position: "fixed",
-                      bottom: 4,
-                      zIndex: 12,
-                      width: "100vw",
-                      justifyContent: "center",
-                    }}
+                    onClick={() => setOpenProfile(true)}
+                    sx={{ justifyContent: "center" }}
                   >
-                    <Typography onClick={handleAuthAction}>
-                      {isLoggedIn ? "Logout" : "Login"}
+                    <Avatar sx={{ mr: 2 }} />
+                    {currentUser?.displayName}
+                  </ListItemButton>
+                </ListItem>
+                <ListItem
+                  disablePadding
+                  sx={{
+                    position: "fixed",
+                    bottom: 4,
+                    zIndex: 12,
+                    width: "100vw",
+                  }}
+                >
+                  <ListItemButton
+                    onClick={logout}
+                    sx={{ justifyContent: "center" }}
+                  >
+                    <Typography>
+                      {isAuthenticated ? "Logout" : "Login"}
                     </Typography>
                   </ListItemButton>
                 </ListItem>

@@ -1,18 +1,13 @@
 import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
-import React from "react";
 import IconSC from "../../assets/iconSC.png";
 import ProfileModal from "../main/user_management/ProfileModal";
+import { useAuthStore } from "../../stores/AuthStore";
+import type { JSX } from "@emotion/react/jsx-runtime";
+import { usePropStore } from "../../stores/PropStore";
 
-type DesktopNavProps = {
-  isLoggedIn: boolean;
-  handleAuthAction: () => void;
-};
-
-const DesktopNav: React.FC<DesktopNavProps> = ({
-  isLoggedIn,
-  handleAuthAction,
-}) => {
-  const [open, setOpen] = React.useState(false);
+const DesktopNav = (): JSX.Element => {
+  const { isAuthenticated, logout } = useAuthStore();
+  const { openProfile, setOpenProfile } = usePropStore();
   return (
     <>
       <Box
@@ -51,9 +46,9 @@ const DesktopNav: React.FC<DesktopNavProps> = ({
           </Typography>
         </Box>
         <Box sx={{ flexGrow: 0 }}>
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <IconButton
-              onClick={() => setOpen(!open)}
+              onClick={() => setOpenProfile(!openProfile)}
               sx={{
                 p: 0,
                 mr: 4,
@@ -66,12 +61,12 @@ const DesktopNav: React.FC<DesktopNavProps> = ({
               <Avatar alt="Profile" src="" />
             </IconButton>
           ) : null}
-          <Button color="inherit" onClick={handleAuthAction}>
-            {isLoggedIn ? "Logout" : "Login"}
+          <Button color="inherit" onClick={logout}>
+            {isAuthenticated ? "Logout" : "Login"}
           </Button>
         </Box>
       </Box>
-      {open ? <ProfileModal open={open} setOpen={setOpen} /> : null}
+      {openProfile ? <ProfileModal /> : null}
     </>
   );
 };

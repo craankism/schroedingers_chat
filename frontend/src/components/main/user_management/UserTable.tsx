@@ -36,7 +36,7 @@ const UserTable = (): JSX.Element => {
     { field: "email", headerName: "E-Mail", minWidth: 220, flex: 1.8 },
     {
       field: "displayName",
-      headerName: "Display Name",
+      headerName: "Username",
       minWidth: 160,
       flex: 1.2,
     },
@@ -58,7 +58,7 @@ const UserTable = (): JSX.Element => {
     },
     {
       field: "active",
-      headerName: "Aktiv",
+      headerName: "Active",
       type: "boolean",
       editable: true,
       minWidth: 100,
@@ -66,7 +66,7 @@ const UserTable = (): JSX.Element => {
     },
     {
       field: "delete",
-      headerName: "Löschen",
+      headerName: "Delete",
       type: "boolean",
       minWidth: 110,
       flex: 0.9,

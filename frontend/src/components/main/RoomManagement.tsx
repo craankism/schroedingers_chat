@@ -54,7 +54,7 @@ const RoomManagement = (): JSX.Element => {
     },
     {
       field: "delete",
-      headerName: "Löschen",
+      headerName: "Delete",
       type: "boolean",
       minWidth: 110,
       flex: 0.9,
@@ -73,7 +73,7 @@ const RoomManagement = (): JSX.Element => {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <Toolbar />
-      <Typography variant="h5">Userverwaltung</Typography>
+      <Typography variant="h5">User Management</Typography>
       <Box sx={{ height: 630, maxWidth: { xs: "90vw", md: "100vw" }, mt: 1 }}>
         <DataGrid
           rows={rooms}

@@ -1,62 +1,23 @@
 import type { JSX } from "@emotion/react/jsx-runtime";
 import NavTop from "./components/nav/NavTop";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import LoginView from "./components/views/LoginView";
 import EnterCodeView from "./components/views/EnterCodeView";
 import RegisterView from "./components/views/RegisterView";
 import MainView from "./components/views/MainView";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationBanner from "./components/NotificationBanner";
-import React, { useState } from "react";
-import { useAuthStore } from "./stores/AuthStore";
 import LiveUpdates from "./components/main/LiveUpdates";
 
 const App = (): JSX.Element => {
-  const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuthStore();
-
-  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(isAuthenticated);
-
-  const handleAuthAction = () => {
-    if (isLoggedIn) {
-      logout();
-      setIsLoggedIn(false);
-      navigate("/");
-    } else {
-      navigate("/login");
-    }
-  };
-
-  React.useEffect(() => {
-    // eslint-disable-next-line
-    setIsLoggedIn(isAuthenticated);
-  }, [isAuthenticated]);
-
-  const [openSidebar, setOpenSidebar] = useState<boolean>(true);
-
   return (
     <>
       <LiveUpdates />
-      <NavTop
-        isLoggedIn={isLoggedIn}
-        handleAuthAction={handleAuthAction}
-        openSidebar={openSidebar}
-        setOpenSidebar={setOpenSidebar}
-      />
+      <NavTop />
       <NotificationBanner />
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route
-            path="/"
-            element={
-              <MainView
-                isLoggedIn={isLoggedIn}
-                handleAuthAction={handleAuthAction}
-                openSidebar={openSidebar}
-                setOpenSidebar={setOpenSidebar}
-              />
-            }
-          />
+          <Route path="/" element={<MainView />} />
         </Route>
         <Route path="/login" element={<LoginView />} />
         <Route path="/register" element={<EnterCodeView />} />

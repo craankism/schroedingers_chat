@@ -38,6 +38,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         flexGrow: 1,
         p: 2,
         mr: { xs: "0", md: md },
+        ml: { xs: "0", md: 30 },
         mb: 7,
       }}
     >
