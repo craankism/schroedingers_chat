@@ -161,7 +161,7 @@ export const authApi = {
     registrationCode: string,
   ): Promise<CodeValidationType> => {
     const response = await api.get<CodeValidationType>(
-      `${authUrl}/regist/validation/${registrationCode}`,
+      `${authUrl}/register/validation/${registrationCode}`,
     );
     return response.data;
   },
