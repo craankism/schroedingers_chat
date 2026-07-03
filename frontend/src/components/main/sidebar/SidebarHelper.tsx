@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import type { RoomType } from "../../../types/RoomType";
+import { usePropStore } from "../../../stores/PropStore";
 
 const SidebarHelper: React.FC<{
   items: string[];
@@ -17,7 +18,6 @@ const SidebarHelper: React.FC<{
   select: string;
   setSelect: (selection: string) => void;
   setRoomId: (roomId: number) => void;
-  setOpen: (open: boolean) => void;
 }> = ({
   items,
   itemNames,
@@ -25,12 +25,12 @@ const SidebarHelper: React.FC<{
   setActiveView,
   select,
   setSelect,
-  setOpen,
   rooms,
   setRoomId,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const { setOpenSidebar } = usePropStore();
 
   const selectionFilter = (item: string) => {
     if (activeView === item) return true;
@@ -51,7 +51,7 @@ const SidebarHelper: React.FC<{
               else {
                 setActiveView("Chats");
               }
-              if (isMobile) setOpen(false);
+              if (isMobile) setOpenSidebar(false);
             }}
           >
             <ListItemText primary={item} />

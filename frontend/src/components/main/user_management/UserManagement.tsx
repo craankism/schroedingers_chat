@@ -7,7 +7,7 @@ const UserManagement = (): JSX.Element => {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <Toolbar />
-      <Typography variant="h5">Userverwaltung</Typography>
+      <Typography variant="h5">User Management</Typography>
       <InviteModal />
       <UserTable />
     </Box>

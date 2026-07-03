@@ -39,7 +39,7 @@ const Files = (): JSX.Element => {
                         component="label"
                         startIcon={<CloudUploadIcon/>}
                     >
-                        Datei waehlen
+                        Select File
                         <input type="file" hidden onChange={handleSelect}/>
                     </Button>
                     <Button
@@ -47,13 +47,13 @@ const Files = (): JSX.Element => {
                         onClick={handleUpload}
                         disabled={!selectedFile}
                     >
-                        Hochladen
+                        Upload
                     </Button>
                 </Box>
 
                 {selectedFile && (
                     <Typography variant="body2" sx={{mb: 2}}>
-                        Gewaehlt: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                        Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
                     </Typography>
                 )}
 

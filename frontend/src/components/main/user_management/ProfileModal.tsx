@@ -13,25 +13,22 @@ import {
 } from "@mui/material";
 import { decodeJwt } from "../../../stores/AuthStore";
 import { useUserStore } from "../../../stores/UserStore";
+import type { JSX } from "@emotion/react/jsx-runtime";
+import { usePropStore } from "../../../stores/PropStore";
 
 const style = {
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 800,
+  width: { xs: "90vw", md: 800 },
   bgcolor: "background.paper",
   border: "2px solid #000",
   boxShadow: 24,
   p: 4,
 };
 
-type ProfileModalProps = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-};
-
-const ProfileModal: React.FC<ProfileModalProps> = ({ open, setOpen }) => {
+const ProfileModal = (): JSX.Element => {
   const { updateUser, getUser, getAllUsers } = useUserStore();
 
   const [displayName, setDisplayName] = React.useState<string>("");
@@ -42,6 +39,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, setOpen }) => {
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
   const [isTrainer, setIsTrainer] = React.useState<boolean>(false);
   const [userId, setUserId] = React.useState<number>(0);
+  const { openProfile, setOpenProfile } = usePropStore();
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -57,7 +55,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, setOpen }) => {
     fetchUser();
   }, [getAllUsers, getUser]);
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => setOpenProfile(false);
 
   const submitHandler = async (
     e: React.SubmitEvent<HTMLFormElement>,
@@ -74,7 +72,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, setOpen }) => {
 
   return (
     <Modal
-      open={open}
+      open={openProfile}
       onClose={handleClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
@@ -82,7 +80,25 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, setOpen }) => {
       <form onSubmit={submitHandler}>
         <Box sx={style}>
           <Grid container spacing={2} sx={{ alignItems: "center" }}>
-            <Grid size={8}>
+            <Grid
+              size={{ xs: 12, md: 4 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Avatar
+                alt="profile picture"
+                src=""
+                sx={{
+                  width: { xs: "40%", md: "100%" },
+                  height: "auto",
+                  aspectRatio: "1",
+                }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Stack spacing={2}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
                   Profile:
@@ -148,23 +164,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, setOpen }) => {
                   control={<Checkbox checked={isAdmin} />}
                   label="Admin"
                 />
-                <Button onClick={() => setOpen(false)}>Back</Button>
+                <Button onClick={() => setOpenProfile(false)}>Back</Button>
                 <Button type="submit">Save</Button>
               </Stack>
-            </Grid>
-            <Grid
-              size={4}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Avatar
-                alt="profile picture"
-                src=""
-                sx={{ width: "100%", height: "auto", aspectRatio: "1" }}
-              />
             </Grid>
           </Grid>
         </Box>

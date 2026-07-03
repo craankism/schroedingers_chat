@@ -5,7 +5,7 @@ const FileManagement = (): JSX.Element => {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <Toolbar />
-      <Typography variant="h5">Dateiverwaltung</Typography>
+      <Typography variant="h5">File Management</Typography>
     </Box>
   );
 };
