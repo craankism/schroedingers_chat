@@ -3,7 +3,7 @@ package sc.backend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -17,12 +17,13 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int messageId;
 
-    @Column(nullable = false)
+    //TODO: length?
+    @Column(nullable = false, length = 2000)
     private String content;
 
     //TODO: best date type?
     @Column(nullable = false)
-    private Date creationDate;
+    private LocalDateTime creationDate;
 
     @ManyToOne
     @JoinColumn(name = "userId")
@@ -31,4 +32,7 @@ public class ChatMessage {
     @ManyToOne
     @JoinColumn(name = "roomId")
     private Room room;
+
+    @Column(nullable = false)
+    private byte[] iv;
 }

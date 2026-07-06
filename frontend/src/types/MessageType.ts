@@ -1,12 +1,10 @@
 export type MessageType = {
-    messageId: number,
     content: string,
-    roomId: number,
-    createdBy: number
 }
 
 export type MessageInput = {
+    messageId: number,
     content: string,
-    roomId: number,
-    createdBy: number
+    sender: string,
+    creationDate: string
 }

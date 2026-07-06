@@ -3,7 +3,7 @@ package sc.backend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -22,13 +22,9 @@ public class Registration {
 
     //TODO: best date type?
     @Column(nullable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     private String registrationCode;
-
-    @OneToOne
-    @JoinColumn(name = "registration", nullable = true)
-    private User usedBy;
 
     @ManyToOne
     @JoinColumn(name = "userId")

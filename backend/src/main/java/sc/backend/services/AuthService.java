@@ -1,25 +1,29 @@
 package sc.backend.services;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.res.AuthDTO;
 import sc.backend.dtos.res.CodeDTO;
+import sc.backend.entities.RefreshToken;
 import sc.backend.entities.Registration;
+import sc.backend.entities.Room;
 import sc.backend.entities.User;
 import sc.backend.exceptions.EmptyOptionalException;
 import sc.backend.exceptions.KeyInvalidException;
 import sc.backend.repositories.RegistrationRepository;
+import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class AuthService {
@@ -27,17 +31,19 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
-    private final ConversionService conversionService;
     private final AuthenticationManager authenticationManager;
     private final RegistrationRepository registrationRepository;
+    private final RoomRepository roomRepository;
+    private final UserService userService;
 
     @Transactional
     public AuthDTO register(String registryKey, RegisterDTO registerDTO) {
         Registration registration = registrationRepository.findByRegistrationCode(registryKey).orElseThrow(() ->
                         new KeyInvalidException("Key is not valid!"));
 
-        if (registration.getUsedBy() != null) {
-            throw new KeyInvalidException("Registration code has already been used!");
+        if (registration.getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
+            registrationRepository.delete(registration);
+            throw new KeyInvalidException("Registration has expired!");
         }
 
         User user = User.builder()
@@ -48,49 +54,61 @@ public class AuthService {
                 .isTrainer(registration.isTrainer())
                 .isActive(true)
                 .build();
-
         userRepository.save(user);
-        registration.setUsedBy(user);
-        registrationRepository.save(registration);
+
+        Room announcements = roomRepository.findById(1).orElseThrow(() ->
+                new EmptyOptionalException("Room not found!"));
+
+        Room room = roomRepository.findById(2).orElseThrow(() ->
+                new EmptyOptionalException("Room not found!"));
+
+        announcements.addUser(user);
+        room.addUser(user);
+        registrationRepository.delete(registration);
 
         String jwt = tokenService.generateTokenWithClaims(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
 
-        return convertToAuthDTO(user, jwt);
+        return convertToAuthDTO(user, jwt, refreshToken);
     }
 
     public CodeDTO checkValidity(String code) {
         Optional<Registration> registration = registrationRepository.findByRegistrationCode(code);
 
-        boolean valid = registration.isPresent() && registration.get().getUsedBy() == null;
+        boolean valid = registration.isPresent();
 
         return CodeDTO.builder()
                 .isValid(valid)
                 .build();
     }
 
+    @Transactional
     public AuthDTO login(LoginDTO loginDTO) {
-        User user = getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
+        User user = userService.getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
         String email = user.getEmail();
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, loginDTO.getPassword()));
 
         String jwt = tokenService.generateTokenWithClaims(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
 
-        return convertToAuthDTO(user, jwt);
+        return convertToAuthDTO(user, jwt, refreshToken);
     }
 
-    public User getUserByEmail(Optional<User> userOptional) {
-        User user;
-
-        try {
-            user = conversionService.getEntityFromOptional(userOptional);
-        } catch (EmptyOptionalException e) {
-            throw new UsernameNotFoundException("Email not found!");
-        }
-        return user;
+    @Transactional
+    public AuthDTO refresh(String rawRefreshToken) {
+        RefreshToken validateToken = tokenService.validateRefreshToken(rawRefreshToken);
+        User user = validateToken.getUser();
+        String newRefreshTokenStr = tokenService.rotateRefreshToken(rawRefreshToken);
+        String newJwt = tokenService.generateTokenWithClaims(user);
+        return convertToAuthDTO(user, newJwt, newRefreshTokenStr);
     }
 
-    private AuthDTO convertToAuthDTO(User user, String jwt) {
+    public void logout(String rawRefreshToken) {
+        tokenService.deleteRefreshToken(rawRefreshToken);
+    }
+
+    private AuthDTO convertToAuthDTO(User user, String jwt, String refreshToken) {
         return AuthDTO.builder()
                 .userId(user.getUserId())
                 .email(user.getEmail())
@@ -99,6 +117,7 @@ public class AuthService {
                 .isTrainer(user.isTrainer())
                 .isActive(user.isActive())
                 .jwt(jwt)
+                .refreshToken(refreshToken)
                 .build();
     }
 }

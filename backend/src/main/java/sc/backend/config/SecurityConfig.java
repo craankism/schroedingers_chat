@@ -3,6 +3,7 @@ package sc.backend.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -32,12 +33,23 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                        })
+                )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(paths.matcher("/api/auth/**")).permitAll()
                         .requestMatchers(paths.matcher("/api/admin/**")).hasRole("ADMIN")
-                        .requestMatchers(paths.matcher("/h2/**")).permitAll() //Test
+                        .requestMatchers(paths.matcher("/h2/**")).permitAll() //TODO: remove before production
+                        .requestMatchers(paths.matcher("/ws"), paths.matcher("/ws/**")).permitAll()
+                        .requestMatchers(paths.matcher("/api/file/**")).permitAll() //TODO: remove before production
+                        .requestMatchers(paths.matcher("/actuator/health")).permitAll()
+                        .requestMatchers(paths.matcher("/error")).permitAll()
                         .anyRequest().authenticated()
                         //TODO: change permissions
                 )

@@ -4,8 +4,9 @@ import type { AuthLoginType, CodeValidationType } from "../types/AuthType.ts";
 import { useNotificationStore } from "./NotificationStore.ts";
 import { authApi } from "../services/apiCalls.ts";
 
-export function decodeJwt(token: string): UserType | null {
+export function decodeJwt(): UserType | null {
   try {
+    const token = localStorage.getItem("jwt") || "";
     const payload = JSON.parse(atob(token.split(".")[1]));
     return {
       userId: payload.userId,
@@ -25,8 +26,10 @@ type AuthState = {
   token: string | null;
   currentUser: UserType | null;
   isAuthenticated: boolean;
+  setIsAuthenticated: (change: boolean) => void;
   login: (login: AuthLoginType) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  refreshToken: () => Promise<string | null>;
   addRegistrationCode: (registration: boolean) => Promise<string | null>;
   validateRegistrationCode: (
     registrationCode: string,
@@ -36,8 +39,12 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set) => ({
   error: null,
   token: localStorage.getItem("jwt"),
-  currentUser: decodeJwt(localStorage.getItem("jwt")!),
+  currentUser: decodeJwt(),
   isAuthenticated: !!localStorage.getItem("jwt"),
+
+  setIsAuthenticated: (change: boolean) => {
+    set({ isAuthenticated: change });
+  },
 
   login: async (login: AuthLoginType) => {
     useNotificationStore.getState().startLoading();
@@ -45,22 +52,70 @@ export const useAuthStore = create<AuthState>((set) => ({
       const data = await authApi.login(login);
       set({ token: data.jwt, currentUser: data, isAuthenticated: true });
       localStorage.setItem("jwt", data.jwt);
+      localStorage.setItem("refreshToken", data.refreshToken);
       useNotificationStore
         .getState()
-        .addNotification("Login Erfolgreich", "success");
+        .addNotification("Login successful", "success");
     } catch (e) {
       set({ error: "Fehler" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Login", "error");
+        .addNotification("Login error", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }
   },
 
-  logout: () => {
+  logout: async () => {
+    useNotificationStore.getState().startLoading();
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      try {
+        await authApi.logout(refreshToken);
+        useNotificationStore
+          .getState()
+          .addNotification("Logout successful", "success");
+      } catch (e) {
+        set({ error: "Error" + e });
+      } finally {
+        useNotificationStore.getState().stopLoading();
+      }
+    }
     localStorage.removeItem("jwt");
+    localStorage.removeItem("refreshToken");
     set({ token: null, currentUser: null, isAuthenticated: false });
+  },
+
+  refreshToken: async () => {
+    useNotificationStore.getState().startLoading();
+    const rawRefreshToken = localStorage.getItem("refreshToken");
+    if (!rawRefreshToken) return null;
+    try {
+      const data = await authApi.refresh(rawRefreshToken);
+      localStorage.setItem("jwt", data.jwt);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      set({
+        token: data.jwt,
+        currentUser: data,
+        isAuthenticated: true,
+      });
+      return data.jwt;
+    } catch (e) {
+      localStorage.removeItem("jwt");
+      localStorage.removeItem("refreshToken");
+      set({
+        token: null,
+        currentUser: null,
+        isAuthenticated: false,
+        error: "Error" + e,
+      });
+      useNotificationStore
+        .getState()
+        .addNotification("Session expired, please log in again.", "error");
+      return null;
+    } finally {
+      useNotificationStore.getState().stopLoading();
+    }
   },
 
   addRegistrationCode: async (registration: boolean) => {
@@ -69,14 +124,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       const data = await authApi.createRegistrationCode(registration);
       useNotificationStore
         .getState()
-        .addNotification("Einladung erfolgreich angelegt", "success");
-
+        .addNotification("Invitation successfully created", "success");
       return data.registrationCode;
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Erstellen der Einladung", "error");
+        .addNotification("Error creating invitation", "error");
       return null;
     } finally {
       useNotificationStore.getState().stopLoading();
@@ -90,18 +144,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (data.valid) {
         useNotificationStore
           .getState()
-          .addNotification("Code ist korrekt", "success");
+          .addNotification("Code is correct", "success");
       } else {
         useNotificationStore
           .getState()
-          .addNotification("Code ist ungültig", "error");
+          .addNotification("Code is invalid", "error");
       }
       return data;
     } catch (e) {
-      set({ error: "Fehler" + e });
+      set({ error: "Error" + e });
       useNotificationStore
         .getState()
-        .addNotification("Fehler beim Validieren des Codes", "error");
+        .addNotification("Error validating the code", "error");
       return { valid: false };
     } finally {
       useNotificationStore.getState().stopLoading();

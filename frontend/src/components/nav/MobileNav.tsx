@@ -1,24 +1,22 @@
 import { Box, Typography } from "@mui/material";
-import type React from "react";
 import IconSC from "../../assets/iconSC.png";
 import { useNavigate } from "react-router-dom";
-import DrawerList from "./DrawerList";
+import { Menu } from "@mui/icons-material";
+import type { JSX } from "@emotion/react/jsx-runtime";
+import { usePropStore } from "../../stores/PropStore";
 
-type MobileNavProps = {
-  pages: string[];
-};
-
-const MobileNav: React.FC<MobileNavProps> = ({ pages }) => {
+const MobileNav = (): JSX.Element => {
   const navigate = useNavigate();
+  const { openSidebar, setOpenSidebar } = usePropStore();
 
   return (
     <>
-      <DrawerList pages={pages} />
       <Box
         sx={{
           display: { xs: "flex", md: "none" },
-          cursor: "pointer",
           flexGrow: 1,
+          justifyContent: "center",
+          alignItems: "center",
         }}
         onClick={() => navigate("/")}
       >
@@ -47,6 +45,18 @@ const MobileNav: React.FC<MobileNavProps> = ({ pages }) => {
         >
           SC
         </Typography>
+        <Box
+          sx={{
+            position: "fixed",
+            right: 20,
+            scale: 2,
+            cursor: "pointer",
+            display: "flex",
+          }}
+          onClick={() => setOpenSidebar(!openSidebar)}
+        >
+          <Menu color="primary" />
+        </Box>
       </Box>
     </>
   );

@@ -1,36 +1,100 @@
-import { Box, Divider, Drawer, IconButton, Toolbar } from "@mui/material";
-import React, { useState } from "react";
-import AddIcon from "@mui/icons-material/Add";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import {
+  Avatar,
+  Box,
+  Divider,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
 import SidebarHelper from "./SidebarHelper";
-import { decodeJwt } from "../../../stores/AuthStore";
-
-const drawerWidth = 240;
+import { decodeJwt, useAuthStore } from "../../../stores/AuthStore";
+import NewRoomModal from "./NewRoomModal";
+import { useRoomStore } from "../../../stores/RoomStore";
+import type { RoomType } from "../../../types/RoomType";
+import AddIcon from "@mui/icons-material/Add";
+import { useUserStore } from "../../../stores/UserStore";
+import { usePropStore } from "../../../stores/PropStore";
 
 type SidebarProps = {
   activeView: string;
   setActiveView(view: string): void;
+  select: string;
+  setSelect(selection: string): void;
 };
 
-const adminItems = ["Userverwaltung", "Dateiverwaltung"];
-const navItems = ["Ankündigungen", "Kursmaterialien"];
-const chatItems = ["Chats"];
+const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
+const navItems = ["Announcement", "Files"];
+const itemNames = [...adminItems, ...navItems];
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
-  const [open, setOpen] = useState<boolean>(true);
-  const isAdmin = decodeJwt(localStorage.getItem("jwt") || "")?.isAdmin;
+const Sidebar: React.FC<SidebarProps> = ({
+  activeView,
+  setActiveView,
+  select,
+  setSelect,
+}) => {
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const isAdmin = decodeJwt()?.isAdmin;
+  const userId = decodeJwt()?.userId || 0;
+  const { getAllRooms, rooms } = useRoomStore();
+  const { getAllUsers } = useUserStore();
+  const { isAuthenticated, logout, currentUser } = useAuthStore();
+  const { openSidebar, setOpenSidebar, setOpenProfile } = usePropStore();
+
+  useEffect(() => {
+    getAllRooms();
+  }, [getAllRooms]);
+
+  const roomItems: string[] = [];
+  const userRooms: RoomType[] = [];
+
+  rooms.map((room) => {
+    if (room.userList.includes(userId)) {
+      // So Announcement doesn't show up twice
+      if (room.roomId === 1) return;
+
+      roomItems.push(room.name);
+      userRooms.push(room);
+    }
+  });
+
+  const openModalFunc = () => {
+    setOpenModal(!openModal);
+  };
+
+  const [variant, setVariant] = useState<"permanent" | "temporary">(
+    "permanent",
+  );
+  const theme = useTheme();
+  const md = useMediaQuery(theme.breakpoints.up("md"));
+
+  useEffect(() => {
+    if (md) {
+      // eslint-disable-next-line
+      setVariant("permanent");
+    } else {
+      setVariant("temporary");
+    }
+    // eslint-disable-next-line
+  }, []);
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", maxHeight: "100vh" }}>
       <Drawer
-        variant="persistent"
-        open={open}
+        variant={variant}
+        open={openSidebar}
+        onClose={() => setOpenSidebar(false)}
         sx={{
-          width: open ? drawerWidth : 0,
+          width: openSidebar ? { xs: "100vw", md: 240 } : 0,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: {
-            width: drawerWidth,
+            width: { xs: "100vw", md: 240 },
+            height: "100vh",
             boxSizing: "border-box",
           },
         }}
@@ -41,54 +105,95 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
             <>
               <SidebarHelper
                 items={adminItems}
+                itemNames={itemNames}
                 activeView={activeView}
                 setActiveView={setActiveView}
-                setOpen={setOpen}
+                select={select}
+                setSelect={setSelect}
               />
               <Divider />
             </>
           )}
-          <SidebarHelper
-            items={navItems}
-            activeView={activeView}
-            setActiveView={setActiveView}
-            setOpen={setOpen}
-          />
-          <Divider />
-          <AddIcon
-            sx={{ cursor: "pointer", ml: drawerWidth / 10, mt: 1 }}
-            onClick={() => {
-              /*neuen Chat erstellen*/
-            }}
-          />
-          {/* Code unten ist Placeholder für Chats */}
-          <SidebarHelper
-            items={chatItems}
-            activeView={activeView}
-            setActiveView={setActiveView}
-            setOpen={setOpen}
-          />
+          <List>
+            <SidebarHelper
+              items={navItems}
+              itemNames={itemNames}
+              activeView={activeView}
+              setActiveView={setActiveView}
+              select={select}
+              setSelect={setSelect}
+            />
+            <Divider />
+            <AddIcon
+              sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
+              onClick={() => {
+                openModalFunc();
+                getAllUsers();
+              }}
+            />
+            <NewRoomModal
+              openModal={openModal}
+              closeModal={setOpenModal}
+              roomEdit={false}
+            />
+            <SidebarHelper
+              items={roomItems}
+              itemNames={itemNames}
+              rooms={userRooms}
+              activeView={activeView}
+              setActiveView={setActiveView}
+              select={select}
+              setSelect={setSelect}
+            />
+            {!md ? (
+              <div>
+                <Divider
+                  sx={{
+                    position: "fixed",
+                    bottom: 48,
+                    width: "100vw",
+                  }}
+                />
+                <ListItem
+                  disablePadding
+                  sx={{
+                    position: "fixed",
+                    bottom: 55,
+                    zIndex: 12,
+                    width: "100vw",
+                  }}
+                >
+                  <ListItemButton
+                    onClick={() => setOpenProfile(true)}
+                    sx={{ justifyContent: "center" }}
+                  >
+                    <Avatar sx={{ mr: 2 }} />
+                    {currentUser?.displayName}
+                  </ListItemButton>
+                </ListItem>
+                <ListItem
+                  disablePadding
+                  sx={{
+                    position: "fixed",
+                    bottom: 4,
+                    zIndex: 12,
+                    width: "100vw",
+                  }}
+                >
+                  <ListItemButton
+                    onClick={logout}
+                    sx={{ justifyContent: "center" }}
+                  >
+                    <Typography>
+                      {isAuthenticated ? "Logout" : "Login"}
+                    </Typography>
+                  </ListItemButton>
+                </ListItem>
+              </div>
+            ) : null}
+          </List>
         </Box>
       </Drawer>
-      <IconButton
-        onClick={() => setOpen(!open)}
-        size="small"
-        sx={{
-          display: { xs: "flex", md: "none" },
-          position: "fixed",
-          left: open ? drawerWidth : 0,
-          top: "50%",
-          transform: "translateY(-50%)",
-          zIndex: 1300,
-          bgcolor: "background.paper",
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: "0 4px 4px 0",
-          "&:hover": { bgcolor: "action.hover" },
-        }}
-      >
-        {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-      </IconButton>
     </Box>
   );
 };

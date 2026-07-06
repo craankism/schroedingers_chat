@@ -3,6 +3,8 @@ package sc.backend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,12 +21,23 @@ public class StoredFile {
     private String filename;
 
     @Column(nullable = false)
-    private int size;
+    private String storedFilename;
 
     @Column(nullable = false)
-    private String path;
+    private long size;
+
+    private String mimeType;
+
+    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime uploadDate;
 
     @ManyToOne
     @JoinColumn(name = "userId")
     private User uploadedBy;
+
+    @Column(nullable = false)
+    private byte[] iv;
+
+    @Column
+    private byte[] encryptedDek;
 }

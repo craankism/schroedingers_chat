@@ -1,0 +1,133 @@
+package sc.backend.services;
+
+import io.minio.GetObjectArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import sc.backend.components.CryptoUtil;
+import sc.backend.dtos.res.StoredFileMetaDTO;
+import sc.backend.entities.StoredFile;
+import sc.backend.repositories.StoredFileRepository;
+import sc.backend.repositories.UserRepository;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@Profile("prod")
+@RequiredArgsConstructor
+public class FileStorageService {
+
+    private final MinioClient minioClient;
+    private final UserRepository userRepository;
+    private final StoredFileRepository storedFileRepository;
+    private final CryptoUtil cryptoUtil;
+
+    @Value("${minio.bucket.name}")
+    private String bucketName;
+
+    public StoredFileMetaDTO uploadFile(MultipartFile file, String userName) throws Exception {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Datei darf nicht leer sein");
+        }
+
+        String originalName = file.getOriginalFilename();
+        String extension = "";
+        if (originalName != null && originalName.contains(".")) {
+            extension = originalName.substring(originalName.lastIndexOf("."));
+        }
+        String storedFileName = UUID.randomUUID() + extension;
+
+        byte [] plaintext = file.getBytes();
+
+        CryptoUtil.EncryptionResult encryptionResult = cryptoUtil.encrypt(plaintext);
+        byte[] ciphertext = encryptionResult.ciphertext();
+        byte[] iv = encryptionResult.iv();
+
+        minioClient.putObject(
+                PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(storedFileName)
+                        .stream(new ByteArrayInputStream(ciphertext), (long) ciphertext.length, (long) -1)
+                        .contentType("application/octet-stream")
+                        .build()
+        );
+
+        StoredFile storedFile = StoredFile.builder()
+                .filename(file.getOriginalFilename())
+                .storedFilename(storedFileName)
+                .size(file.getSize())
+                .mimeType(file.getContentType())
+                .uploadDate(LocalDateTime.now())
+                .uploadedBy(userRepository.findByEmail(userName).orElseThrow(() -> new RuntimeException("User nicht gefunden")))
+                .iv(iv)
+                .encryptedDek(null)
+                .build();
+
+        return convertStoredFileToDto(storedFileRepository.save(storedFile));
+    }
+
+    public InputStream downloadFile(Integer fileId) throws Exception {
+        StoredFile file = storedFileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("Datei nicht gefunden"));
+
+        InputStream encryptedStream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(file.getStoredFilename())
+                        .build()
+        );
+
+        byte[] ciphertext = encryptedStream.readAllBytes();
+
+        byte[] decrypted = cryptoUtil.decrypt(ciphertext, file.getIv());
+
+        return new ByteArrayInputStream(decrypted);
+    }
+
+    public StoredFileMetaDTO getFileMetadata(Integer fileId) {
+        return convertStoredFileToDto(storedFileRepository.findById(fileId).orElseThrow(() -> new RuntimeException("Datei nicht gefunden")));
+    }
+
+    public List<StoredFileMetaDTO> getAllFilesMetaDate() {
+        List<StoredFileMetaDTO> fileDtoList = new ArrayList<>();
+
+        for (StoredFile file: storedFileRepository.findAll()) {
+            fileDtoList.add(convertStoredFileToDto(file));
+        }
+        return fileDtoList;
+    }
+
+    public void deleteFile(Integer fileId) throws Exception {
+        StoredFile file = storedFileRepository.findById(fileId).orElseThrow();
+
+        storedFileRepository.delete(file);
+
+        minioClient.removeObject(
+                RemoveObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(file.getStoredFilename())
+                        .build()
+        );
+    }
+
+    private StoredFileMetaDTO convertStoredFileToDto(StoredFile storedFile) {
+        return StoredFileMetaDTO.builder()
+                .fileId(storedFile.getFileId())
+                .filename(storedFile.getFilename())
+                .uploadedById(storedFile.getUploadedBy().getUserId())
+                .size(storedFile.getSize())
+                .uploadDate(storedFile.getUploadDate())
+                .mimeType(storedFile.getMimeType())
+                .build();
+    }
+}

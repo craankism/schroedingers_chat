@@ -1,29 +1,32 @@
 import { DataGrid } from "@mui/x-data-grid";
-import Paper from "@mui/material/Paper";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { useUserStore } from "../../../stores/UserStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import type {
   GridColDef,
   GridRenderCellParams,
   GridRowModel,
 } from "@mui/x-data-grid";
+import ConfirmationModal from "./ConfirmationModal";
+import { usePropStore } from "../../../stores/PropStore";
 
 const UserTable = (): JSX.Element => {
-  const { getAllUsers, deleteUser, users, updateUser } = useUserStore();
+  const { getAllUsers, deleteUser, users, updateUserRoles } = useUserStore();
+  const { setOpenConfirmation, confirmation, setConfirmation } = usePropStore();
+  const [deleteId, setDeleteId] = useState<number>(0);
 
   const handleRowUpdate = async (
     updatedRow: GridRowModel,
     originalRow: GridRowModel,
   ): Promise<GridRowModel> => {
     if (updatedRow.admin !== originalRow.admin) {
-      await updateUser(updatedRow.userId, "setAdmin");
+      await updateUserRoles(updatedRow.userId, "setAdmin");
     } else if (updatedRow.trainer !== originalRow.trainer) {
-      await updateUser(updatedRow.userId, "setTrainer");
+      await updateUserRoles(updatedRow.userId, "setTrainer");
     } else if (updatedRow.active !== originalRow.active) {
-      await updateUser(updatedRow.userId, "setActive");
+      await updateUserRoles(updatedRow.userId, "setActive");
     }
     return updatedRow;
   };
@@ -32,12 +35,22 @@ const UserTable = (): JSX.Element => {
     getAllUsers();
   }, [getAllUsers]);
 
+  useEffect(() => {
+    if (confirmation == true && deleteId > 0) {
+      deleteUser(deleteId);
+      setConfirmation(false);
+      // eslint-disable-next-line
+      setDeleteId(0);
+    }
+    // eslint-disable-next-line
+  }, [confirmation]);
+
   const columns: GridColDef[] = [
     { field: "userId", headerName: "ID", minWidth: 70, flex: 0.5 },
     { field: "email", headerName: "E-Mail", minWidth: 220, flex: 1.8 },
     {
       field: "displayName",
-      headerName: "Display Name",
+      headerName: "Username",
       minWidth: 160,
       flex: 1.2,
     },
@@ -59,7 +72,7 @@ const UserTable = (): JSX.Element => {
     },
     {
       field: "active",
-      headerName: "Aktiv",
+      headerName: "Active",
       type: "boolean",
       editable: true,
       minWidth: 100,
@@ -67,13 +80,16 @@ const UserTable = (): JSX.Element => {
     },
     {
       field: "delete",
-      headerName: "Löschen",
+      headerName: "Delete",
       type: "boolean",
       minWidth: 110,
       flex: 0.9,
       renderCell: (params: GridRenderCellParams) => (
         <Button
-          onClick={() => deleteUser(params.row.userId)}
+          onClick={() => {
+            setOpenConfirmation(true);
+            setDeleteId(params.row.userId);
+          }}
           sx={{ border: "none", boxShadow: "none" }}
         >
           <DeleteIcon />
@@ -84,18 +100,8 @@ const UserTable = (): JSX.Element => {
 
   const paginationModel = { page: 0, pageSize: 10 };
 
-  // const test = [{
-  //   id: 1,
-  //   userId: 1,
-  //   email: "sa@xd.de",
-  //   displayName: "Craankism",
-  //   isAdmin: false,
-  //   isTrainer: false,
-  //   isActive: false,
-  // }];
-
   return (
-    <Paper sx={{ height: 400, width: "100%" }}>
+    <Box sx={{ height: 630, maxWidth: { xs: "90vw", md: "100vw" }, mt: 1 }}>
       <DataGrid
         rows={users}
         getRowId={(row) => row.userId}
@@ -105,7 +111,8 @@ const UserTable = (): JSX.Element => {
         processRowUpdate={handleRowUpdate}
         sx={{ border: 0 }}
       />
-    </Paper>
+      <ConfirmationModal />
+    </Box>
   );
 };
 

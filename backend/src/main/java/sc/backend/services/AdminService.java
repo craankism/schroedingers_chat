@@ -1,8 +1,8 @@
 package sc.backend.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
@@ -11,8 +11,9 @@ import sc.backend.entities.User;
 import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.UserRepository;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class AdminService {
@@ -24,36 +25,34 @@ public class AdminService {
     private final UserService userService;
 
     public RegistrationDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO, String creatorEmail) {
-        User creator = userRepository.findByEmail(creatorEmail).orElseThrow(() ->
-                new UsernameNotFoundException("Authenticated user not found"));
+        User creator = userService.getUserByEmail(userRepository.findByEmail(creatorEmail));
 
         // MH: changed Code to use new Service
         String registryKey = registryCodeService.generateRegistryCode();
 
         Registration registration = Registration.builder()
                 .isTrainer(registerUserKeyDTO.isTrainer())
-                .createdAt(new Date(System.currentTimeMillis()))
+                .createdAt(LocalDateTime.now())
                 .registrationCode(registryKey)
                 .createdBy(creator)
                 .build();
 
-        Registration savedRegistration = registrationRepository.save(registration);
+        creator.addCreatedRegistration(registration);
+        registrationRepository.save(registration);
 
         return RegistrationDTO.builder()
-                .registrationId(savedRegistration.getRegistrationId())
-                .isTrainer(savedRegistration.isTrainer())
-                .createdAt(savedRegistration.getCreatedAt())
-                .registrationCode(savedRegistration.getRegistrationCode())
-                .createdBy(savedRegistration.getCreatedBy().getUserId())
+                .registrationId(registration.getRegistrationId())
+                .isTrainer(registration.isTrainer())
+                .createdAt(registration.getCreatedAt())
+                .registrationCode(registration.getRegistrationCode())
+                .createdBy(registration.getCreatedBy().getUserId())
                 .build();
     }
 
     public UserDTO setAdmin(int userId) {
         User user = userService.findUserById(userId);
 
-        boolean admin = user.isAdmin();
-        user.setAdmin(!admin);
-        userRepository.save(user);
+        user.setAdmin(!user.isAdmin());
 
         return userService.convertToDTO(user);
     }
@@ -61,9 +60,7 @@ public class AdminService {
     public UserDTO setTrainer(int userId) {
         User user = userService.findUserById(userId);
 
-        boolean trainer = user.isTrainer();
-        user.setTrainer(!trainer);
-        userRepository.save(user);
+        user.setTrainer(!user.isTrainer());
 
         return userService.convertToDTO(user);
     }
@@ -71,16 +68,12 @@ public class AdminService {
     public UserDTO setActive(int userId) {
         User user = userService.findUserById(userId);
 
-        boolean active = user.isActive();
-        user.setActive(!active);
-        userRepository.save(user);
+        user.setActive(!user.isActive());
 
         return userService.convertToDTO(user);
     }
 
-    public void  deleteUser(int userId) {
-        User user  = userService.findUserById(userId);
-
-        userRepository.delete(user);
+    public void deleteUser(int userId, String authenticatedEmail) {
+        userService.deleteUser(userId, authenticatedEmail);
     }
 }

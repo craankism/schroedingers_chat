@@ -2,7 +2,7 @@ package sc.backend.dtos.res;
 
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -14,7 +14,7 @@ public class RegistrationDTO {
     private int registrationId;
     private boolean isTrainer;
     //TODO: best date type?
-    private Date createdAt;
+    private LocalDateTime createdAt;
     private String registrationCode;
     private int createdBy;
 }

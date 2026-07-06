@@ -10,5 +10,4 @@ import lombok.*;
 public class SendMessageDTO {
 
     private String content;
-    private String sender;
 }
