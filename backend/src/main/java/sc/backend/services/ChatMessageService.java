@@ -46,9 +46,33 @@ public class ChatMessageService {
                 .content(ciphertextBase64)
                 .iv(result.iv())
                 .creationDate(LocalDateTime.now())
+                .senderType("USER")
                 .build();
 
         creator.addChatMessage(chatMessage);
+        room.addChatMessage(chatMessage);
+        chatMessageRepository.save(chatMessage);
+
+        return convertToDTO(chatMessage);
+    }
+
+    @Transactional
+    public MessageDTO createAIMessage(int roomId, String plaintext) {
+        Room room = roomService.findRoomById(roomId);
+
+        CryptoUtil.EncryptionResult result = cryptoUtil.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
+
+        String ciphertextBase64 = Base64.getEncoder().encodeToString(result.ciphertext());
+
+        ChatMessage chatMessage = ChatMessage.builder()
+                .content(ciphertextBase64)
+                .iv(result.iv())
+                .creationDate(LocalDateTime.now())
+                .senderType("AI")
+                .room(room)
+                .createdBy(null)
+                .build();
+
         room.addChatMessage(chatMessage);
         chatMessageRepository.save(chatMessage);
 
@@ -76,11 +100,17 @@ public class ChatMessageService {
         User user = chatMessage.getCreatedBy();
         Room room = chatMessage.getRoom();
 
-        if (authenticatedUser.getUserId() != user.getUserId() && !authenticatedUser.isAdmin()) {
+        if (user == null) {
+            if (!authenticatedUser.isAdmin()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete AI messages");
+            }
+        } else if (authenticatedUser.getUserId() != user.getUserId() && !authenticatedUser.isAdmin()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this message");
         }
 
-        user.removeChatMessage(chatMessage);
+        if (user != null) {
+            user.removeChatMessage(chatMessage);
+        }
 
         if (room != null) {
             room.removeChatMessage(chatMessage);
@@ -90,10 +120,18 @@ public class ChatMessageService {
     }
 
     private MessageDTO convertToDTO(ChatMessage message) {
+        String sender;
+
+        if (message.getCreatedBy() == null) {
+            sender = "Void 😺";
+        } else {
+            sender = message.getCreatedBy().getDisplayName();
+        }
+
         return MessageDTO.builder()
                 .messageId(message.getMessageId())
                 .content(decryptContent(message))
-                .sender(message.getCreatedBy().getDisplayName())
+                .sender(sender)
                 .creationDate(message.getCreationDate())
                 .build();
     }
