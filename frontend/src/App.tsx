@@ -17,6 +17,7 @@ import Login from "./components/views/Login.tsx";
 import EnterCode from "./components/views/EnterCode.tsx";
 import Register from "./components/views/Register.tsx";
 import AdminRoute from "./components/AdminRoute.tsx";
+import { SimpleEditor } from "./components/tiptap/components/tiptap-templates/simple/simple-editor";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
@@ -38,6 +39,7 @@ const App = (): JSX.Element => {
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/chat" element={<Chat roomId={roomId} />} />
           <Route path="/files" element={<Files />} />
+          <Route path="/editor" element={<SimpleEditor />} />
           <Route element={<AdminRoute />}>
             <Route path="/usermanagement" element={<UserManagement />} />
             <Route path="/filemanagement" element={<FileManagement />} />
