@@ -52,6 +52,46 @@ services:
     depends_on:
       - backend
 
+  collab:
+    build:
+      context: ./collab
+    container_name: hocuspocus-server
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      AUTH_ENDPOINT: http://backend:8080/api/editor/auth
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/schroedingerschat
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-server
+    restart: unless-stopped
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
+    environment:
+      OLLAMA_HOST: 0.0.0.0
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./ollama/entrypoint.sh:/entrypoint.sh:ro
+    networks:
+      - app-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+
   nginx:
     build:
       context: ./nginx
@@ -70,7 +110,8 @@ services:
     depends_on:
       - backend
       - frontend
-
+      - collab
+      - ollama
 
   certbot:
     image: certbot/certbot
@@ -110,6 +151,7 @@ volumes:
   minio_data:
   letsencrypt:
   acme-challenge:
+  ollama_data:
 
 networks:
   app-network:
