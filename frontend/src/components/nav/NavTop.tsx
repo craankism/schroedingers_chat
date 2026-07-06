@@ -13,7 +13,7 @@ const NavTop = (): JSX.Element => {
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
     >
       <Container maxWidth={false}>
-        <Toolbar disableGutters>
+        <Toolbar disableGutters sx={{ color: "appBar.text" }}>
           <DesktopNav />
           <MobileNav />
         </Toolbar>
