@@ -1,14 +1,38 @@
-//import {create} from "zustand";
+import { create } from "zustand";
+import { persist, devtools } from "zustand/middleware";
 
-//TODO the ThemeStore as it is at the moment is a placeholder, if we do not want different themes, light mode or something like that, we can kick it.
+export type ThemeName = "matrix" | "dark" | "light" | "unicorn";
 
-/*type ThemeState = {
-    currentTheme: 'terminal'; // Platzhalter, falls später noch erweitert wird
-    themeName: string;
-}
+type ThemeState = {
+    currentTheme: ThemeName;
+    setCurrentTheme: (theme: ThemeName) => void;
+    getThemeName: () => string;
+};
 
-export const useThemeStore = create<ThemeState>(
-    (set) => ({
-    currentTheme: 'terminal',
-    themeName: 'Terminal Classic',
-}));*/
+const THEME_NAME_MAP: Record<ThemeName, string> = {
+    matrix: "Matrix",
+    dark: "Professional Dark",
+    light: "Professional Light",
+    unicorn: "Fluffy Unicorn",
+};
+
+export const useThemeStore = create<ThemeState>()(
+    devtools(
+        persist(
+            (set, get) => ({
+                currentTheme: "matrix",
+
+                setCurrentTheme: (theme: ThemeName) => {
+                    set({ currentTheme: theme });
+                },
+
+                getThemeName: () => {
+                    return THEME_NAME_MAP[get().currentTheme];
+                },
+            }),
+            {
+                name: "schroedingers-chat-theme",
+            }
+        )
+    )
+);
