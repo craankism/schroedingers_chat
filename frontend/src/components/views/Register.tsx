@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserStore } from "../../stores/UserStore";
 
-const RegisterView = (): JSX.Element => {
+const Register = (): JSX.Element => {
   const navigate = useNavigate();
   const params = useParams();
   const inviteKey = params.inviteKey || "";
@@ -106,4 +106,4 @@ const RegisterView = (): JSX.Element => {
   );
 };
 
-export default RegisterView;
+export default Register;

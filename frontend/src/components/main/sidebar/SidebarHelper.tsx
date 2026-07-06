@@ -8,6 +8,7 @@ import {
 import React from "react";
 import type { RoomType } from "../../../types/RoomType";
 import { usePropStore } from "../../../stores/PropStore";
+import { useNavigate } from "react-router-dom";
 
 const SidebarHelper: React.FC<{
   items: string[];
@@ -29,6 +30,7 @@ const SidebarHelper: React.FC<{
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { setOpenSidebar, setRoomId } = usePropStore();
+  const navigate = useNavigate();
 
   const selectionFilter = (item: string) => {
     if (activeView === item) return true;
@@ -45,8 +47,11 @@ const SidebarHelper: React.FC<{
             onClick={() => {
               setSelect(item);
               if (rooms) setRoomId(rooms.at(index)?.roomId || 0);
-              if (itemNames.includes(item)) setActiveView(item);
-              else {
+              if (itemNames.includes(item)) {
+                setActiveView(item);
+                navigate("/" + item.toLowerCase());
+              } else {
+                navigate("/chat");
                 setActiveView("Chats");
               }
               if (isMobile) setOpenSidebar(false);

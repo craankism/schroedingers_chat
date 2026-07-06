@@ -11,7 +11,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SidebarHelper from "./SidebarHelper";
 import { decodeJwt, useAuthStore } from "../../../stores/AuthStore";
 import NewRoomModal from "./NewRoomModal";
@@ -20,24 +20,15 @@ import type { RoomType } from "../../../types/RoomType";
 import AddIcon from "@mui/icons-material/Add";
 import { useUserStore } from "../../../stores/UserStore";
 import { usePropStore } from "../../../stores/PropStore";
-
-type SidebarProps = {
-  activeView: string;
-  setActiveView(view: string): void;
-  select: string;
-  setSelect(selection: string): void;
-};
+import type { JSX } from "@emotion/react/jsx-runtime";
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files"];
 const itemNames = [...adminItems, ...navItems];
 
-const Sidebar: React.FC<SidebarProps> = ({
-  activeView,
-  setActiveView,
-  select,
-  setSelect,
-}) => {
+const Sidebar = (): JSX.Element => {
+  const [activeView, setActiveView] = useState<string>("");
+  const [select, setSelect] = useState<string>("");
   const [openModal, setOpenModal] = useState<boolean>(false);
   const isAdmin = decodeJwt()?.isAdmin;
   const userId = decodeJwt()?.userId || 0;

@@ -1,8 +1,8 @@
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { Box, Toolbar, Typography } from "@mui/material";
-import UserTable from "./UserTable";
-import InviteModal from "./InviteModal";
-import { widthMinusSidebar } from "../../../types/constants/constants";
+import UserTable from "../main/user_management/UserTable";
+import InviteModal from "../main/user_management/InviteModal";
+import { widthMinusSidebar } from "../../types/constants/constants";
 
 const UserManagement = (): JSX.Element => {
   return (
