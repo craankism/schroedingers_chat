@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/AuthStore";
 
-const EnterCodeView = (): JSX.Element => {
+const EnterCode = (): JSX.Element => {
   const navigate = useNavigate();
 
   const [code, setCode] = useState<string>("");
@@ -65,4 +65,4 @@ const EnterCodeView = (): JSX.Element => {
   );
 };
 
-export default EnterCodeView;
+export default EnterCode;

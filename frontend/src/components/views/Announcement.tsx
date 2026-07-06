@@ -1,8 +1,8 @@
 import { Client } from "@stomp/stompjs";
 import { Box } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
-import MessagesDisplay from "./chat/MessagesDisplay";
-import Message from "./chat/Message";
+import MessagesDisplay from "../main/chat/MessagesDisplay";
+import Message from "../main/chat/Message";
 import { heightMinusTopNav } from "../../types/constants/constants";
 import type { MessageInput, MessageType } from "../../types/MessageType";
 import { roomApi } from "../../services/apiCalls";
