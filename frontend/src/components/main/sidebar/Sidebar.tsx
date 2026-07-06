@@ -23,7 +23,7 @@ import { usePropStore } from "../../../stores/PropStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
-const navItems = ["Announcement", "Files"];
+const navItems = ["Announcement", "Files", "Editor"];
 const itemNames = [...adminItems, ...navItems];
 
 const Sidebar = (): JSX.Element => {

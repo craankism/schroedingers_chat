@@ -1,6 +1,9 @@
-*{
-    -ms-overflow-style: none;
+@import "./components/tiptap/styles/_variables.scss";
+@import "./components/tiptap/styles/_keyframe-animations.scss";
+
+* {
+  -ms-overflow-style: none;
 }
 ::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
