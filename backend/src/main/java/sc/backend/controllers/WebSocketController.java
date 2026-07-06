@@ -11,6 +11,10 @@ import sc.backend.dtos.req.DeleteMessageDTO;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.dtos.res.UpdateEventDTO;
+import sc.backend.entities.User;
+import sc.backend.enums.AiMode;
+import sc.backend.repositories.UserRepository;
+import sc.backend.services.AIService;
 import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -22,28 +26,53 @@ public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final AIService aiService;
+    private final UserRepository userRepository;
 
     @MessageMapping("/chat/{roomId}")
-    @SendTo("/topic/{roomId}/messages")
-    public MessageDTO sendMessage(@DestinationVariable int roomId, @Payload SendMessageDTO message,
-            Principal principal) {
+    public void sendMessage(@DestinationVariable int roomId, @Payload SendMessageDTO message, Principal principal) {
         if (principal == null) {
             throw new AccessDeniedException("Not authenticated");
         }
 
-        return chatMessageService.createMessage(roomId, message, principal.getName());
+        MessageDTO messageDTO = chatMessageService.createMessage(roomId, message, principal.getName());
+
+        messagingTemplate.convertAndSend("/topic/" + roomId + "/messages", messageDTO);
+
+        if (aiMentioned(message.getContent())) {
+            String prompt = removeAiMention(message.getContent());
+
+            //TODO: implement logic for reading theme (save theme to user)
+
+            String aiAnswer = aiService.ask(roomId, prompt, AiMode.DEFAULT);
+
+            MessageDTO aiMessageDTO = chatMessageService.createAIMessage(roomId, aiAnswer);
+
+            messagingTemplate.convertAndSend("/topic/" + roomId + "/messages", aiMessageDTO);
+        }
     }
 
     @MessageMapping("/chat/{roomId}/delete")
     @SendTo("/topic/{roomId}/delete")
-    public DeleteMessageDTO deleteMessage(@Payload DeleteMessageDTO deleteMessageDTO,
-            Principal principal) {
+    public DeleteMessageDTO deleteMessage(@Payload DeleteMessageDTO deleteMessageDTO, Principal principal) {
         if (principal == null) {
             throw new AccessDeniedException("Not authenticated");
         }
 
         chatMessageService.deleteMessage(deleteMessageDTO.getMessageId(),  principal.getName());
         return deleteMessageDTO;
+    }
+
+    private boolean aiMentioned(String text) {
+        return text != null && text.matches("(?i).*@ai.*");
+    }
+
+    private String removeAiMention(String text) {
+        if (text == null) {
+            return "";
+        }
+
+        return text.replaceAll("(?i)@ai", "").trim();
     }
 
     public void broadcastUpdate(String updateType) {
