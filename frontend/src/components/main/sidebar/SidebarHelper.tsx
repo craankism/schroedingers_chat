@@ -9,6 +9,8 @@ import React from "react";
 import type { RoomType } from "../../../types/RoomType";
 import { usePropStore } from "../../../stores/PropStore";
 import { useNavigate } from "react-router-dom";
+import { useDocumentStore } from "../../../stores/DocumentStore";
+import { decodeJwt } from "../../../stores/AuthStore";
 
 const SidebarHelper: React.FC<{
   items: string[];
@@ -29,8 +31,9 @@ const SidebarHelper: React.FC<{
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { setOpenSidebar, setRoomId } = usePropStore();
+  const { setOpenSidebar, setRoomId, setNewDocModalOpen } = usePropStore();
   const navigate = useNavigate();
+  const { documents } = useDocumentStore();
 
   const selectionFilter = (item: string) => {
     if (activeView === item) return true;
@@ -49,7 +52,18 @@ const SidebarHelper: React.FC<{
               if (rooms) setRoomId(rooms.at(index)?.roomId || 0);
               if (itemNames.includes(item)) {
                 setActiveView(item);
-                navigate("/" + item.toLowerCase());
+                if (item === "Editor") {
+                  const userInDocs = documents.find((document) =>
+                    document.userList.find(
+                      (userId) => userId === decodeJwt()?.userId,
+                    ),
+                  );
+                  if (!userInDocs) {
+                    setNewDocModalOpen(true);
+                  }
+                } else {
+                  navigate("/" + item.toLowerCase());
+                }
               } else {
                 navigate("/chat");
                 setActiveView("Chats");

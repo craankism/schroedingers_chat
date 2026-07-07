@@ -21,6 +21,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useUserStore } from "../../../stores/UserStore";
 import { usePropStore } from "../../../stores/PropStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
+import NewDocumentModal from "./NewDocumentModal";
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files", "Editor"];
@@ -35,7 +36,8 @@ const Sidebar = (): JSX.Element => {
   const { getAllRooms, rooms } = useRoomStore();
   const { getAllUsers } = useUserStore();
   const { isAuthenticated, logout, currentUser } = useAuthStore();
-  const { openSidebar, setOpenSidebar, setOpenProfile } = usePropStore();
+  const { openSidebar, setOpenSidebar, setOpenProfile, newDocModalOpen } =
+    usePropStore();
 
   useEffect(() => {
     getAllRooms();
@@ -136,6 +138,7 @@ const Sidebar = (): JSX.Element => {
               select={select}
               setSelect={setSelect}
             />
+            {newDocModalOpen ? <NewDocumentModal /> : null}
             {!md ? (
               <div>
                 <Divider

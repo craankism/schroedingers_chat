@@ -9,11 +9,13 @@ import type {
   AuthResponseType,
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
+import type { DocumentType } from "src/types/DocumentType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
 const roomUrl = "/room";
 const messageUrl = "/messages";
+const documentUrl = "/documents";
 
 const authUrl = "/auth";
 const adminUrl = "/admin";
@@ -49,6 +51,40 @@ export const fileApi = {
 
   delete: async (fileId: number): Promise<void> => {
     await api.delete(`${fileUrl}/${fileId}`);
+  },
+};
+
+export const documentApi = {
+  create: async (document: DocumentType): Promise<DocumentType> => {
+    const response = await api.post<DocumentType>(documentUrl, document);
+    return response.data;
+  },
+
+  getAll: async (): Promise<DocumentType[]> => {
+    const response = await api.get<DocumentType[]>(documentUrl);
+    return response.data;
+  },
+
+  getById: async (documentId: number): Promise<DocumentType> => {
+    const response = await api.get<DocumentType>(
+      `${documentUrl}/${documentId}`,
+    );
+    return response.data;
+  },
+
+  update: async (
+    document: DocumentType,
+    documentId: number,
+  ): Promise<DocumentType> => {
+    const response = await api.put<DocumentType>(
+      `${documentUrl}/${documentId}`,
+      document,
+    );
+    return response.data;
+  },
+
+  delete: async (documentId: number): Promise<void> => {
+    await api.delete(`${documentUrl}/${documentId}`);
   },
 };
 
