@@ -1,7 +1,12 @@
 package sc.backend.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import sc.backend.entities.Documents;
+import sc.backend.entities.Document;
 
-public interface DocumentsRepository extends JpaRepository<Documents, String> {
+import java.util.List;
+import java.util.Optional;
+
+public interface DocumentsRepository extends JpaRepository<Document, String> {
+    Optional<Document> findByName(String name);
+    List<Document> findByOwnerUserId(Long userId);
 }
