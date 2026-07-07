@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
 @Transactional(readOnly = true)
@@ -119,10 +120,46 @@ public class ChatMessageService {
         chatMessageRepository.delete(chatMessage);
     }
 
+    public String getRecentChatHistory(int roomId, int currentMessageId) {
+        Room room = roomService.findRoomById(roomId);
+
+        List<ChatMessage> recentMessages = chatMessageRepository.findTop50ByRoomAndMessageIdNotOrderByCreationDateDesc(room, currentMessageId);
+
+        List<ChatMessage> chronological = new ArrayList<>(recentMessages);
+        Collections.reverse(chronological);
+
+        StringBuilder transcript = new StringBuilder();
+
+        for (ChatMessage message : chronological) {
+            String content = decryptContent(message)
+                    .replaceAll("\\s+", " ")
+                    .trim();
+
+            if (content.isBlank()) {
+                continue;
+            }
+
+            String sender;
+
+            if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) || message.getCreatedBy() == null) {
+                sender = "Void 😺";
+            } else {
+                sender = message.getCreatedBy().getDisplayName();
+            }
+
+            transcript.append(sender)
+                    .append(": ")
+                    .append(content)
+                    .append("\n");
+        }
+
+        return transcript.toString();
+    }
+
     private MessageDTO convertToDTO(ChatMessage message) {
         String sender;
 
-        if (message.getCreatedBy() == null) {
+        if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) || message.getCreatedBy() == null) {
             sender = "Void 😺";
         } else {
             sender = message.getCreatedBy().getDisplayName();

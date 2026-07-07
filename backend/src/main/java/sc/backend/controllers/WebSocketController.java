@@ -11,9 +11,7 @@ import sc.backend.dtos.req.DeleteMessageDTO;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.dtos.res.UpdateEventDTO;
-import sc.backend.entities.User;
 import sc.backend.enums.AiMode;
-import sc.backend.repositories.UserRepository;
 import sc.backend.services.AIService;
 import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,7 +25,6 @@ public class WebSocketController {
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
     private final AIService aiService;
-    private final UserRepository userRepository;
 
     @MessageMapping("/chat/{roomId}")
     public void sendMessage(@DestinationVariable int roomId, @Payload SendMessageDTO message, Principal principal) {
@@ -42,9 +39,9 @@ public class WebSocketController {
         if (aiMentioned(message.getContent())) {
             String prompt = removeAiMention(message.getContent());
 
-            //TODO: implement logic for reading theme (save theme to user)
-
-            String aiAnswer = aiService.ask(roomId, prompt, AiMode.DEFAULT);
+            //TODO: can be adjusted later
+            AiMode aiMode = message.getAiMode();
+            String aiAnswer = aiService.ask(roomId, prompt, aiMode, messageDTO.getMessageId());
 
             MessageDTO aiMessageDTO = chatMessageService.createAIMessage(roomId, aiAnswer);
 
@@ -64,7 +61,7 @@ public class WebSocketController {
     }
 
     private boolean aiMentioned(String text) {
-        return text != null && text.matches("(?i).*@ai.*");
+        return text != null && text.matches("(?i).*@void.*");
     }
 
     private String removeAiMention(String text) {
@@ -72,7 +69,7 @@ public class WebSocketController {
             return "";
         }
 
-        return text.replaceAll("(?i)@ai", "").trim();
+        return text.replaceAll("(?i)@void", "").trim();
     }
 
     public void broadcastUpdate(String updateType) {
