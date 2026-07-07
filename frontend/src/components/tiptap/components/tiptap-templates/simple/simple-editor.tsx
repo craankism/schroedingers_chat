@@ -83,6 +83,8 @@ import {
   HocuspocusRoom,
 } from "@hocuspocus/provider-react";
 import { decodeJwt } from "../../../../../stores/AuthStore";
+import { MenuItem, Select } from "@mui/material";
+import { useDocumentStore } from "../../../../../stores/DocumentStore";
 
 const MainToolbarContent = ({
   onHighlighterClick,
@@ -93,10 +95,33 @@ const MainToolbarContent = ({
   onLinkClick: () => void;
   isMobile: boolean;
 }) => {
+  const {
+    documents,
+    getAllDocuments,
+    setCurrentDocumentId,
+    currentDocumentId,
+  } = useDocumentStore();
+  useEffect(() => {
+    getAllDocuments();
+  }, [getAllDocuments]);
   return (
     <>
-      <Spacer />
-
+      <ToolbarGroup>
+        <Select
+          defaultValue={
+            documents.filter(
+              (document) => document.documentId === currentDocumentId,
+            )[0]?.name
+          }
+          onChange={(e) => setCurrentDocumentId(Number(e.target.value))}
+        >
+          {documents.map((document) =>
+            document.userList.includes(decodeJwt()?.userId || 0) ? (
+              <MenuItem value={document.documentId}>{document.name}</MenuItem>
+            ) : null,
+          )}
+        </Select>
+      </ToolbarGroup>
       <ToolbarGroup>
         <UndoRedoButton action="undo" />
         <UndoRedoButton action="redo" />
@@ -267,8 +292,8 @@ function SimpleEditorInner() {
                 bottom: `calc(100% - ${height - rect.y}px)`,
               }
             : {
-                paddingLeft: 210,
-                marginTop: "64px",
+                paddingLeft: 240,
+                marginTop: "66px",
               }),
         }}
       >
@@ -297,11 +322,16 @@ function SimpleEditorInner() {
 }
 
 export function SimpleEditor() {
+  const { documents, currentDocumentId } = useDocumentStore();
   return (
     <div className="simple-editor-wrapper">
       <HocuspocusProviderWebsocketComponent url="ws://localhost:1234">
         <HocuspocusRoom
-          name="example-document"
+          name={
+            documents.filter(
+              (document) => document.documentId === currentDocumentId,
+            )[0]?.name
+          }
           token={localStorage.getItem("jwt") || undefined}
           onAuthenticationFailed={(data) => console.error(data.reason)}
           onSynced={() => console.log("synced")}
