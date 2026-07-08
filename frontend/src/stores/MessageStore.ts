@@ -11,7 +11,7 @@ type MessageState = {
   // getAllMessages: () => void;
   setMessages: (message: MessageInput) => void;
   markMessageDeleted: (messageId: number) => void;
-  deleteMessage: (messageId: number) => void;
+  // deleteMessage: (messageId: number) => void;
 };
 
 export const useMessageStore = create<MessageState>((set) => ({
@@ -103,20 +103,20 @@ export const useMessageStore = create<MessageState>((set) => ({
   //   }
   // },
 
-  deleteMessage: async (messageId: number) => {
-    useNotificationStore.getState().startLoading();
-    try {
-      await messageApi.delete(messageId);
-      useNotificationStore
-        .getState()
-        .addNotification("Message successfully deleted", "success");
-    } catch (e) {
-      set({ error: "Fehler" + e });
-      useNotificationStore
-        .getState()
-        .addNotification("Error deleting message", "error");
-    } finally {
-      useNotificationStore.getState().stopLoading();
-    }
-  },
+  // deleteMessage: async (messageId: number) => {
+  //   useNotificationStore.getState().startLoading();
+  //   try {
+  //     await messageApi.delete(messageId);
+  //     useNotificationStore
+  //       .getState()
+  //       .addNotification("Message successfully deleted", "success");
+  //   } catch (e) {
+  //     set({ error: "Fehler" + e });
+  //     useNotificationStore
+  //       .getState()
+  //       .addNotification("Error deleting message", "error");
+  //   } finally {
+  //     useNotificationStore.getState().stopLoading();
+  //   }
+  // },
 }));

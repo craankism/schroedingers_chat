@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRoomStore } from "../../stores/RoomStore";
 import { useUserStore } from "../../stores/UserStore";
 import { useFileStore } from "../../stores/FileStore";
-import { useMessageStore } from "../../stores/MessageStore";
 
 const LiveUpdates: React.FC = () => {
   const clientRef = useRef<Client | null>(null);
@@ -36,8 +35,6 @@ const LiveUpdates: React.FC = () => {
               useUserStore.getState().getUser(event.id);
             } else if (event.type === "FILE_UPDATE") {
               useFileStore.getState().getFileMeta(event.id);
-            } else if (event.type === "MESSAGE_UPDATE") {
-              useMessageStore.getState().getMessages(event.id);
             }
           } catch {
             console.error("Failed to parse update event", incomingMessage.body);
