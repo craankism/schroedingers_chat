@@ -13,7 +13,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import { usePropStore } from "../../../stores/PropStore";
 
 const UserTable = (): JSX.Element => {
-  const { getAllUsers, deleteUser, users, updateUserRoles } = useUserStore();
+  const { deleteUser, users, updateUserRoles } = useUserStore();
   const { setOpenConfirmation, confirmation, setConfirmation } = usePropStore();
   const [deleteId, setDeleteId] = useState<number>(0);
 
@@ -30,10 +30,6 @@ const UserTable = (): JSX.Element => {
     }
     return updatedRow;
   };
-
-  useEffect(() => {
-    getAllUsers();
-  }, [getAllUsers]);
 
   useEffect(() => {
     if (confirmation == true && deleteId > 0) {

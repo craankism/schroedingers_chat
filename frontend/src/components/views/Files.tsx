@@ -10,19 +10,15 @@ import {
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DownloadIcon from "@mui/icons-material/Download";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFileStore } from "../../stores/FileStore.ts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { widthMinusSidebar } from "../../types/constants/constants.ts";
 
 const Files = (): JSX.Element => {
-  const { files, uploadFile, getAllFilesMeta, downloadFile, deleteFile } =
+  const { files, uploadFile, downloadFile, deleteFile } =
     useFileStore();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  useEffect(() => {
-    getAllFilesMeta();
-  }, [getAllFilesMeta]);
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

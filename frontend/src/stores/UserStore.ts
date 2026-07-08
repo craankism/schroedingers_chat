@@ -78,12 +78,12 @@ export const useUserStore = create<UserState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       await userApi.updateRole(userId, role);
-      const data = await userApi.getById(userId);
-      set((state: UserState) => ({
-        users: state.users.map((user) =>
-          user.userId === userId ? { ...user, ...data } : user,
-        ),
-      }));
+      // const data = await userApi.getById(userId);
+      // set((state: UserState) => ({
+      //   users: state.users.map((user) =>
+      //     user.userId === userId ? { ...user, ...data } : user,
+      //   ),
+      // }));
       useNotificationStore
         .getState()
         .addNotification("User successfully changed", "success");
@@ -101,16 +101,16 @@ export const useUserStore = create<UserState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       await userApi.updateUser(userId, updatedUser);
-      const data = await userApi.getById(userId);
-      set((state: UserState) => ({
-        users: state.users.map((user) =>
-          user.userId === userId ? { ...user, ...data } : user,
-        ),
-      }));
+      // const data = await userApi.getById(userId);
+      // set((state: UserState) => ({
+      //   users: state.users.map((user) =>
+      //     user.userId === userId ? { ...user, ...data } : user,
+      //   ),
+      // }));
       useNotificationStore
         .getState()
         .addNotification("Profile successfully changed", "success");
-        return true;
+      return true;
     } catch (e) {
       set({ error: "Error" + e });
       // eslint-disable-next-line

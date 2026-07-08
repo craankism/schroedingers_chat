@@ -16,24 +16,34 @@ import sc.backend.services.AdminService;
 public class AdminController {
 
     private final AdminService adminService;
+    private final WebSocketController webSocketController;
+
+    private void broadcastUserUpdate(int userId) {
+        webSocketController.broadcastUpdate("USER_UPDATE", userId);
+    }
 
     @PostMapping("/invite")
-    public ResponseEntity<RegistrationDTO> registerUserKey(@RequestBody RegisterUserKeyDTO registerUserKeyDTO, Authentication authentication) {
-        return new ResponseEntity<>(adminService.registerUserKey(registerUserKeyDTO, authentication.getName()), HttpStatus.CREATED);
+    public ResponseEntity<RegistrationDTO> registerUserKey(@RequestBody RegisterUserKeyDTO registerUserKeyDTO,
+            Authentication authentication) {
+        return new ResponseEntity<>(adminService.registerUserKey(registerUserKeyDTO, authentication.getName()),
+                HttpStatus.CREATED);
     }
 
     @PutMapping("/user/setAdmin/{userId}")
     public ResponseEntity<UserDTO> setAdmin(@PathVariable int userId) {
+        broadcastUserUpdate(userId);
         return new ResponseEntity<>(adminService.setAdmin(userId), HttpStatus.OK);
     }
 
     @PutMapping("/user/setTrainer/{userId}")
     public ResponseEntity<UserDTO> setTrainer(@PathVariable int userId) {
+        broadcastUserUpdate(userId);
         return new ResponseEntity<>(adminService.setTrainer(userId), HttpStatus.OK);
     }
 
     @PutMapping("/user/setActive/{userId}")
     public ResponseEntity<UserDTO> setActive(@PathVariable int userId) {
+        broadcastUserUpdate(userId);
         return new ResponseEntity<>(adminService.setActive(userId), HttpStatus.OK);
     }
 }

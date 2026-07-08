@@ -18,10 +18,29 @@ import EnterCode from "./components/views/EnterCode.tsx";
 import Register from "./components/views/Register.tsx";
 import AdminRoute from "./components/AdminRoute.tsx";
 import { SimpleEditor } from "./components/tiptap/components/tiptap-templates/simple/simple-editor";
+import { useEffect } from "react";
+import { useDocumentStore } from "./stores/DocumentStore.ts";
+import { useFileStore } from "./stores/FileStore.ts";
+import { useRoomStore } from "./stores/RoomStore.ts";
+import { useUserStore } from "./stores/UserStore.ts";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
   const { roomId } = usePropStore();
+  const { getAllDocuments } = useDocumentStore();
+  const { getAllFilesMeta } = useFileStore();
+  const { getAllRooms } = useRoomStore();
+  const { getAllUsers } = useUserStore();
+
+  useEffect(() => {
+    if (isAuthenticated === true) {
+      getAllDocuments();
+      getAllFilesMeta();
+      getAllRooms();
+      getAllUsers();
+    }
+    // eslint-disable-next-line
+  }, [isAuthenticated]);
 
   return (
     <>

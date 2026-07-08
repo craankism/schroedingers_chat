@@ -122,11 +122,6 @@ export const userApi = {
 };
 
 export const roomApi = {
-  getMessages: async (roomId: number): Promise<MessageInput[]> => {
-    const response = await api.get(`${websocket}/${roomId}`);
-    return response.data;
-  },
-
   getAll: async (): Promise<RoomType[]> => {
     const response = await api.get<RoomType[]>(roomUrl);
     return response.data;
@@ -158,8 +153,8 @@ export const messageApi = {
     return response.data;
   },
 
-  getById: async (messageId: number): Promise<MessageType> => {
-    const response = await api.get<MessageType>(`${messageUrl}/${messageId}`);
+  getMessages: async (roomId: number): Promise<MessageInput[]> => {
+    const response = await api.get(`${websocket}/${roomId}`);
     return response.data;
   },
 

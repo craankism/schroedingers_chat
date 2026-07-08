@@ -18,10 +18,17 @@ import sc.backend.services.AuthService;
 public class AuthController {
 
     private final AuthService authService;
+    private final WebSocketController webSocketController;
+
+    private void broadcastUserUpdate(int userId) {
+        webSocketController.broadcastUpdate("USER_UPDATE", userId);
+    }
 
     @PostMapping("/register/{code}")
     public ResponseEntity<AuthDTO> register(@PathVariable String code, @RequestBody RegisterDTO registerDTO) {
-        return new ResponseEntity<>(authService.register(code, registerDTO), HttpStatus.CREATED);
+        AuthDTO userAuthDTO = authService.register(code, registerDTO);
+        broadcastUserUpdate(userAuthDTO.getUserId());
+        return new ResponseEntity<>(userAuthDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/register/validation/{code}")

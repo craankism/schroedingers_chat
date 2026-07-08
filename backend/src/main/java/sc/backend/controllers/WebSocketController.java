@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
 import sc.backend.dtos.req.DeleteMessageDTO;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
@@ -26,6 +27,10 @@ public class WebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final AIService aiService;
 
+    public void broadcastUpdate(String updateType, int id) {
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id));
+    }
+
     @MessageMapping("/chat/{roomId}")
     public void sendMessage(@DestinationVariable int roomId, @Payload SendMessageDTO message, Principal principal) {
         if (principal == null) {
@@ -39,7 +44,7 @@ public class WebSocketController {
         if (aiMentioned(message.getContent())) {
             String prompt = removeAiMention(message.getContent());
 
-            //TODO: can be adjusted later
+            // TODO: can be adjusted later
             AiMode aiMode = message.getAiMode();
             String aiAnswer = aiService.ask(roomId, prompt, aiMode, messageDTO.getMessageId());
 
@@ -51,12 +56,13 @@ public class WebSocketController {
 
     @MessageMapping("/chat/{roomId}/delete")
     @SendTo("/topic/{roomId}/delete")
-    public DeleteMessageDTO deleteMessage(@Payload DeleteMessageDTO deleteMessageDTO, Principal principal) {
+    public DeleteMessageDTO deleteMessage(@Payload DeleteMessageDTO deleteMessageDTO, Principal principal,
+            @DestinationVariable int roomId) {
         if (principal == null) {
             throw new AccessDeniedException("Not authenticated");
         }
-
-        chatMessageService.deleteMessage(deleteMessageDTO.getMessageId(),  principal.getName());
+        chatMessageService.deleteMessage(deleteMessageDTO.getMessageId(), principal.getName());
+        broadcastUpdate("MESSAGE_UPDATE", roomId);
         return deleteMessageDTO;
     }
 
@@ -72,7 +78,4 @@ public class WebSocketController {
         return text.replaceAll("(?i)@void", "").trim();
     }
 
-    public void broadcastUpdate(String updateType) {
-        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType));
-    }
 }
