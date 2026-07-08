@@ -9,6 +9,10 @@ const LiveUpdates: React.FC = () => {
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
 
+  const { getRoom } = useRoomStore();
+  const { getFileMeta } = useFileStore();
+  const { getUser, setOnlineList } = useUserStore();
+
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const host = window.location.host;
@@ -30,11 +34,13 @@ const LiveUpdates: React.FC = () => {
           try {
             const event = JSON.parse(incomingMessage.body);
             if (event.type === "ROOM_UPDATE") {
-              useRoomStore.getState().getRoom(event.id);
+              getRoom(event.id);
             } else if (event.type === "USER_UPDATE") {
-              useUserStore.getState().getUser(event.id);
+              getUser(event.id);
             } else if (event.type === "FILE_UPDATE") {
-              useFileStore.getState().getFileMeta(event.id);
+              getFileMeta(event.id);
+            } else if (event.type === "AUTH_UPDATE") {
+              setOnlineList(event.online);
             }
           } catch {
             console.error("Failed to parse update event", incomingMessage.body);
@@ -52,9 +58,11 @@ const LiveUpdates: React.FC = () => {
     return () => {
       client.deactivate();
     };
+    // eslint-disable-next-line
   }, []);
 
   console.log("LiveUpdates: " + connectionStatus);
+  return null;
 };
 
 export default LiveUpdates;

@@ -12,11 +12,14 @@ type UserState = {
   updateUserRoles: (userId: number, role: string) => void;
   updateUser: (userId: number, updatedUser: UserChange) => Promise<boolean>;
   deleteUser: (userId: number) => void;
+  onlineList: [];
+  setOnlineList: (list: []) => void;
 };
 
 export const useUserStore = create<UserState>((set) => ({
   users: [],
   error: null,
+  onlineList: [],
 
   addUser: async (inviteKey: string, userInput: UserInput) => {
     useNotificationStore.getState().startLoading();
@@ -148,5 +151,8 @@ export const useUserStore = create<UserState>((set) => ({
     } finally {
       useNotificationStore.getState().stopLoading();
     }
+  },
+  setOnlineList: (list: []) => {
+    set({ onlineList: list });
   },
 }));

@@ -20,6 +20,10 @@ public class AuthController {
     private final AuthService authService;
     private final WebSocketController webSocketController;
 
+    private void broadcastAuthUpdate(int userId, boolean online) {
+        webSocketController.broadcastUpdate("AUTH_UPDATE", userId, online);
+    }
+
     private void broadcastUserUpdate(int userId) {
         webSocketController.broadcastUpdate("USER_UPDATE", userId);
     }
@@ -47,6 +51,7 @@ public class AuthController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+        broadcastAuthUpdate(authDTO.getUserId(), true);
         return new ResponseEntity<>(authDTO, HttpStatus.OK);
     }
 
@@ -57,7 +62,8 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestBody RefreshRequestDTO request) {
-        authService.logout(request.getRefreshToken());
+        int userId = authService.logout(request.getRefreshToken());
+        broadcastAuthUpdate(userId, false);
         return ResponseEntity.noContent().build();
     }
 
