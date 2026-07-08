@@ -28,6 +28,12 @@ public class ChatMessage {
     @Column(nullable = false)
     private String senderType;
 
+    @Column(nullable = false)
+    private boolean aiPrompt;
+
+    @Column
+    private Integer aiPromptMessageId;
+
     @ManyToOne
     @JoinColumn(name = "userId")
     private User createdBy;

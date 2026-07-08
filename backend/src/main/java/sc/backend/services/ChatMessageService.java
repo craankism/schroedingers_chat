@@ -17,10 +17,8 @@ import sc.backend.repositories.UserRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -48,6 +46,8 @@ public class ChatMessageService {
                 .iv(result.iv())
                 .creationDate(LocalDateTime.now())
                 .senderType("USER")
+                .aiPrompt(false)
+                .aiPromptMessageId(null)
                 .build();
 
         creator.addChatMessage(chatMessage);
@@ -58,11 +58,10 @@ public class ChatMessageService {
     }
 
     @Transactional
-    public MessageDTO createAIMessage(int roomId, String plaintext) {
+    public MessageDTO createAIMessage(int roomId, String plaintext, Integer aiPromptMessageId) {
         Room room = roomService.findRoomById(roomId);
 
         CryptoUtil.EncryptionResult result = cryptoUtil.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
-
         String ciphertextBase64 = Base64.getEncoder().encodeToString(result.ciphertext());
 
         ChatMessage chatMessage = ChatMessage.builder()
@@ -72,6 +71,8 @@ public class ChatMessageService {
                 .senderType("AI")
                 .room(room)
                 .createdBy(null)
+                .aiPrompt(false)
+                .aiPromptMessageId(aiPromptMessageId)
                 .build();
 
         room.addChatMessage(chatMessage);
@@ -124,40 +125,78 @@ public class ChatMessageService {
     }
 
     public String getRecentChatHistory(int roomId, int currentMessageId) {
-        Room room = roomService.findRoomById(roomId);
+        List<ChatMessage> prompts =
+                chatMessageRepository.findRecentAiPrompts(roomId, currentMessageId);
 
-        List<ChatMessage> recentMessages = chatMessageRepository
-                .findTop50ByRoomAndMessageIdNotOrderByCreationDateDesc(room, currentMessageId);
+        if (prompts.isEmpty()) {
+            return "";
+        }
 
-        List<ChatMessage> chronological = new ArrayList<>(recentMessages);
-        Collections.reverse(chronological);
+        List<Integer> promptIds = prompts.stream()
+                .map(ChatMessage::getMessageId)
+                .toList();
+
+        List<ChatMessage> aiAnswers =
+                chatMessageRepository.findAiAnswersForPrompts(roomId, promptIds);
+
+        Map<Integer, ChatMessage> answerByPromptId = aiAnswers.stream()
+                .filter(answer -> answer.getAiPromptMessageId() != null)
+                .collect(Collectors.toMap(
+                        ChatMessage::getAiPromptMessageId,
+                        answer -> answer,
+                        (first, second) -> first
+                ));
+
+        Collections.reverse(prompts);
 
         StringBuilder transcript = new StringBuilder();
 
-        for (ChatMessage message : chronological) {
-            String content = decryptContent(message)
-                    .replaceAll("\\s+", " ")
-                    .trim();
+        for (ChatMessage prompt : prompts) {
+            String promptContent = cleanForPrompt(decryptContent(prompt));
 
-            if (content.isBlank()) {
+            if (promptContent.isBlank()) {
                 continue;
             }
 
-            String sender;
+            transcript.append("User: ")
+                    .append(promptContent)
+                    .append("\n");
 
-            if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) || message.getCreatedBy() == null) {
-                sender = "Void 😺";
-            } else {
-                sender = message.getCreatedBy().getDisplayName();
+            ChatMessage aiAnswer = answerByPromptId.get(prompt.getMessageId());
+
+            if (aiAnswer != null) {
+                String answerContent = cleanForPrompt(decryptContent(aiAnswer));
+
+                if (!answerContent.isBlank()) {
+                    transcript.append("Void 😺: ")
+                            .append(answerContent)
+                            .append("\n");
+                }
             }
 
-            transcript.append(sender)
-                    .append(": ")
-                    .append(content)
-                    .append("\n");
+            transcript.append("\n---\n");
         }
 
         return transcript.toString();
+    }
+
+    private String cleanForPrompt(String content) {
+        if (content == null) {
+            return "";
+        }
+
+        return content
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    @Transactional
+    public void markAsAiPrompt(int messageId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new EntityNotFoundException("Message with id " + messageId + " not found"));
+
+        message.setAiPrompt(true);
+        chatMessageRepository.save(message);
     }
 
     private MessageDTO convertToDTO(ChatMessage message) {

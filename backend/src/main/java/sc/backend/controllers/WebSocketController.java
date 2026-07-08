@@ -41,11 +41,39 @@ public class WebSocketController {
 
             //TODO: can be adjusted later
             AiMode aiMode = message.getAiMode();
-            String aiAnswer = aiService.ask(roomId, prompt, aiMode, messageDTO.getMessageId());
 
-            MessageDTO aiMessageDTO = chatMessageService.createAIMessage(roomId, aiAnswer);
+            try {
+                String aiAnswer = aiService.ask(
+                        roomId,
+                        prompt,
+                        aiMode,
+                        messageDTO.getMessageId()
+                );
 
-            messagingTemplate.convertAndSend("/topic/" + roomId + "/messages", aiMessageDTO);
+                chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
+
+                MessageDTO aiMessageDTO = chatMessageService.createAIMessage(
+                        roomId,
+                        aiAnswer,
+                        messageDTO.getMessageId()
+                );
+
+                messagingTemplate.convertAndSend(
+                        "/topic/" + roomId + "/messages",
+                        aiMessageDTO
+                );
+            } catch (Exception exception) {
+                MessageDTO errorMessage = chatMessageService.createAIMessage(
+                        roomId,
+                        "Sorry, Void could not answer right now.",
+                        null
+                );
+
+                messagingTemplate.convertAndSend(
+                        "/topic/" + roomId + "/messages",
+                        errorMessage
+                );
+            }
         }
     }
 
