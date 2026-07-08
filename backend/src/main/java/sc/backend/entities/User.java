@@ -66,6 +66,14 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<RefreshToken> refreshTokenList = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Document> documentList = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "document", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<DocumentMembership> documentMembershipList = new ArrayList<>();
+
     public void addCreatedRoom(Room room) {
         createdRoomSet.add(room);
         room.setCreatedBy(this);
