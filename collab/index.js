@@ -33,9 +33,13 @@ const server = Server.configure({
         }),
     ],
     async onAuthenticate({ token, documentName }) {
-        const roomId = documentName.split('-')[1];
+        const documentId = documentName.split('-')[1];
 
-        const response = await fetch(`${AUTH_ENDPOINT}?token=${encodeURIComponent(token)}&roomId=${roomId}`);
+        const response = await fetch(`${AUTH_ENDPOINT}/${documentId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
 
         if (!response.ok) {
             throw new Error('Authentication Error');

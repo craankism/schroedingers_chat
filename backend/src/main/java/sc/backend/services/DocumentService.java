@@ -1,15 +1,20 @@
 package sc.backend.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.CreateDocumentDTO;
 import sc.backend.dtos.res.DocumentDTO;
+import sc.backend.dtos.res.DocumentMetaDTO;
+import sc.backend.dtos.res.EditorAuthDTO;
 import sc.backend.entities.Document;
 import sc.backend.entities.DocumentMembership;
 import sc.backend.entities.User;
 import sc.backend.enums.DocumentRole;
+import sc.backend.exceptions.DocumentPermissionException;
 import sc.backend.repositories.DocumentMembershipRepository;
-import sc.backend.repositories.DocumentsRepository;
+import sc.backend.repositories.DocumentRepository;
 import sc.backend.repositories.UserRepository;
 
 import java.time.LocalDateTime;
@@ -20,13 +25,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DocumentService {
 
-    private final DocumentsRepository documentsRepository;
+    private final DocumentRepository documentRepository;
     private final DocumentMembershipRepository documentMembershipRepository;
     private final UserService userService;
     private final UserRepository userRepository;
 
+    @Transactional
     public DocumentDTO createDocument(CreateDocumentDTO createDocumentDTO, String authenticatedEmail) {
-        User creator = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User creator = getUserFromEmail(authenticatedEmail);
 
         Document document = Document.builder()
                 .createdAt(LocalDateTime.now())
@@ -34,7 +40,7 @@ public class DocumentService {
                 .title(createDocumentDTO.getTitle())
                 .build();
 
-        Document createdDocument = documentsRepository.save(document);
+        Document createdDocument = documentRepository.save(document);
 
         createdDocument.setName("doc-" + createdDocument.getDocumentId());
 
@@ -46,86 +52,84 @@ public class DocumentService {
 
         documentMembershipRepository.save(creatorMembership);
 
-        for (Integer userId: createDocumentDTO.getDocumentMembershipList()) {
-            shareDocument(createdDocument.getDocumentId(), creator.getUserId(), userId);
+        for (Integer userId : createDocumentDTO.getDocumentMembershipList()) {
+            shareDocument(createdDocument.getDocumentId(), creator.getEmail(), userId);
         }
 
-        return convertToDto(documentsRepository.save(createdDocument));
+        return convertToDto(documentRepository.save(createdDocument));
     }
 
-    public List<DocumentDTO> showByUser(int userId) {
-        User user = userRepository.findById(userId).orElseThrow();
+    public List<DocumentMetaDTO> showByUser(String authenticatedEmail) {
+        List<DocumentMembership> membershipList = documentMembershipRepository.findByUser(getUserFromEmail(authenticatedEmail));
 
-        List<DocumentMembership> membershipList = documentMembershipRepository.findByUser(user);
+        List<DocumentMetaDTO> documentMetaDTOList = new ArrayList<>();
 
-        List<DocumentDTO> documentDTOList = new ArrayList<>();
-
-        for (DocumentMembership membership: membershipList) {
-            documentDTOList.add(convertToDto(membership.getDocument()));
+        for (DocumentMembership membership : membershipList) {
+            documentMetaDTOList.add(convertToMetaDto(membership.getDocument()));
         }
 
-        return documentDTOList;
+        return documentMetaDTOList;
     }
 
-    public void shareDocument(Long documentId, int ownerId, int userId) {
-        Document document = documentsRepository.findById(documentId);
-        User owner = userRepository.getById(ownerId);
+    @Transactional
+    public DocumentMetaDTO shareDocument(int documentId, String authenticatedEmail, int userId) {
+        Document document = findDocumentById(documentId);
 
-        if (document.getCreator() != owner) {
-            throw new RuntimeException("User is not Owner, no Permission");
+        checkOwner(document, getUserFromEmail(authenticatedEmail).getUserId());
+
+        User newMember = userService.findUserById(userId);
+
+        if (!documentMembershipRepository.existsByDocumentAndUser(document, newMember)) {
+            DocumentMembership documentMembership = DocumentMembership.builder()
+                    .document(document)
+                    .user(newMember)
+                    .role(DocumentRole.EDITOR)
+                    .build();
+            documentMembershipRepository.save(documentMembership);
         }
-
-        User newMember = userRepository.getById(userId);
-
-        DocumentMembership documentMembership = DocumentMembership.builder()
-                .document(document)
-                .user(newMember)
-                .role(DocumentRole.EDITOR)
-                .build();
-
-        documentMembershipRepository.save(documentMembership);
+        return convertToMetaDto(document);
     }
 
-    public void deleteDocument(Long documentId, int ownerId) {
-        Document document = documentsRepository.findById(documentId);
-        User owner = userRepository.getById(ownerId);
-
-        if (document.getCreator() != owner) {
-            throw new RuntimeException("User is not Owner, no Permission");
-        }
-
+    @Transactional
+    public void deleteDocument(int documentId, String authenticatedEmail) {
+        Document document = findDocumentById(documentId);
+        checkOwner(document, getUserFromEmail(authenticatedEmail).getUserId());
         List<DocumentMembership> membershipList = document.getDocumentMembershipList();
-
-
-
-        documentMembershipRepository.deleteAllById(documentMembershipRepository.findByDocument(document));
+        documentMembershipRepository.deleteAll(membershipList);
+        documentRepository.delete(document);
     }
 
-    // CREATE: Neues Dokument erstellen
-    // - Generiert name ("doc-" + documentId nach save)
-    // - Setzt Owner
-    // - Erstellt automatisch eine DocumentMembership mit Role OWNER
+    public DocumentDTO getDocument(int documentId, String authenticatedEmail) {
+        hasAccess(documentId, authenticatedEmail);
 
-    // LIST: Alle Dokumente eines Users
-    // - Sucht alle DocumentMemberships des Users
-    // - Gibt Dokumenttitel, Rolle, updatedAt zurueck
+        Document document = findDocumentById(documentId);
 
-    // SHARE: Dokument mit User teilen
-    // - Sucht Dokument anhand documentId
-    // - Prueft ob anfragender User OWNER ist
-    // - Sucht Ziel-User anhand Email
-    // - Erstellt DocumentMembership mit Role EDITOR
+        return convertToDto(document);
+    }
 
-    // DELETE: Dokument loeschen
-    // - Prueft ob User OWNER ist
-    // - Loescht alle Memberships
-    // - Loescht Dokument
+    public EditorAuthDTO hasAccess(int documentId, String authenticatedEmail) {
+        User user = getUserFromEmail(authenticatedEmail);
+        if (documentMembershipRepository.existsByDocumentAndUser(findDocumentById(documentId), user)) {
+            return convertToEditorAuthDTO(user);
+        } else {
+            throw new DocumentPermissionException("User has no Access to Document");
+        }
+    }
 
-    // GET_CONTENT: Dokumentinhalt laden (fuer Export spaeter)
+    private Document findDocumentById(int documentId) {
+        return documentRepository.findById(documentId).orElseThrow(() ->
+                new EntityNotFoundException("Document not found"));
+    }
 
-    // HAS_ACCESS: Prueft ob User Zugriff auf Dokument hat
-    // - Wird vom EditorAuthController genutzt
+    private User getUserFromEmail(String authenticatedEmail) {
+        return userRepository.findByEmail(authenticatedEmail).orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
 
+    private void checkOwner(Document document, int userId) {
+        if (document.getCreator().getUserId() != userId) {
+            throw new DocumentPermissionException("User is not Owner, no Permission");
+        }
+    }
 
     private DocumentDTO convertToDto(Document document) {
         return DocumentDTO.builder()
@@ -136,6 +140,25 @@ public class DocumentService {
                 .updatedAt(document.getUpdatedAt())
                 .content(document.getContent())
                 .creator(document.getCreator())
+                .build();
+    }
+
+    private DocumentMetaDTO convertToMetaDto(Document document) {
+        return DocumentMetaDTO.builder()
+                .documentId(document.getDocumentId())
+                .name(document.getName())
+                .title(document.getTitle())
+                .createdAt(document.getCreatedAt())
+                .updatedAt(document.getUpdatedAt())
+                .creator(document.getCreator())
+                .build();
+    }
+
+    private EditorAuthDTO convertToEditorAuthDTO(User user) {
+        return EditorAuthDTO.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .displayName(user.getDisplayName())
                 .build();
     }
 

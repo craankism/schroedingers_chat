@@ -6,7 +6,7 @@ import sc.backend.entities.Document;
 import java.util.List;
 import java.util.Optional;
 
-public interface DocumentsRepository extends JpaRepository<Document, String> {
+public interface DocumentRepository extends JpaRepository<Document, Integer> {
     Optional<Document> findByName(String name);
-    List<Document> findByOwnerUserId(Long userId);
+    List<Document> findByOwnerUserId(Integer userId);
 }

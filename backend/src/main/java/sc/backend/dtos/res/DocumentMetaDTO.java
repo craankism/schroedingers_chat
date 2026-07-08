@@ -12,13 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-public class DocumentDTO {
+public class DocumentMetaDTO {
 
     private int documentId;
     private String name;
     private String title;
     private User creator;
-    private byte[] content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<DocumentMembership> documentMembershipList;

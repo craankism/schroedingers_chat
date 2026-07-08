@@ -1,29 +1,47 @@
 package sc.backend.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import sc.backend.dtos.req.CreateDocumentDTO;
+import sc.backend.dtos.res.DocumentDTO;
+import sc.backend.dtos.res.DocumentMetaDTO;
+import sc.backend.services.DocumentService;
+
+import java.security.Principal;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/documents")
 public class DocumentController {
 
-//    POST   /api/documents              -> Neues Dokument erstellen
-//    Body: { "title": "Mein Dokument" }
-//    Response: { "documentId": 5, "name": "doc-5", "title": "Mein Dokument" }
-//
-//    GET    /api/documents              -> Alle Dokumente des Users listen
-//    Response: [{ "documentId": 5, "title": "...", "role": "OWNER", "updatedAt": "..." }, ...]
-//
-//    GET    /api/documents/{id}         -> Details fuer ein Dokument
-//    Response: { "documentId": 5, "title": "...", "role": "OWNER", "members": [...] }
-//
-//    POST   /api/documents/{id}/share   -> Dokument teilen
-//    Body: { "email": "kollege@example.com", "role": "EDITOR" }
-//    Response: 200 OK oder 403 Forbidden
-//
-//    DELETE /api/documents/{id}         -> Dokument loeschen
-//    Response: 204 No Content oder 403 Forbidden
+    private final DocumentService documentService;
 
+    @PostMapping
+    public ResponseEntity<DocumentDTO> createDocument(@RequestBody CreateDocumentDTO createDocumentDTO, Principal principal) {
+        return new ResponseEntity<>(documentService.createDocument(createDocumentDTO, principal.getName()), HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<DocumentMetaDTO>> showDocumentsByUser(Principal principal) {
+        return new ResponseEntity<>(documentService.showByUser(principal.getName()), HttpStatus.OK);
+    }
+
+    @GetMapping("{documentId}")
+    public ResponseEntity<DocumentDTO> getDocument(@PathVariable int documentId, Principal principal) {
+        return new ResponseEntity<>(documentService.getDocument(documentId, principal.getName()), HttpStatus.OK);
+    }
+
+    @PostMapping("{documentId}/share/{userId}")
+    public ResponseEntity<DocumentMetaDTO> shareDocument(@PathVariable int documentId, @PathVariable int userId, Principal principal) {
+        return new ResponseEntity<>(documentService.shareDocument(documentId, principal.getName(), userId), HttpStatus.OK);
+    }
+
+    @DeleteMapping("{documentId}")
+    public ResponseEntity<?> deleteDocument(@PathVariable int documentId, Principal principal) {
+        documentService.deleteDocument(documentId, principal.getName());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
