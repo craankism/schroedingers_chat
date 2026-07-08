@@ -20,14 +20,14 @@ public class RoomController {
     private final RoomService roomService;
     private final WebSocketController webSocketController;
 
-    private void broadcastRoomUpdate() {
-        webSocketController.broadcastUpdate("ROOM_UPDATE");
+    private void broadcastRoomUpdate(int roomId) {
+        webSocketController.broadcastUpdate("ROOM_UPDATE", roomId);
     }
 
     @PostMapping
     public ResponseEntity<RoomDTO> createRoom(@RequestBody CreateRoomDTO createRoomDTO, Principal principal) {
         RoomDTO roomDTO = roomService.createRoom(createRoomDTO, principal.getName());
-        broadcastRoomUpdate();
+        broadcastRoomUpdate(roomDTO.getRoomId());
         return new ResponseEntity<>(roomDTO, HttpStatus.CREATED);
     }
 
@@ -44,14 +44,14 @@ public class RoomController {
     @PutMapping("{roomId}")
     public ResponseEntity<RoomDTO> editRoom(@PathVariable int roomId, @RequestBody EditRoomDTO addUserToRoomDTO) {
         RoomDTO room = roomService.editRoom(roomId, addUserToRoomDTO);
-        broadcastRoomUpdate();
+        broadcastRoomUpdate(roomId);
         return new ResponseEntity<>(room, HttpStatus.OK);
     }
 
     @DeleteMapping("{roomId}")
     public ResponseEntity<?> deleteRoom(@PathVariable int roomId, Principal principal) {
         roomService.deleteRoom(roomId, principal.getName());
-        broadcastRoomUpdate();
+        broadcastRoomUpdate(roomId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

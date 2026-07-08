@@ -9,4 +9,5 @@ import lombok.*;
 @Setter
 public class UpdateEventDTO {
     private String type;
+    private int id;
 }

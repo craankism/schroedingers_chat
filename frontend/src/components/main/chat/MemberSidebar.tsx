@@ -1,6 +1,6 @@
 import type React from "react";
 import { useUserStore } from "../../../stores/UserStore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRoomStore } from "../../../stores/RoomStore";
 import {
   Box,
@@ -22,17 +22,11 @@ type MemberSidebarProps = {
 };
 
 const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
-  const { getAllUsers, users } = useUserStore();
-  const { getAllRooms, rooms } = useRoomStore();
+  const { users } = useUserStore();
+  const { rooms } = useRoomStore();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [open, setOpen] = useState<boolean>(false);
-
-  useEffect(() => {
-    getAllUsers();
-    getAllRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId]);
 
   const currentRoom = rooms.find((r) => r.roomId === roomId);
   const userDisplay = currentRoom

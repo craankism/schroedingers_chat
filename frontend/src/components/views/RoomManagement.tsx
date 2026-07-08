@@ -8,12 +8,11 @@ import type {
   GridRenderCellParams,
   GridRowModel,
 } from "@mui/x-data-grid";
-import { useEffect } from "react";
 import { useRoomStore } from "../../stores/RoomStore";
 import { widthMinusSidebar } from "../../types/constants/constants";
 
 const RoomManagement = (): JSX.Element => {
-  const { getAllRooms, deleteRoom, rooms, updateRoom } = useRoomStore();
+  const { deleteRoom, rooms, updateRoom } = useRoomStore();
 
   const handleRowUpdate = (
     updatedRow: GridRowModel,
@@ -25,10 +24,6 @@ const RoomManagement = (): JSX.Element => {
     );
     return updatedRow;
   };
-
-  useEffect(() => {
-    getAllRooms();
-  }, [getAllRooms]);
 
   const columns: GridColDef[] = [
     { field: "roomId", headerName: "ID", minWidth: 70, flex: 0.5 },

@@ -4,8 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
 import { heightMinusTopNav } from "../../types/constants/constants";
-import type { MessageInput, MessageType } from "../../types/MessageType";
-import { roomApi } from "../../services/apiCalls";
+import type { MessageType } from "../../types/MessageType";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { decodeJwt } from "../../stores/AuthStore";
 import { useMessageStore } from "../../stores/MessageStore";
@@ -14,11 +13,10 @@ const Announcement = (): JSX.Element => {
   const clientRef = useRef<Client | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
-  const [messageHistory, setMessageHistory] = useState<MessageInput[]>([]);
   const [message, setMessage] = useState<string>("");
-  const { deleteMessage } = useMessageStore();
   const isTrainer = decodeJwt()?.isTrainer === true;
   const isAdmin = decodeJwt()?.isAdmin === true;
+  const { setMessages, markMessageDeleted, getMessages } = useMessageStore();
 
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -37,15 +35,15 @@ const Announcement = (): JSX.Element => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
-        roomApi
-          .getMessages(1)
-          .then((messages: MessageInput[]) => setMessageHistory(messages));
+        getMessages(1);
         client.subscribe("/topic/1/messages", (incomingMessage) => {
-          console.log(incomingMessage.body);
-          setMessageHistory((prev) => [
-            ...prev,
-            JSON.parse(incomingMessage.body),
-          ]);
+          setMessages(JSON.parse(incomingMessage.body));
+        });
+        client.subscribe("/topic/1/delete", (incomingMessage) => {
+          const deletedMessage = JSON.parse(incomingMessage.body) as {
+            messageId: number;
+          };
+          markMessageDeleted(deletedMessage.messageId);
         });
       },
       onWebSocketClose: handleConnectionClose,
@@ -59,17 +57,18 @@ const Announcement = (): JSX.Element => {
     return () => {
       void client.deactivate();
     };
+    // eslint-disable-next-line
   }, []);
 
-  const handleDeleteMessage = useCallback(
-    async (messageId: number) => {
-      await deleteMessage(messageId);
-      setMessageHistory((prev) =>
-        prev.filter((m) => m.messageId !== messageId),
-      );
-    },
-    [deleteMessage],
-  );
+  const handleDeleteMessage = useCallback((messageId: number) => {
+    if (!clientRef.current?.connected) {
+      return;
+    }
+    clientRef.current.publish({
+      destination: "/app/chat/1/delete",
+      body: JSON.stringify({ messageId }),
+    });
+  }, []);
 
   const handleClickSendMessage = useCallback(() => {
     const trimmedMessage = message.trim();
@@ -101,7 +100,6 @@ const Announcement = (): JSX.Element => {
     >
       <MessagesDisplay
         connectionStatus={connectionStatus}
-        messageHistory={messageHistory}
         handleDeleteMessage={handleDeleteMessage}
         announcement={true}
       />

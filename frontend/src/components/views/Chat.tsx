@@ -4,9 +4,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
 import { heightMinusTopNav } from "../../types/constants/constants";
-import type { MessageInput, MessageType } from "../../types/MessageType";
-import { roomApi } from "../../services/apiCalls";
+import type { MessageType } from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
+import { useMessageStore } from "../../stores/MessageStore";
 
 type ChatProps = {
   roomId: number;
@@ -16,8 +16,8 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   const clientRef = useRef<Client | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
-  const [messageHistory, setMessageHistory] = useState<MessageInput[]>([]);
   const [message, setMessage] = useState<string>("");
+  const { setMessages, markMessageDeleted, getMessages } = useMessageStore();
 
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -36,28 +36,21 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
-        roomApi
-          .getMessages(roomId.roomId)
-          .then((messages) => setMessageHistory(messages));
+        getMessages(roomId.roomId);
         client.subscribe(
           "/topic/" + roomId.roomId + "/messages",
           (incomingMessage) => {
-            console.log(incomingMessage.body);
-            setMessageHistory((prev) => [
-              ...prev,
-              JSON.parse(incomingMessage.body),
-            ]);
+            setMessages(JSON.parse(incomingMessage.body));
           },
         );
+
         client.subscribe(
           "/topic/" + roomId.roomId + "/delete",
           (incomingMessage) => {
-            const { messageId } = JSON.parse(incomingMessage.body) as {
+            const deletedMessage = JSON.parse(incomingMessage.body) as {
               messageId: number;
             };
-            setMessageHistory((prev) =>
-              prev.filter((m) => m.messageId !== messageId),
-            );
+            markMessageDeleted(deletedMessage.messageId);
           },
         );
       },
@@ -72,6 +65,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     return () => {
       void client.deactivate();
     };
+    // eslint-disable-next-line
   }, [roomId.roomId]);
 
   const handleDeleteMessage = useCallback(
@@ -117,7 +111,6 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     >
       <MessagesDisplay
         connectionStatus={connectionStatus}
-        messageHistory={messageHistory}
         handleDeleteMessage={handleDeleteMessage}
         announcement={false}
       />

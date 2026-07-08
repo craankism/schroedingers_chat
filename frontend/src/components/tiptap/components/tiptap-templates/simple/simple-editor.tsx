@@ -95,15 +95,9 @@ const MainToolbarContent = ({
   onLinkClick: () => void;
   isMobile: boolean;
 }) => {
-  const {
-    documents,
-    getAllDocuments,
-    setCurrentDocumentId,
-    currentDocumentId,
-  } = useDocumentStore();
-  useEffect(() => {
-    getAllDocuments();
-  }, [getAllDocuments]);
+  const { documents, setCurrentDocumentId, currentDocumentId } =
+    useDocumentStore();
+
   return (
     <>
       <ToolbarGroup>
