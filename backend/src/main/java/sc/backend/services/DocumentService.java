@@ -34,15 +34,13 @@ public class DocumentService {
     public DocumentDTO createDocument(CreateDocumentDTO createDocumentDTO, String authenticatedEmail) {
         User creator = getUserFromEmail(authenticatedEmail);
 
-        Document document = Document.builder()
+        Document createdDocument = Document.builder()
                 .createdAt(LocalDateTime.now())
                 .creator(creator)
                 .title(createDocumentDTO.getTitle())
                 .build();
 
-        Document createdDocument = documentRepository.save(document);
-
-        createdDocument.setName("doc-" + createdDocument.getDocumentId());
+        documentRepository.save(createdDocument);
 
         DocumentMembership creatorMembership = DocumentMembership.builder()
                 .document(createdDocument)
@@ -56,9 +54,10 @@ public class DocumentService {
             shareDocument(createdDocument.getDocumentId(), creator.getEmail(), userId);
         }
 
-        return convertToDto(documentRepository.save(createdDocument));
+        return convertToDto(createdDocument);
     }
 
+    @Transactional
     public List<DocumentMetaDTO> showByUser(String authenticatedEmail) {
         List<DocumentMembership> membershipList = documentMembershipRepository.findByUser(getUserFromEmail(authenticatedEmail));
 
@@ -99,6 +98,7 @@ public class DocumentService {
         documentRepository.delete(document);
     }
 
+    @Transactional
     public DocumentDTO getDocument(int documentId, String authenticatedEmail) {
         hasAccess(documentId, authenticatedEmail);
 
@@ -107,6 +107,7 @@ public class DocumentService {
         return convertToDto(document);
     }
 
+    @Transactional
     public EditorAuthDTO hasAccess(int documentId, String authenticatedEmail) {
         User user = getUserFromEmail(authenticatedEmail);
         if (documentMembershipRepository.existsByDocumentAndUser(findDocumentById(documentId), user)) {
@@ -125,6 +126,15 @@ public class DocumentService {
         return userRepository.findByEmail(authenticatedEmail).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
+    private List<Integer> getMembershipList(Document document) {
+        List<Integer> membershipList = new ArrayList<>();
+
+        for(DocumentMembership membership: document.getDocumentMembershipList()) {
+            membershipList.add(membership.getUser().getUserId());
+        }
+        return membershipList;
+    }
+
     private void checkOwner(Document document, int userId) {
         if (document.getCreator().getUserId() != userId) {
             throw new DocumentPermissionException("User is not Owner, no Permission");
@@ -132,25 +142,26 @@ public class DocumentService {
     }
 
     private DocumentDTO convertToDto(Document document) {
+
         return DocumentDTO.builder()
                 .documentId(document.getDocumentId())
-                .name(document.getName())
                 .title(document.getTitle())
                 .createdAt(document.getCreatedAt())
                 .updatedAt(document.getUpdatedAt())
                 .content(document.getContent())
-                .creator(document.getCreator())
+                .creatorId(document.getCreator().getUserId())
+                .documentMembershipList(getMembershipList(document))
                 .build();
     }
 
     private DocumentMetaDTO convertToMetaDto(Document document) {
         return DocumentMetaDTO.builder()
                 .documentId(document.getDocumentId())
-                .name(document.getName())
                 .title(document.getTitle())
                 .createdAt(document.getCreatedAt())
                 .updatedAt(document.getUpdatedAt())
-                .creator(document.getCreator())
+                .creatorId(document.getCreator().getUserId())
+                .documentMembershipList(getMembershipList(document))
                 .build();
     }
 

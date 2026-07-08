@@ -15,11 +15,10 @@ import java.util.List;
 public class DocumentMetaDTO {
 
     private int documentId;
-    private String name;
     private String title;
-    private User creator;
+    private int creatorId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<DocumentMembership> documentMembershipList;
+    private List<Integer> documentMembershipList;
 
 }

@@ -42,7 +42,7 @@ const NewDocumentModal = (): JSX.Element => {
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    createDocument({ name, userList });
+    createDocument({title: name, documentMembershipList: userList});
     setUserList([]);
     setName("");
     handleClose();

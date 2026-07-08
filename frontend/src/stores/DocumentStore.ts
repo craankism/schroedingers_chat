@@ -83,9 +83,9 @@ export const useDocumentStore = create<DocumentState>((set) => ({
 
   updateDocument: async (document: DocumentType, documentId: number) => {
     useNotificationStore.getState().startLoading();
-    if (!Array.isArray(document.userList)) {
-      const documentStringToArray = JSON.parse("[" + document.userList + "]");
-      document.userList = documentStringToArray;
+    if (!Array.isArray(document.documentMembershipList)) {
+      const documentStringToArray = JSON.parse("[" + document.documentMembershipList + "]");
+      document.documentMembershipList = documentStringToArray;
     }
 
     try {

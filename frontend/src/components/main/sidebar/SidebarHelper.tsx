@@ -33,7 +33,7 @@ const SidebarHelper: React.FC<{
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { setOpenSidebar, setRoomId, setNewDocModalOpen } = usePropStore();
   const navigate = useNavigate();
-  const { documents } = useDocumentStore();
+  const { documents, setCurrentDocumentId } = useDocumentStore();
 
   const selectionFilter = (item: string) => {
     if (activeView === item) return true;
@@ -53,14 +53,17 @@ const SidebarHelper: React.FC<{
               if (itemNames.includes(item)) {
                 setActiveView(item);
                 if (item === "Editor") {
-                  const userInDocs = documents.find((document) =>
-                    document.userList.find(
-                      (userId) => userId === decodeJwt()?.userId,
-                    ),
-                  );
-                  if (!userInDocs) {
-                    setNewDocModalOpen(true);
-                  }
+                    const userInDocs = documents.find((document) =>
+                        document.documentMembershipList.find(
+                            (userId: number) => userId === decodeJwt()?.userId,
+                        ),
+                    );
+                    if (!userInDocs) {
+                        setNewDocModalOpen(true);
+                    } else {
+                        setCurrentDocumentId(userInDocs.documentId || 0);
+                        navigate("/" + item.toLowerCase());
+                    }
                 } else {
                   navigate("/" + item.toLowerCase());
                 }

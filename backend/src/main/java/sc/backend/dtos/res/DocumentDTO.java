@@ -15,12 +15,11 @@ import java.util.List;
 public class DocumentDTO {
 
     private int documentId;
-    private String name;
     private String title;
-    private User creator;
+    private int creatorId;
     private byte[] content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<DocumentMembership> documentMembershipList;
+    private List<Integer> documentMembershipList;
 
 }
