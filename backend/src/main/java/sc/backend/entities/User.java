@@ -71,7 +71,7 @@ public class User implements UserDetails {
     private List<Document> documentList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "document", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<DocumentMembership> documentMembershipList = new ArrayList<>();
 
     public void addCreatedRoom(Room room) {
