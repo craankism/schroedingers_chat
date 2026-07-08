@@ -62,7 +62,6 @@ public class WebSocketController {
             throw new AccessDeniedException("Not authenticated");
         }
         chatMessageService.deleteMessage(deleteMessageDTO.getMessageId(), principal.getName());
-        broadcastUpdate("MESSAGE_UPDATE", roomId);
         return deleteMessageDTO;
     }
 
