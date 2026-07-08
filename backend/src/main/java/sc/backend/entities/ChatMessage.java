@@ -19,7 +19,6 @@ public class ChatMessage {
 
     //TODO: length?
     @Lob
-    @Column(nullable = false)
     private String content;
 
     //TODO: best date type?

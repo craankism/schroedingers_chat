@@ -103,8 +103,8 @@ public class UserService {
     }
 
     public User findUserById(int userId) {
-        return userRepository.findById(userId).orElseThrow(() ->
-                new EntityNotFoundException("User #" + userId + " not found!"));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User #" + userId + " not found!"));
     }
 
     public User getUserByEmail(Optional<User> userOptional) {

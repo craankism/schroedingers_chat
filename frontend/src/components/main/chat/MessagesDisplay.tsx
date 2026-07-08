@@ -69,10 +69,21 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                   <Typography sx={{ color: "cyan" }}>
                     {message.sender}
                   </Typography>
-                  <Typography>{message.content}</Typography>
+                  {message.content != null ? (
+                    <Typography>{message.content}</Typography>
+                  ) : (
+                    <Typography sx={{ opacity: "30%" }}>
+                      Message deleted
+                    </Typography>
+                  )}
                 </Box>
                 <Box
-                  sx={{ visibility: hoveredId === id ? "visible" : "hidden" }}
+                  sx={{
+                    visibility:
+                      hoveredId === id && message.content != null
+                        ? "visible"
+                        : "hidden",
+                  }}
                 >
                   <Clear
                     sx={{ cursor: "pointer" }}
