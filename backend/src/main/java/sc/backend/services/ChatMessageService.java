@@ -95,11 +95,11 @@ public class ChatMessageService {
     public void deleteMessage(int messageId, String authenticatedEmail) {
         User authenticatedUser = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
 
-        ChatMessage chatMessage = chatMessageRepository.findById(messageId).orElseThrow(() ->
-                new EntityNotFoundException("Message with id " + messageId + " not found"));
+        ChatMessage chatMessage = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new EntityNotFoundException("Message with id " + messageId + " not found"));
 
         User user = chatMessage.getCreatedBy();
-        Room room = chatMessage.getRoom();
+        // Room room = chatMessage.getRoom();
 
         if (user == null) {
             if (!authenticatedUser.isAdmin()) {
@@ -109,21 +109,25 @@ public class ChatMessageService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this message");
         }
 
-        if (user != null) {
-            user.removeChatMessage(chatMessage);
-        }
+        // Messages don't get deleted atm, just content changes
+        // if (user != null) {
+        // user.removeChatMessage(chatMessage);
+        // }
 
-        if (room != null) {
-            room.removeChatMessage(chatMessage);
-        }
+        // if (room != null) {
+        // room.removeChatMessage(chatMessage);
+        // }
 
-        chatMessageRepository.delete(chatMessage);
+        // Don't delete Message, just set content to null
+        chatMessage.setContent(null);
+        chatMessageRepository.save(chatMessage);
     }
 
     public String getRecentChatHistory(int roomId, int currentMessageId) {
         Room room = roomService.findRoomById(roomId);
 
-        List<ChatMessage> recentMessages = chatMessageRepository.findTop50ByRoomAndMessageIdNotOrderByCreationDateDesc(room, currentMessageId);
+        List<ChatMessage> recentMessages = chatMessageRepository
+                .findTop50ByRoomAndMessageIdNotOrderByCreationDateDesc(room, currentMessageId);
 
         List<ChatMessage> chronological = new ArrayList<>(recentMessages);
         Collections.reverse(chronological);
@@ -174,6 +178,9 @@ public class ChatMessageService {
     }
 
     private String decryptContent(ChatMessage message) {
+        if (message.getContent() == null) {
+            return null;
+        }
         byte[] ciphertext = Base64.getDecoder().decode(message.getContent());
         byte[] plaintextBytes = cryptoUtil.decrypt(ciphertext, message.getIv());
         return new String(plaintextBytes, StandardCharsets.UTF_8);
