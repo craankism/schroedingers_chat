@@ -170,7 +170,9 @@ const Sidebar = (): JSX.Element => {
                   }}
                 >
                   <ListItemButton
-                    onClick={logout}
+                    onClick={() => {
+                      logout();
+                    }}
                     sx={{ justifyContent: "center" }}
                   >
                     <Typography>

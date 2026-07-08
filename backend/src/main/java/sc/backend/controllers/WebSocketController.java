@@ -18,6 +18,8 @@ import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -26,9 +28,15 @@ public class WebSocketController {
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
     private final AIService aiService;
+    Map<Integer, Boolean> onlineList = new HashMap<>();
+
+    public void broadcastUpdate(String updateType, int id, boolean online) {
+        onlineList.put(id, online);
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id, onlineList));
+    }
 
     public void broadcastUpdate(String updateType, int id) {
-        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id));
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id, new HashMap<>()));
     }
 
     @MessageMapping("/chat/{roomId}")
@@ -52,32 +60,27 @@ public class WebSocketController {
                         roomId,
                         prompt,
                         aiMode,
-                        messageDTO.getMessageId()
-                );
+                        messageDTO.getMessageId());
 
                 chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
 
                 MessageDTO aiMessageDTO = chatMessageService.createAIMessage(
                         roomId,
                         aiAnswer,
-                        messageDTO.getMessageId()
-                );
+                        messageDTO.getMessageId());
 
                 messagingTemplate.convertAndSend(
                         "/topic/" + roomId + "/messages",
-                        aiMessageDTO
-                );
+                        aiMessageDTO);
             } catch (Exception exception) {
                 MessageDTO errorMessage = chatMessageService.createAIMessage(
                         roomId,
                         "Sorry, Void could not answer right now.",
-                        null
-                );
+                        null);
 
                 messagingTemplate.convertAndSend(
                         "/topic/" + roomId + "/messages",
-                        errorMessage
-                );
+                        errorMessage);
             }
         }
     }

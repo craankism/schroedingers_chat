@@ -104,8 +104,11 @@ public class AuthService {
         return convertToAuthDTO(user, newJwt, newRefreshTokenStr);
     }
 
-    public void logout(String rawRefreshToken) {
+    public int logout(String rawRefreshToken) {
+        RefreshToken validateToken = tokenService.validateRefreshToken(rawRefreshToken);
+        int userId = validateToken.getUser().getUserId();
         tokenService.deleteRefreshToken(rawRefreshToken);
+        return userId;
     }
 
     private AuthDTO convertToAuthDTO(User user, String jwt, String refreshToken) {

@@ -61,7 +61,12 @@ const DesktopNav = (): JSX.Element => {
               <Avatar alt="Profile" src="" />
             </IconButton>
           ) : null}
-          <Button color="inherit" onClick={logout}>
+          <Button
+            color="inherit"
+            onClick={() => {
+              logout();
+            }}
+          >
             {isAuthenticated ? "Logout" : "Login"}
           </Button>
         </Box>
