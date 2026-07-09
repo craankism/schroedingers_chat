@@ -65,6 +65,12 @@ const ProfileModal = (): JSX.Element => {
 
   const handleClose = () => setOpenProfile(false);
 
+  const hasUpperCase = (password: string) => {
+    return password !== password.toLowerCase();
+  };
+  const hasNumber = (password: string) => {
+    return /\d/.test(password);
+  };
   const submitHandler = async (
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
@@ -73,6 +79,20 @@ const ProfileModal = (): JSX.Element => {
       useNotificationStore
         .getState()
         .addNotification("Username too long (max. 16 characters)", "error");
+      return;
+    }
+    if (
+      newPassword.length > 0 &&
+      (!hasUpperCase(newPassword) ||
+        !hasNumber(newPassword) ||
+        newPassword.length < 8)
+    ) {
+      useNotificationStore
+        .getState()
+        .addNotification(
+          "Password too weak. Need to be min. 8 digits, contain atleast 1 upper case letter and 1 number",
+          "error",
+        );
       return;
     }
     if (newPassword === repeatNewPassword) {
