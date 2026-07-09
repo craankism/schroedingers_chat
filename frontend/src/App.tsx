@@ -75,6 +75,7 @@ const App = (): JSX.Element => {
         </>
       ) : null}
       <NavTop />
+      <GlobalLoader />
       <NotificationBanner />
       <Routes>
         <Route element={<ProtectedRoute />}>

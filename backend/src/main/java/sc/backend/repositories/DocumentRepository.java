@@ -6,5 +6,4 @@ import sc.backend.entities.Document;
 import java.util.Optional;
 
 public interface DocumentRepository extends JpaRepository<Document, Integer> {
-    Optional<Document> findByName(String name);
 }

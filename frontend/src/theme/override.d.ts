@@ -1,6 +1,10 @@
 import "@mui/material/styles";
 
 declare module "@mui/material/styles" {
+    interface TypeBackground {
+        deep: string;
+    }
+
     interface Palette {
         appBar: {
             background: string;

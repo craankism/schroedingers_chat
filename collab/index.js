@@ -13,28 +13,30 @@ const server = Server.configure({
     extensions: [
         new Database({
             fetch: async ({ documentName }) => {
+                const documentId = documentName.split('-')[1];
                 const result = await pool.query(
-                    'SELECT content FROM documents WHERE name = $1',
-                    [documentName]
+                    'SELECT content FROM documents WHERE document_id = $1',
+                    [documentId]
                 );
-                if (result.rows.length > 0) {
+                if (result.rows.length > 0 && result.rows[0].content) {
                     return Buffer.from(result.rows[0].content);
                 }
                 return null;
             },
             store: async ({ documentName, state }) => {
+                const documentId = documentName.split('-')[1];
+                const hex = Buffer.from(state).toString('hex');
                 await pool.query(`
-          INSERT INTO documents (name, content, updated_at)
-          VALUES ($1, $2, NOW())
-          ON CONFLICT (name)
-          DO UPDATE SET content = $2, updated_at = NOW()
-        `, [documentName, Buffer.from(state)]);
+                    UPDATE documents
+                    SET content = decode($1, 'hex'), updated_at = NOW()
+                    WHERE document_id = $2
+                `, [hex, documentId]);
             },
         }),
     ],
     async onAuthenticate({ token, documentName }) {
         const documentId = documentName.split('-')[1];
-
+        console.log('documentName:', documentName, '| documentId:', documentId, '| URL:', `${AUTH_ENDPOINT}/${documentId}`);
         const response = await fetch(`${AUTH_ENDPOINT}/${documentId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`

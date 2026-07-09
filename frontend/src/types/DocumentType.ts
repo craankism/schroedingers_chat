@@ -1,7 +1,7 @@
 export type DocumentType = {
   documentId?: number;
-  name: string;
+  title: string;
   createdBy?: number;
-  userList: number[];
+  documentMembershipList: number[];
   content?: string;
 };
