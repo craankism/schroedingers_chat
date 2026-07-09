@@ -55,20 +55,21 @@ const SidebarHelper: React.FC<{
                 if (item === "Editor") {
                   const userInDocs = documents.find((document) =>
                     document.userList.find(
-                      (userId) => userId === decodeJwt()?.userId,
+                      (userId: number) => userId === decodeJwt()?.userId,
                     ),
                   );
                   if (!userInDocs) {
                     setNewDocModalOpen(true);
                   }
                 } else {
+                  if (isMobile) setOpenSidebar(false);
                   navigate("/" + item.toLowerCase());
                 }
               } else {
+                if (isMobile) setOpenSidebar(false);
                 navigate("/chat");
                 setActiveView("Chats");
               }
-              if (isMobile) setOpenSidebar(false);
             }}
           >
             <ListItemText primary={item} />

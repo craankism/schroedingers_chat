@@ -54,7 +54,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
           },
         }}
       >
-        <ListItem sx={{ mt: 1 }}>
+        <ListItem>
           <ListItemText primary={"Members:"} />
           <EditChat roomId={roomId} />
         </ListItem>
@@ -63,9 +63,9 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
           <ListItem key={index}>
             <ListItemText primary={user.displayName} />
             {onlineList[user.userId] ? (
-              <Lens sx={{ color: "green" }} />
+              <Lens sx={{ color: "green", mr: 1.7 }} />
             ) : (
-              <Lens sx={{ color: "grey" }} />
+              <Lens sx={{ color: "grey", mr: 1.7 }} />
             )}
           </ListItem>
         ))}
