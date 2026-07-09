@@ -1,6 +1,7 @@
 package sc.backend.controllers;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +20,16 @@ public class AuthController {
 
     private final AuthService authService;
     private final WebSocketController webSocketController;
+    
+    @GetMapping("/verify/{token}")
+    public ResponseEntity<String> handleVerification(@PathVariable String token) {
+        try {
+            String result = authService.verifyEmail(token);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
     private void broadcastAuthUpdate(int userId, boolean online) {
         webSocketController.broadcastUpdate("AUTH_UPDATE", userId, online);
