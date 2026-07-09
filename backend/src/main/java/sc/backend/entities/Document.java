@@ -27,7 +27,7 @@ public class Document {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @Lob
+    @Column(name = "content", columnDefinition = "bytea")
     private byte[] content;
 
     @Column(name = "created_at", updatable = false)

@@ -8,7 +8,7 @@ type DocumentState = {
   currentDocumentId: number;
   setCurrentDocumentId: (id: number) => void;
   error: string | null;
-  createDocument: (documentData: DocumentType) => void;
+  createDocument: (documentData: DocumentType) => Promise<void>;
   getDocument: (documentId: number) => Promise<DocumentType | undefined>;
   getAllDocuments: () => void;
   updateDocument: (document: DocumentType, documentId: number) => void;
@@ -31,6 +31,9 @@ export const useDocumentStore = create<DocumentState>((set) => ({
       set((state: DocumentState) => ({
         documents: [...state.documents, data],
       }));
+      if (data.documentId) {
+        useDocumentStore.getState().setCurrentDocumentId(data.documentId);
+      }
       useNotificationStore
         .getState()
         .addNotification("Document successfully created", "success");

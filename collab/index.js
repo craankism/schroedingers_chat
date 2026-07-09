@@ -18,19 +18,19 @@ const server = Server.configure({
                     'SELECT content FROM documents WHERE document_id = $1',
                     [documentId]
                 );
-                if (result.rows.length > 0) {
+                if (result.rows.length > 0 && result.rows[0].content) {
                     return Buffer.from(result.rows[0].content);
                 }
                 return null;
             },
             store: async ({ documentName, state }) => {
                 const documentId = documentName.split('-')[1];
+                const hex = Buffer.from(state).toString('hex');
                 await pool.query(`
-                    INSERT INTO documents (document_id, content, updated_at)
-                    VALUES ($1, $2, NOW())
-                    ON CONFLICT (document_id)
-                        DO UPDATE SET content = $2, updated_at = NOW()
-                `, [documentId, Buffer.from(state)]);
+                    UPDATE documents
+                    SET content = decode($1, 'hex'), updated_at = NOW()
+                    WHERE document_id = $2
+                `, [hex, documentId]);
             },
         }),
     ],

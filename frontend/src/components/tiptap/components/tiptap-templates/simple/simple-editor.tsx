@@ -85,6 +85,7 @@ import {
 import {decodeJwt} from "../../../../../stores/AuthStore";
 import {Select} from "@mui/material";
 import {useDocumentStore} from "../../../../../stores/DocumentStore";
+import MenuItem from "@mui/material/MenuItem";
 
 const MainToolbarContent = ({
                                 onHighlighterClick,
@@ -96,6 +97,7 @@ const MainToolbarContent = ({
     isMobile: boolean;
 }) => {
     const {
+        documents,
         getAllDocuments,
         setCurrentDocumentId,
         currentDocumentId,
@@ -110,6 +112,13 @@ const MainToolbarContent = ({
                     value={currentDocumentId || ""}
                     onChange={(e) => setCurrentDocumentId(Number(e.target.value))}
                 >
+                    {documents.map((document) =>
+                        document.documentMembershipList.includes(decodeJwt()?.userId || 0) ? (
+                            <MenuItem key={document.documentId} value={document.documentId}>
+                                {document.title}
+                            </MenuItem>
+                        ) : null,
+                    )}
                 </Select>
             </ToolbarGroup>
             <ToolbarGroup>
