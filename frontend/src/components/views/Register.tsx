@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserStore } from "../../stores/UserStore";
+import { useNotificationStore } from "../../stores/NotificationStore";
 
 const Register = (): JSX.Element => {
   const navigate = useNavigate();
@@ -21,8 +22,30 @@ const Register = (): JSX.Element => {
   const [password, setPassword] = useState<string>("");
   const { addUser } = useUserStore();
 
+  const hasUpperCase = (password: string) => {
+    return password !== password.toLowerCase();
+  };
+  const hasNumber = (password: string) => {
+    return /\d/.test(password);
+  };
+
   const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
     e.preventDefault();
+    if (displayName.length > 16) {
+      useNotificationStore
+        .getState()
+        .addNotification("Username too long (max. 16 characters)", "error");
+      return;
+    }
+    if (!hasUpperCase(password) || !hasNumber || password.length < 8) {
+      useNotificationStore
+        .getState()
+        .addNotification(
+          "Password too weak. Need to be min. 8 digits, contain atleast 1 upper case letter and 1 number",
+          "error",
+        );
+      return;
+    }
     addUser(inviteKey, { email, password, displayName });
     navigate("/login");
   };
