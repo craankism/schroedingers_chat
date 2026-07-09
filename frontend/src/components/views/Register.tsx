@@ -37,7 +37,7 @@ const Register = (): JSX.Element => {
         .addNotification("Username too long (max. 16 characters)", "error");
       return;
     }
-    if (!hasUpperCase(password) || !hasNumber || password.length < 8) {
+    if (!hasUpperCase(password) || !hasNumber(password) || password.length < 8) {
       useNotificationStore
         .getState()
         .addNotification(
