@@ -13,7 +13,7 @@ import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.dtos.res.UpdateEventDTO;
 import sc.backend.enums.AiMode;
-import sc.backend.services.AIService;
+import sc.backend.services.AIMessageResponseService;
 import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
 

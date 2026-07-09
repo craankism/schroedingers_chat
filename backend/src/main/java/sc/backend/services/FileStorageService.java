@@ -130,4 +130,11 @@ public class FileStorageService {
                 .mimeType(storedFile.getMimeType())
                 .build();
     }
+
+    public StoredFileMetaDTO getFileMetadataByFilename(String filename) {
+        StoredFile file = storedFileRepository.findFirstByFilenameIgnoreCase(filename)
+                .orElseThrow(() -> new RuntimeException("Datei nicht gefunden: " + filename));
+
+        return convertStoredFileToDto(file);
+    }
 }
