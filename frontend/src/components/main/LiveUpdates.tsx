@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRoomStore } from "../../stores/RoomStore";
 import { useUserStore } from "../../stores/UserStore";
 import { useFileStore } from "../../stores/FileStore";
+import { authApi } from "../../services/apiCalls";
+import { decodeJwt } from "../../stores/AuthStore";
 
 const LiveUpdates: React.FC = () => {
   const clientRef = useRef<Client | null>(null);
@@ -30,6 +32,7 @@ const LiveUpdates: React.FC = () => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
+        authApi.onlineStatus(decodeJwt()?.userId || 0, true);
         client.subscribe("/topic/updates", (incomingMessage) => {
           try {
             const event = JSON.parse(incomingMessage.body);
