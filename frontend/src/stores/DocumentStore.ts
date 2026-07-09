@@ -1,7 +1,7 @@
 import { create } from "zustand/react";
 import { documentApi } from "../services/apiCalls.ts";
 import { useNotificationStore } from "./NotificationStore.ts";
-import type { DocumentType } from "src/types/DocumentType.ts";
+import type {DocumentType} from "../types/DocumentType.ts";
 
 type DocumentState = {
   documents: DocumentType[];
