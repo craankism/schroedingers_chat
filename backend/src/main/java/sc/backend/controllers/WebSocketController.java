@@ -13,7 +13,7 @@ import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.dtos.res.UpdateEventDTO;
 import sc.backend.enums.AiMode;
-import sc.backend.services.AIService;
+import sc.backend.services.AIMessageResponseService;
 import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -25,7 +25,7 @@ public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final AIService aiService;
+    private final AIMessageResponseService aiMessageResponseService;
 
     public void broadcastUpdate(String updateType, int id) {
         messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id));
@@ -47,38 +47,14 @@ public class WebSocketController {
             // TODO: can be adjusted later
             AiMode aiMode = message.getAiMode();
 
-            try {
-                String aiAnswer = aiService.ask(
-                        roomId,
-                        prompt,
-                        aiMode,
-                        messageDTO.getMessageId()
-                );
+            chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
 
-                chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
-
-                MessageDTO aiMessageDTO = chatMessageService.createAIMessage(
-                        roomId,
-                        aiAnswer,
-                        messageDTO.getMessageId()
-                );
-
-                messagingTemplate.convertAndSend(
-                        "/topic/" + roomId + "/messages",
-                        aiMessageDTO
-                );
-            } catch (Exception exception) {
-                MessageDTO errorMessage = chatMessageService.createAIMessage(
-                        roomId,
-                        "Sorry, Void could not answer right now.",
-                        null
-                );
-
-                messagingTemplate.convertAndSend(
-                        "/topic/" + roomId + "/messages",
-                        errorMessage
-                );
-            }
+            aiMessageResponseService.answerAsync(
+                    roomId,
+                    prompt,
+                    aiMode,
+                    messageDTO.getMessageId()
+            );
         }
     }
 

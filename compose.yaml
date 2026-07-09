@@ -32,6 +32,12 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       ENCRYPTION_MASTER_KEY: ${ENCRYPTION_MASTER_KEY}
       DOMAIN: ${DOMAIN:-localhost}
+      SPRING_AI_MODEL_CHAT: ollama
+      SPRING_AI_OLLAMA_BASE_URL: http://ollama:11434
+      SPRING_AI_OLLAMA_CHAT_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:3b}
+      SPRING_AI_OLLAMA_CHAT_TEMPERATURE: 0.3
+      SPRING_AI_MODEL_EMBEDDING: ollama
+      SPRING_AI_OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text:latest}
     networks:
       - app-network
     healthcheck:
@@ -41,6 +47,8 @@ services:
       retries: 5
     depends_on:
       db:
+        condition: service_healthy
+      ollama:
         condition: service_healthy
 
   frontend:
@@ -76,7 +84,8 @@ services:
     entrypoint: ["/bin/bash", "/entrypoint.sh"]
     environment:
       OLLAMA_HOST: 0.0.0.0
-      OLLAMA_MODEL: ${OLLAMA_MODEL}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:3b}
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text:latest}
     ports:
       - "11434:11434"
     volumes:
@@ -84,13 +93,12 @@ services:
       - ./ollama/entrypoint.sh:/entrypoint.sh:ro
     networks:
       - app-network
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [ gpu ]
+    healthcheck:
+      test: [ "CMD-SHELL", "test -f /tmp/ollama-ready && ollama list >/dev/null 2>&1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
 
   nginx:
     build:

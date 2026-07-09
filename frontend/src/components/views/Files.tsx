@@ -35,7 +35,7 @@ const Files = (): JSX.Element => {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3, ml: widthMinusSidebar }}>
       <Toolbar />
-      <Typography variant="h5">Kursmaterialien</Typography>
+      <Typography variant="h5">Files</Typography>
 
       <Box sx={{ maxWidth: 600, mx: "auto", mt: 4, p: 3 }}>
         <Box sx={{ display: "flex", gap: 2, mb: 3 }}>

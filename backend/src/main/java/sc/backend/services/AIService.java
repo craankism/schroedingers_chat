@@ -11,6 +11,7 @@ public class AIService {
 
     private final ChatClient.Builder chatClientBuilder;
     private final ChatMessageService chatMessageService;
+    private final FileContextService fileContextService;
 
     public String ask(
             int roomId,
@@ -25,6 +26,9 @@ public class AIService {
                 currentMessageId
         );
 
+        String fileContext = fileContextService.buildFileContext(message)
+                .orElse("(No file context was found.)");
+
         String userPrompt = """
             You are currently participating in chat room %d.
 
@@ -34,12 +38,18 @@ public class AIService {
             <previous_ai_conversation>
             %s
             </previous_ai_conversation>
+            
+            File context:
+            <file_context>
+            %s
+            </file_context>
 
             Current user prompt:
             %s
             """.formatted(
                 roomId,
                 recentChatHistory.isBlank() ? "(No previous AI conversation.)" : recentChatHistory,
+                fileContext,
                 message
         );
 
@@ -68,7 +78,6 @@ public class AIService {
                     - Use at most 3 sentences.
                     - Use previous AI conversations from this room when relevant.
                     - If you do not have enough context, say so.
-                    - Do not claim that you can access files yet.
                     """;
 
             case UNICORN -> """
@@ -79,7 +88,6 @@ public class AIService {
                     - Pretend to be a unicorn.
                     - Use previous AI conversations from this room when relevant.
                     - If you do not have enough context, say so.
-                    - Do not claim that you can access files yet.
                     """;
         };
     }
