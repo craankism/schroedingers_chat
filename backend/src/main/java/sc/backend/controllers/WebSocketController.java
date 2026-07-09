@@ -27,7 +27,7 @@ public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final AIService aiService;
+    private final AIMessageResponseService aiMessageResponseService;
     Map<Integer, Boolean> onlineList = new HashMap<>();
 
     public void broadcastUpdate(String updateType, int id, boolean online) {
@@ -55,33 +55,14 @@ public class WebSocketController {
             // TODO: can be adjusted later
             AiMode aiMode = message.getAiMode();
 
-            try {
-                String aiAnswer = aiService.ask(
-                        roomId,
-                        prompt,
-                        aiMode,
-                        messageDTO.getMessageId());
+            chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
 
-                chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
-
-                MessageDTO aiMessageDTO = chatMessageService.createAIMessage(
-                        roomId,
-                        aiAnswer,
-                        messageDTO.getMessageId());
-
-                messagingTemplate.convertAndSend(
-                        "/topic/" + roomId + "/messages",
-                        aiMessageDTO);
-            } catch (Exception exception) {
-                MessageDTO errorMessage = chatMessageService.createAIMessage(
-                        roomId,
-                        "Sorry, Void could not answer right now.",
-                        null);
-
-                messagingTemplate.convertAndSend(
-                        "/topic/" + roomId + "/messages",
-                        errorMessage);
-            }
+            aiMessageResponseService.answerAsync(
+                    roomId,
+                    prompt,
+                    aiMode,
+                    messageDTO.getMessageId()
+            );
         }
     }
 
