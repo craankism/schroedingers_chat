@@ -65,13 +65,14 @@ const SidebarHelper: React.FC<{
                         navigate("/" + item.toLowerCase());
                     }
                 } else {
+                  if (isMobile) setOpenSidebar(false);
                   navigate("/" + item.toLowerCase());
                 }
               } else {
+                if (isMobile) setOpenSidebar(false);
                 navigate("/chat");
                 setActiveView("Chats");
               }
-              if (isMobile) setOpenSidebar(false);
             }}
           >
             <ListItemText primary={item} />

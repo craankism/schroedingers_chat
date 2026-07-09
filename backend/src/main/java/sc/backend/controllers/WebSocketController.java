@@ -13,11 +13,13 @@ import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.dtos.res.UpdateEventDTO;
 import sc.backend.enums.AiMode;
-import sc.backend.services.AIService;
+import sc.backend.services.AIMessageResponseService;
 import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -25,10 +27,16 @@ public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final AIService aiService;
+    private final AIMessageResponseService aiMessageResponseService;
+    Map<Integer, Boolean> onlineList = new HashMap<>();
+
+    public void broadcastUpdate(String updateType, int id, boolean online) {
+        onlineList.put(id, online);
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id, onlineList));
+    }
 
     public void broadcastUpdate(String updateType, int id) {
-        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id));
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id, new HashMap<>()));
     }
 
     @MessageMapping("/chat/{roomId}")
@@ -46,11 +54,15 @@ public class WebSocketController {
 
             // TODO: can be adjusted later
             AiMode aiMode = message.getAiMode();
-            String aiAnswer = aiService.ask(roomId, prompt, aiMode, messageDTO.getMessageId());
 
-            MessageDTO aiMessageDTO = chatMessageService.createAIMessage(roomId, aiAnswer);
+            chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
 
-            messagingTemplate.convertAndSend("/topic/" + roomId + "/messages", aiMessageDTO);
+            aiMessageResponseService.answerAsync(
+                    roomId,
+                    prompt,
+                    aiMode,
+                    messageDTO.getMessageId()
+            );
         }
     }
 

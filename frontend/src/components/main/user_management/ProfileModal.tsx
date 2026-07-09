@@ -17,7 +17,7 @@ import type { JSX } from "@emotion/react/jsx-runtime";
 import { usePropStore } from "../../../stores/PropStore";
 import { useNotificationStore } from "../../../stores/NotificationStore";
 import ConfirmationModal from "./ConfirmationModal";
-import {ThemeSwitcher} from "../ThemeSwitcher.tsx";
+import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 
 const style = {
   margin: "auto",
@@ -65,17 +65,42 @@ const ProfileModal = (): JSX.Element => {
 
   const handleClose = () => setOpenProfile(false);
 
+  const hasUpperCase = (password: string) => {
+    return password !== password.toLowerCase();
+  };
+  const hasNumber = (password: string) => {
+    return /\d/.test(password);
+  };
   const submitHandler = async (
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
+    if (displayName.length > 16) {
+      useNotificationStore
+        .getState()
+        .addNotification("Username too long (max. 16 characters)", "error");
+      return;
+    }
+    if (
+      newPassword.length > 0 &&
+      (!hasUpperCase(newPassword) ||
+        !hasNumber(newPassword) ||
+        newPassword.length < 8)
+    ) {
+      useNotificationStore
+        .getState()
+        .addNotification(
+          "Password too weak. Need to be min. 8 digits, contain atleast 1 upper case letter and 1 number",
+          "error",
+        );
+      return;
+    }
     if (newPassword === repeatNewPassword) {
       const response = await updateUser(userId, {
         displayName,
         oldPassword,
         newPassword,
       });
-      console.log(response);
       if (response === true) {
         setOpenProfile(false);
       }
@@ -112,34 +137,41 @@ const ProfileModal = (): JSX.Element => {
         <Box sx={style}>
           <Grid container spacing={2} sx={{ alignItems: "stretch" }}>
             <Grid
-                size={{ xs: 12, md: 4 }}
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
+              size={{ xs: 12, md: 4 }}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
             >
               <Box
-                  sx={{
-                    flexGrow: { xs: 0, md: 1},
-                    minHeight: { xs: 120, md: "auto"},
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
+                sx={{
+                  flexGrow: { xs: 0, md: 1 },
+                  minHeight: { xs: 120, md: "auto" },
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                }}
               >
                 <Avatar
-                    alt="profile picture"
-                    src=""
-                    sx={{
-                      width: { xs: "40%", md: "100%" },
-                      height: "auto",
-                      aspectRatio: "1",
-                    }}
+                  alt="profile picture"
+                  src=""
+                  sx={{
+                    width: { xs: "40%", md: "100%" },
+                    height: "auto",
+                    aspectRatio: "1",
+                  }}
                 />
               </Box>
-              <Box sx={{ width: "100%", display: "flex", justifyContent: "center", pb: 1 }}>
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  pb: 1,
+                }}
+              >
                 <ThemeSwitcher />
               </Box>
             </Grid>
