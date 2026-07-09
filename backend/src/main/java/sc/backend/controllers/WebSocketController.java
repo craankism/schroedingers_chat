@@ -18,6 +18,8 @@ import sc.backend.services.ChatMessageService;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -25,10 +27,16 @@ public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final AIMessageResponseService aiMessageResponseService;
+    private final AIService aiService;
+    Map<Integer, Boolean> onlineList = new HashMap<>();
+
+    public void broadcastUpdate(String updateType, int id, boolean online) {
+        onlineList.put(id, online);
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id, onlineList));
+    }
 
     public void broadcastUpdate(String updateType, int id) {
-        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id));
+        messagingTemplate.convertAndSend("/topic/updates", new UpdateEventDTO(updateType, id, new HashMap<>()));
     }
 
     @MessageMapping("/chat/{roomId}")
@@ -47,14 +55,33 @@ public class WebSocketController {
             // TODO: can be adjusted later
             AiMode aiMode = message.getAiMode();
 
-            chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
+            try {
+                String aiAnswer = aiService.ask(
+                        roomId,
+                        prompt,
+                        aiMode,
+                        messageDTO.getMessageId());
 
-            aiMessageResponseService.answerAsync(
-                    roomId,
-                    prompt,
-                    aiMode,
-                    messageDTO.getMessageId()
-            );
+                chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
+
+                MessageDTO aiMessageDTO = chatMessageService.createAIMessage(
+                        roomId,
+                        aiAnswer,
+                        messageDTO.getMessageId());
+
+                messagingTemplate.convertAndSend(
+                        "/topic/" + roomId + "/messages",
+                        aiMessageDTO);
+            } catch (Exception exception) {
+                MessageDTO errorMessage = chatMessageService.createAIMessage(
+                        roomId,
+                        "Sorry, Void could not answer right now.",
+                        null);
+
+                messagingTemplate.convertAndSend(
+                        "/topic/" + roomId + "/messages",
+                        errorMessage);
+            }
         }
     }
 

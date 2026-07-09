@@ -1,12 +1,10 @@
 import { Box, Typography } from "@mui/material";
 import IconSC from "../../assets/iconSC.png";
-import { useNavigate } from "react-router-dom";
 import { Menu } from "@mui/icons-material";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { usePropStore } from "../../stores/PropStore";
 
 const MobileNav = (): JSX.Element => {
-  const navigate = useNavigate();
   const { openSidebar, setOpenSidebar } = usePropStore();
 
   return (
@@ -18,7 +16,6 @@ const MobileNav = (): JSX.Element => {
           justifyContent: "center",
           alignItems: "center",
         }}
-        onClick={() => navigate("/")}
       >
         <Box
           component="img"

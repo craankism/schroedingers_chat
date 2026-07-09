@@ -6,7 +6,6 @@ import {
   List,
   ListItem,
   ListItemButton,
-  Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
@@ -22,6 +21,7 @@ import { usePropStore } from "../../../stores/PropStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import NewDocumentModal from "./NewDocumentModal";
 import { useUserStore } from "../../../stores/UserStore";
+import { heightMinusTopNav } from "../../../types/constants/constants";
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files", "Editor"];
@@ -85,10 +85,10 @@ const Sidebar = (): JSX.Element => {
             width: { xs: "100vw", md: 240 },
             height: "100vh",
             boxSizing: "border-box",
+            pt: heightMinusTopNav,
           },
         }}
       >
-        <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           {isAdmin && (
             <>
@@ -170,7 +170,9 @@ const Sidebar = (): JSX.Element => {
                   }}
                 >
                   <ListItemButton
-                    onClick={logout}
+                    onClick={() => {
+                      logout();
+                    }}
                     sx={{ justifyContent: "center" }}
                   >
                     <Typography>

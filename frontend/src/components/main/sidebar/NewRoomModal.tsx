@@ -115,7 +115,7 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
                       userIdSet.includes(user.userId) ||
                       decodeJwt()?.userId == user.userId;
                     return (
-                      <Grid size={{ xs: 4, md: 3 }} key={index}>
+                      <Grid size={{ xs: 6, md: 3 }} key={index}>
                         <ListItemButton
                           sx={{
                             border: "solid, 0.5px",
