@@ -51,8 +51,12 @@ public class AuthController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-        broadcastAuthUpdate(authDTO.getUserId(), true);
         return new ResponseEntity<>(authDTO, HttpStatus.OK);
+    }
+
+    @PostMapping("/online/{userId}")
+    public void onlineStatus(@PathVariable int userId, @RequestBody boolean status) {
+        broadcastAuthUpdate(userId, status);
     }
 
     @PostMapping("/refresh")

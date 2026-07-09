@@ -23,6 +23,7 @@ import { useDocumentStore } from "./stores/DocumentStore.ts";
 import { useFileStore } from "./stores/FileStore.ts";
 import { useRoomStore } from "./stores/RoomStore.ts";
 import { useUserStore } from "./stores/UserStore.ts";
+import { decodeJwt } from "./stores/AuthStore.ts";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
@@ -40,6 +41,29 @@ const App = (): JSX.Element => {
       getAllUsers();
     }
     // eslint-disable-next-line
+  }, [isAuthenticated]);
+
+  // show offline status when browser or tab is closed
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleBeforeUnload = () => {
+      const userId = decodeJwt()?.userId;
+      const token = localStorage.getItem("jwt");
+      if (!userId || !token) return;
+      fetch(`/api/auth/online/${userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: "false",
+        keepalive: true,
+      });
+    };
+
+    window.addEventListener("pagehide", handleBeforeUnload);
+    return () => window.removeEventListener("pagehide", handleBeforeUnload);
   }, [isAuthenticated]);
 
   return (

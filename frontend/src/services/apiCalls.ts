@@ -9,7 +9,7 @@ import type {
   AuthResponseType,
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
-import type { DocumentType } from "src/types/DocumentType.ts";
+import type { DocumentType } from "../types/DocumentType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
@@ -185,6 +185,10 @@ export const authApi = {
       credentials,
     );
     return response.data;
+  },
+
+  onlineStatus: async (userId: number, status: boolean): Promise<void> => {
+    await api.post<boolean>(`${authUrl}/online/${userId}`, status);
   },
 
   validateCode: async (
