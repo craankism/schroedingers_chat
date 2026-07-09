@@ -20,6 +20,7 @@ import sc.backend.repositories.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +41,7 @@ public class DocumentService {
                 .title(createDocumentDTO.getTitle())
                 .build();
 
-        documentRepository.save(createdDocument);
+        documentRepository.saveAndFlush(createdDocument);
 
         DocumentMembership creatorMembership = DocumentMembership.builder()
                 .document(createdDocument)
@@ -48,7 +49,7 @@ public class DocumentService {
                 .role(DocumentRole.OWNER)
                 .build();
 
-        documentMembershipRepository.save(creatorMembership);
+        documentMembershipRepository.saveAndFlush(creatorMembership);
 
         for (Integer userId : createDocumentDTO.getDocumentMembershipList()) {
             shareDocument(createdDocument.getDocumentId(), creator.getEmail(), userId);
@@ -84,7 +85,7 @@ public class DocumentService {
                     .user(newMember)
                     .role(DocumentRole.EDITOR)
                     .build();
-            documentMembershipRepository.save(documentMembership);
+            documentMembershipRepository.saveAndFlush(documentMembership);
         }
         return convertToMetaDto(document);
     }
@@ -93,7 +94,7 @@ public class DocumentService {
     public void deleteDocument(int documentId, String authenticatedEmail) {
         Document document = findDocumentById(documentId);
         checkOwner(document, getUserFromEmail(authenticatedEmail).getUserId());
-        List<DocumentMembership> membershipList = document.getDocumentMembershipList();
+        List<DocumentMembership> membershipList = documentMembershipRepository.findByDocument(document);
         documentMembershipRepository.deleteAll(membershipList);
         documentRepository.delete(document);
     }
@@ -127,12 +128,10 @@ public class DocumentService {
     }
 
     private List<Integer> getMembershipList(Document document) {
-        List<Integer> membershipList = new ArrayList<>();
-
-        for(DocumentMembership membership: document.getDocumentMembershipList()) {
-            membershipList.add(membership.getUser().getUserId());
-        }
-        return membershipList;
+        return documentMembershipRepository.findByDocument(document)
+                .stream()
+                .map(dm -> dm.getUser().getUserId())
+                .collect(Collectors.toList());
     }
 
     private void checkOwner(Document document, int userId) {

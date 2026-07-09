@@ -23,6 +23,7 @@ import { useDocumentStore } from "./stores/DocumentStore.ts";
 import { useFileStore } from "./stores/FileStore.ts";
 import { useRoomStore } from "./stores/RoomStore.ts";
 import { useUserStore } from "./stores/UserStore.ts";
+import GlobalLoader from "./components/main/GlobalLoader.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
@@ -51,6 +52,7 @@ const App = (): JSX.Element => {
         </>
       ) : null}
       <NavTop />
+      <GlobalLoader />
       <NotificationBanner />
       <Routes>
         <Route element={<ProtectedRoute />}>

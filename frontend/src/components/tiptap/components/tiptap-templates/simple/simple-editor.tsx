@@ -2,6 +2,8 @@
 
 import {useEffect, useRef, useState} from "react";
 import {EditorContent, EditorContext, useEditor} from "@tiptap/react";
+import { useTheme } from "@mui/material/styles";
+import {Divider, useMediaQuery} from "@mui/material";
 
 // --- Tiptap Core Extensions ---
 import {StarterKit} from "@tiptap/starter-kit";
@@ -61,11 +63,6 @@ import {LinkIcon} from "@/components/tiptap-icons/link-icon";
 
 // --- Hooks ---
 import {useIsBreakpoint} from "@/hooks/use-is-breakpoint";
-import {useWindowSize} from "@/hooks/use-window-size";
-import {useCursorVisibility} from "@/hooks/use-cursor-visibility";
-
-// --- Components ---
-import {ThemeToggle} from "@/components/tiptap-templates/simple/theme-toggle";
 
 // --- Lib ---
 import {handleImageUpload, MAX_FILE_SIZE} from "@/lib/tiptap-utils";
@@ -73,7 +70,6 @@ import {handleImageUpload, MAX_FILE_SIZE} from "@/lib/tiptap-utils";
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
-import content from "@/components/tiptap-templates/simple/data/content.json";
 // mine
 import {useHocuspocusProvider} from "@hocuspocus/provider-react";
 import Collaboration from "@tiptap/extension-collaboration";
@@ -83,9 +79,11 @@ import {
     HocuspocusRoom,
 } from "@hocuspocus/provider-react";
 import {decodeJwt} from "../../../../../stores/AuthStore";
-import {Select} from "@mui/material";
+import {Paper} from "@mui/material";
 import {useDocumentStore} from "../../../../../stores/DocumentStore";
 import MenuItem from "@mui/material/MenuItem";
+import {usePropStore} from "../../../../../stores/PropStore.ts";
+import Menu from "@mui/material/Menu";
 
 const MainToolbarContent = ({
                                 onHighlighterClick,
@@ -102,24 +100,61 @@ const MainToolbarContent = ({
         setCurrentDocumentId,
         currentDocumentId,
     } = useDocumentStore();
+    const { setNewDocModalOpen } = usePropStore();
+    const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+
+    const myJwt = decodeJwt();
+
     useEffect(() => {
         getAllDocuments();
     }, [getAllDocuments]);
+
     return (
         <>
             <ToolbarGroup>
-                <Select
-                    value={currentDocumentId || ""}
-                    onChange={(e) => setCurrentDocumentId(Number(e.target.value))}
+                <Button
+                    variant="ghost"
+                    onClick={(e) => setMenuAnchor(e.currentTarget)}
+                    aria-label="Document menu"
                 >
+                    File
+                </Button>
+                <Menu
+                    anchorEl={menuAnchor}
+                    open={!!menuAnchor}
+                    onClose={() => setMenuAnchor(null)}
+                    anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "left",
+                    }}
+                    transformOrigin={{
+                        vertical: "top",
+                        horizontal: "left",
+                    }}
+                >
+                    <MenuItem onClick={() => {
+                        setNewDocModalOpen(true);
+                        setMenuAnchor(null);
+                    }}>
+                        New File
+                    </MenuItem>
+                    <Divider />
                     {documents.map((document) =>
-                        document.documentMembershipList.includes(decodeJwt()?.userId || 0) ? (
-                            <MenuItem key={document.documentId} value={document.documentId}>
+                        document.documentMembershipList.includes(myJwt?.userId || 0) ? (
+                            <MenuItem
+                                key={document.documentId}
+                                value={document.documentId}
+                                selected={document.documentId === currentDocumentId}
+                                onClick={() => {
+                                    setCurrentDocumentId(document.documentId || 0);
+                                    setMenuAnchor(null);
+                                }}
+                            >
                                 {document.title}
                             </MenuItem>
                         ) : null,
                     )}
-                </Select>
+                </Menu>
             </ToolbarGroup>
             <ToolbarGroup>
                 <UndoRedoButton action="undo"/>
@@ -180,9 +215,6 @@ const MainToolbarContent = ({
 
             {isMobile && <ToolbarSeparator/>}
 
-            <ToolbarGroup>
-                <ThemeToggle/>
-            </ToolbarGroup>
         </>
     );
 };
@@ -218,8 +250,9 @@ const MobileToolbarContent = ({
 
 function SimpleEditorInner() {
     const provider = useHocuspocusProvider();
+    const theme = useTheme();
     const isMobile = useIsBreakpoint();
-    const {height} = useWindowSize();
+
     const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
         "main",
     );
@@ -267,12 +300,6 @@ function SimpleEditorInner() {
                 onError: (error) => console.error("Upload failed:", error),
             }),
         ],
-        content,
-    });
-
-    const rect = useCursorVisibility({
-        editor,
-        overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
     });
 
     useEffect(() => {
@@ -281,58 +308,86 @@ function SimpleEditorInner() {
         }
     }, [isMobile, mobileView]);
 
+    useEffect(() => {
+        const isDark = theme.palette.mode === "dark";
+        document.documentElement.classList.toggle("dark", isDark);
+    }, [theme.palette.mode]);
+
     return (
         <EditorContext.Provider value={{editor}}>
-            <Toolbar
-                ref={toolbarRef}
-                style={{
-                    ...(isMobile
-                        ? {
-                            bottom: `calc(100% - ${height - rect.y}px)`,
-                        }
-                        : {
-                            paddingLeft: 240,
-                            marginTop: "66px",
-                        }),
-                }}
-            >
-                {mobileView === "main" ? (
-                    <MainToolbarContent
-                        onHighlighterClick={() => setMobileView("highlighter")}
-                        onLinkClick={() => setMobileView("link")}
-                        isMobile={isMobile}
-                    />
-                ) : (
-                    <MobileToolbarContent
-                        type={mobileView === "highlighter" ? "highlighter" : "link"}
-                        onBack={() => setMobileView("main")}
-                    />
-                )}
-            </Toolbar>
+            <div className="editor-scroll-container">
+                <div className="floating-toolbar-wrapper">
+                    <Toolbar
+                        ref={toolbarRef}
+                        className="floating-toolbar"
+                        style={{
+                            backgroundColor: theme.palette.background.paper,
+                            ...(isMobile
+                                ? {
+                                    position: "fixed",
+                                    bottom: 16,
+                                    left: 0,
+                                    right: 0,
+                                }
+                                : {}),
+                        }}
+                    >
+                        {mobileView === "main" ? (
+                            <MainToolbarContent
+                                onHighlighterClick={() => setMobileView("highlighter")}
+                                onLinkClick={() => setMobileView("link")}
+                                isMobile={isMobile}
+                            />
+                        ) : (
+                            <MobileToolbarContent
+                                type={mobileView === "highlighter" ? "highlighter" : "link"}
+                                onBack={() => setMobileView("main")}
+                            />
+                        )}
+                    </Toolbar>
+                </div>
 
-            <EditorContent
-                editor={editor}
-                role="presentation"
-                className="simple-editor-content"
-                style={isMobile ? {marginTop: "68.5px"} : {marginLeft: 210}}
-            />
+                <div
+                    className="editor-page-background"
+                    style={{ backgroundColor: theme.palette.background.deep }}
+                >
+                    <Paper
+                        elevation={3}
+                        className="editor-sheet"
+                        style={isMobile ? {} : {maxWidth: "850px", margin: "0 auto 40px"}}
+                    >
+                        <EditorContent
+                            editor={editor}
+                            role="presentation"
+                            className="simple-editor-content"
+                        />
+                    </Paper>
+                </div>
+            </div>
         </EditorContext.Provider>
     );
 }
 
 export function SimpleEditor() {
     const {currentDocumentId} = useDocumentStore();
+    const theme = useTheme();
+    const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
     if (!currentDocumentId) {
         return <div>Kein Dokument ausgewählt</div>;
     }
 
+    const wrapperStyle = isDesktop
+        ? { marginLeft: 240, width: "calc(100vw - 240px)" }
+        : {};
+
     return (
-        <div className="simple-editor-wrapper">
+        <div className="simple-editor-wrapper" style={wrapperStyle}>
             <HocuspocusProviderWebsocketComponent
                 url={`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/collab`}
             >
                 <HocuspocusRoom
+                    key={currentDocumentId}
                     name={`doc-${currentDocumentId}`}
                     token={localStorage.getItem("jwt") || undefined}
                     onAuthenticationFailed={(data) => console.error(data.reason)}
