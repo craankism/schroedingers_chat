@@ -136,6 +136,35 @@ while true; do
     break
 done
 
+# GPU Abfrage
+echo ""
+echo "========================================="
+echo "  GPU Konfiguration"
+echo "========================================="
+read -p "Ist eine NVIDIA GPU vorhanden? (y/N) " has_gpu
+
+if [[ "$has_gpu" =~ ^[Yy]$ ]]; then
+    echo "GPU Modus: 7B Modell mit GPU-Beschleunigung"
+    cat > "compose.override.yaml" << 'EOF'
+services:
+  ollama:
+    environment:
+      - OLLAMA_MODEL=qwen2.5-coder:7b
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+EOF
+    echo "compose.override.yaml wurde erstellt."
+else
+    echo "CPU Modus: 3B Modell ohne GPU"
+    rm -f "compose.override.yaml"
+    echo "Kein GPU-Override aktiv."
+fi
+
 echo ""
 echo "Schreibe $ENV_FILE ..."
 

@@ -24,6 +24,7 @@ import { useFileStore } from "./stores/FileStore.ts";
 import { useRoomStore } from "./stores/RoomStore.ts";
 import { useUserStore } from "./stores/UserStore.ts";
 import { decodeJwt } from "./stores/AuthStore.ts";
+import GlobalLoader from "./components/main/GlobalLoader.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
