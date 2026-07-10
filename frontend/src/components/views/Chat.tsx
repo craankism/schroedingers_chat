@@ -82,15 +82,14 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   );
 
   const handleClickSendMessage = useCallback(() => {
-    const trimmedMessage = message.trim();
-    if (!trimmedMessage || !clientRef.current?.connected) {
+    if (!message.trim() || !clientRef.current?.connected) {
       return;
     }
 
     clientRef.current.publish({
       destination: "/app/chat/" + roomId.roomId,
       body: JSON.stringify({
-        content: trimmedMessage,
+        content: message,
       } as MessageType),
     });
     setMessage("");

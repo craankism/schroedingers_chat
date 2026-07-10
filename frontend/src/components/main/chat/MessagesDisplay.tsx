@@ -5,6 +5,8 @@ import { decodeJwt } from "../../../stores/AuthStore";
 import { Clear } from "@mui/icons-material";
 import { widthMinusSidebar } from "../../../types/constants/constants.ts";
 import { useMessageStore } from "../../../stores/MessageStore.ts";
+import Markdown from "react-markdown";
+
 type MessagesDisplayProps = {
   connectionStatus: string;
   handleDeleteMessage: (messageId: number) => void;
@@ -69,7 +71,11 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                     {message.sender}
                   </Typography>
                   {message.content != null ? (
-                    <Typography>{message.content}</Typography>
+                    <Box
+                      sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                    >
+                      <Markdown>{message.content}</Markdown>
+                    </Box>
                   ) : (
                     <Typography sx={{ opacity: "30%" }}>
                       Message deleted
@@ -94,7 +100,11 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
               <Box>
                 <Typography sx={{ color: "red" }}>{message.sender}</Typography>
                 {message.content != null ? (
-                  <Typography>{message.content}</Typography>
+                  <Box
+                    sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                  >
+                    <Markdown>{message.content}</Markdown>
+                  </Box>
                 ) : (
                   <Typography sx={{ opacity: "30%" }}>
                     Message deleted
