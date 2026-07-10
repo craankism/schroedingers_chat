@@ -63,25 +63,49 @@ if [ "$DOMAIN" != "localhost" ] && [ -n "$DOMAIN" ]; then
     echo ""
     echo "Beantrage SSL Zertifikat fuer $DOMAIN..."
 
-    # Warten bis nginx verfuegbar ist
+    # Warten bis Nginx verfuegbar ist (mit Timeout)
     echo "Warte auf Nginx..."
-    until curl -sf http://localhost/.well-known/acme-challenge/ >/dev/null 2>&1; do
+    MAX_WAIT=60
+    WAITED=0
+    until curl -s -o /dev/null -w "%{http_code}" http://localhost/ 2>/dev/null | grep -qE '^(200|301|302)$'; do
         sleep 2
+        WAITED=$((WAITED + 2))
+        if [ "$WAITED" -ge "$MAX_WAIT" ]; then
+            echo "FEHLER: Nginx nicht erreichbar nach $MAX_WAIT Sekunden."
+            echo "Pruefe mit: docker compose logs nginx"
+            echo "SSL wird uebersprungen. Self-Signed Cert bleibt aktiv."
+            echo ""
+            echo "========================================="
+            echo "  Installation abgeschlossen (ohne SSL)!"
+            echo "========================================="
+            docker compose ps
+            exit 1
+        fi
     done
+    echo "Nginx ist bereit."
 
-    # Certbot initial ausfuehren (entrypoint ueberschreiben!)
-    docker compose run --rm --entrypoint "certbot" certbot certonly \
+    # Certbot initial ausfuehren (entrypoint ueberschreiben)
+    echo "Beantrage Zertifikat..."
+    if docker compose run --rm --entrypoint "certbot" certbot certonly \
         --webroot -w /var/www/certbot \
         -d "$DOMAIN" \
         --non-interactive \
         --agree-tos \
-        -m "$ADMIN_EMAIL"
+        -m "$ADMIN_EMAIL"; then
 
-    # Nginx Container neustarten damit entrypoint.sh die Symlinks setzt
-    echo "Neustart von Nginx fuer Zertifikatsuebernahme..."
-    docker compose restart nginx
-
-    echo "SSL Zertifikat fuer $DOMAIN aktiviert."
+        # Nginx neustarten damit entrypoint.sh die Symlinks setzt
+        echo "Neustart von Nginx fuer Zertifikatsuebernahme..."
+        docker compose restart nginx
+        echo "SSL Zertifikat fuer $DOMAIN aktiviert."
+    else
+        echo "WARNUNG: Certbot konnte kein Zertifikat besorgen."
+        echo "Moegliche Ursachen: DNS noch nicht propagiert, Rate Limit, falsche Domain."
+        echo "Self-Signed Cert bleibt aktiv. Du kannst es spaeter manuell erneut versuchen."
+        echo ""
+        echo "Manueller Versuch spaeter:"
+        echo "  docker compose run --rm --entrypoint certbot certbot certonly --webroot -w /var/www/certbot -d $DOMAIN --non-interactive --agree-tos -m $ADMIN_EMAIL"
+        echo "  docker compose restart nginx"
+    fi
 else
     echo "Keine Domain gesetzt, ueberspringe SSL. Self-Signed Cert wird verwendet."
 fi
