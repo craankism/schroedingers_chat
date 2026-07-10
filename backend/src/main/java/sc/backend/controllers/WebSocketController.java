@@ -20,6 +20,7 @@ import org.springframework.security.access.AccessDeniedException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Controller
@@ -27,7 +28,7 @@ public class WebSocketController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final AIMessageResponseService aiMessageResponseService;
+    private final Optional<AIMessageResponseService> aiMessageResponseService;
     Map<Integer, Boolean> onlineList = new HashMap<>();
 
     public void broadcastUpdate(String updateType, int id, boolean online) {
@@ -50,19 +51,20 @@ public class WebSocketController {
         messagingTemplate.convertAndSend("/topic/" + roomId + "/messages", messageDTO);
 
         if (aiMentioned(message.getContent())) {
-            String prompt = removeAiMention(message.getContent());
+            aiMessageResponseService.ifPresent(aiService -> {
+                String prompt = removeAiMention(message.getContent());
 
-            // TODO: can be adjusted later
-            AiMode aiMode = message.getAiMode();
+                AiMode aiMode = message.getAiMode();
 
-            chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
+                chatMessageService.markAsAiPrompt(messageDTO.getMessageId());
 
-            aiMessageResponseService.answerAsync(
-                    roomId,
-                    prompt,
-                    aiMode,
-                    messageDTO.getMessageId()
-            );
+                aiService.answerAsync(
+                        roomId,
+                        prompt,
+                        aiMode,
+                        messageDTO.getMessageId()
+                );
+            });
         }
     }
 
