@@ -144,12 +144,11 @@ echo "========================================="
 read -p "Ist eine NVIDIA GPU vorhanden? (y/N) " has_gpu
 
 if [[ "$has_gpu" =~ ^[Yy]$ ]]; then
-    echo "GPU Modus: 7B Modell mit GPU-Beschleunigung"
+    SELECTED_MODEL="qwen2.5-coder:7b"
+    echo "GPU Modus: 7B Modell mit GPU Beschleunigung"
     cat > "compose.override.yaml" << 'EOF'
 services:
   ollama:
-    environment:
-      - OLLAMA_MODEL=qwen2.5-coder:7b
     deploy:
       resources:
         reservations:
@@ -158,11 +157,11 @@ services:
               count: all
               capabilities: [gpu]
 EOF
-    echo "compose.override.yaml wurde erstellt."
+    echo "compose.override.yaml (GPU Treiber) wurde erstellt."
 else
+    SELECTED_MODEL="qwen2.5-coder:3b"
     echo "CPU Modus: 3B Modell ohne GPU"
     rm -f "compose.override.yaml"
-    echo "Kein GPU-Override aktiv."
 fi
 
 echo ""
@@ -194,6 +193,10 @@ MINIO_BUCKET=$minio_bucket
 
 # AES Encryption Key
 ENCRYPTION_MASTER_KEY=$enc_master_key
+
+# AI Model Configuration
+OLLAMA_MODEL=$SELECTED_MODEL
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest
 
 EOF
 
