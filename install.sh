@@ -46,14 +46,45 @@ else
     cd "$INSTALL_DIR"
 fi
 
-# Setup Skript ausfuehren (interaktiv fuer sensible Werte)
+# Setup Skript ausfuehren (interaktiv, stdin vom Terminal)
 chmod +x setup.sh
-./setup.sh
+./setup.sh </dev/tty
 
-# Docker Compe start
+# Docker Compose start
 echo ""
 echo "Starte Schroedingers Chat..."
 docker compose up -d --build
+
+# SSL Zertifikat beantragen wenn nicht localhost
+DOMAIN=$(grep '^DOMAIN=' .env | cut -d= -f2)
+ADMIN_EMAIL=$(grep '^SUPERADMIN_EMAIL=' .env | cut -d= -f2)
+
+if [ "$DOMAIN" != "localhost" ] && [ -n "$DOMAIN" ]; then
+    echo ""
+    echo "Beantrage SSL Zertifikat fuer $DOMAIN..."
+
+    # Warten bis nginx verfuegbar ist
+    echo "Warte auf Nginx..."
+    until curl -sf http://localhost/.well-known/acme-challenge/ >/dev/null 2>&1; do
+        sleep 2
+    done
+
+    # Certbot initial ausfuehren (entrypoint ueberschreiben!)
+    docker compose run --rm --entrypoint "certbot" certbot certonly \
+        --webroot -w /var/www/certbot \
+        -d "$DOMAIN" \
+        --non-interactive \
+        --agree-tos \
+        -m "$ADMIN_EMAIL"
+
+    # Nginx Container neustarten damit entrypoint.sh die Symlinks setzt
+    echo "Neustart von Nginx fuer Zertifikatsuebernahme..."
+    docker compose restart nginx
+
+    echo "SSL Zertifikat fuer $DOMAIN aktiviert."
+else
+    echo "Keine Domain gesetzt, ueberspringe SSL. Self-Signed Cert wird verwendet."
+fi
 
 echo ""
 echo "========================================="

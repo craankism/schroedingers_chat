@@ -54,6 +54,7 @@ services:
   frontend:
     build:
       context: ./frontend
+      target: prod
     restart: unless-stopped
     networks:
       - app-network
