@@ -74,7 +74,7 @@ public class StoredFileController {
     @DeleteMapping("/{fileId}")
     public ResponseEntity<?> deleteFileById(@PathVariable int fileId) throws Exception {
         fileStorageService.deleteFile(fileId);
-        broadcastFileUpdate(fileId);
+        broadcastFileUpdate(0);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -11,9 +11,9 @@ const LiveUpdates: React.FC = () => {
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
 
-  const { getRoom } = useRoomStore();
-  const { getFileMeta } = useFileStore();
-  const { getUser, setOnlineList } = useUserStore();
+  const { getRoom, getAllRooms } = useRoomStore();
+  const { getFileMeta, getAllFilesMeta } = useFileStore();
+  const { getUser, setOnlineList, getAllUsers } = useUserStore();
 
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -37,11 +37,14 @@ const LiveUpdates: React.FC = () => {
           try {
             const event = JSON.parse(incomingMessage.body);
             if (event.type === "ROOM_UPDATE") {
-              getRoom(event.id);
+              if (event.id === 0) getAllRooms();
+              else getRoom(event.id);
             } else if (event.type === "USER_UPDATE") {
-              getUser(event.id);
+              if (event.id === 0) getAllUsers();
+              else getUser(event.id);
             } else if (event.type === "FILE_UPDATE") {
-              getFileMeta(event.id);
+              if (event.id === 0) getAllFilesMeta();
+              else getFileMeta(event.id);
             } else if (event.type === "AUTH_UPDATE") {
               setOnlineList(event.online);
             }
