@@ -2,9 +2,11 @@ package sc.backend.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import sc.backend.enums.AiMode;
 
+@Profile("prod")
 @RequiredArgsConstructor
 @Service
 public class AIService {

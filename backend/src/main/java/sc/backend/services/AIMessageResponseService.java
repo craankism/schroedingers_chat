@@ -1,12 +1,21 @@
 package sc.backend.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.enums.AiMode;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
+@ConditionalOnProperty(
+        name = "ai.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+)
+@Profile("prod")
 @RequiredArgsConstructor
 @Service
 public class AIMessageResponseService {
