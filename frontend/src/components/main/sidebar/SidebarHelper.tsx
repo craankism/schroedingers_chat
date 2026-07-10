@@ -33,7 +33,8 @@ const SidebarHelper: React.FC<{
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { setOpenSidebar, setRoomId, setNewDocModalOpen } = usePropStore();
   const navigate = useNavigate();
-  const { documents, setCurrentDocumentId } = useDocumentStore();
+  const { documents, currentDocumentId, setCurrentDocumentId } =
+    useDocumentStore();
 
   const selectionFilter = (item: string) => {
     if (activeView === item) return true;
@@ -53,17 +54,28 @@ const SidebarHelper: React.FC<{
               if (itemNames.includes(item)) {
                 setActiveView(item);
                 if (item === "Editor") {
-                    const userInDocs = documents.find((document) =>
-                        document.documentMembershipList.find(
-                            (userId: number) => userId === decodeJwt()?.userId,
-                        ),
+                  const currentUserId = decodeJwt()?.userId;
+                  const memberDocs = documents.filter((document) =>
+                    document.documentMembershipList.some(
+                      (userId: number) => userId === currentUserId,
+                    ),
+                  );
+
+                  if (memberDocs.length === 0) {
+                    setNewDocModalOpen(true);
+                  } else {
+                    // Prefer the current document id when valid, otherwise use the first member doc.
+                    const currentMemberDocument = memberDocs.find(
+                      (document) => document.documentId === currentDocumentId,
                     );
-                    if (!userInDocs) {
-                        setNewDocModalOpen(true);
-                    } else {
-                        setCurrentDocumentId(userInDocs.documentId || 0);
-                        navigate("/" + item.toLowerCase());
-                    }
+                    const selectedDocumentId =
+                      currentMemberDocument?.documentId ??
+                      memberDocs[0].documentId ??
+                      0;
+
+                    setCurrentDocumentId(selectedDocumentId);
+                    navigate("/" + item.toLowerCase());
+                  }
                 } else {
                   if (isMobile) setOpenSidebar(false);
                   navigate("/" + item.toLowerCase());
