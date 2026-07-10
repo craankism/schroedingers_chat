@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_URL="https://github.com/DEIN-USER/Schroedingers-Chat.git"
+REPO_URL="https://gitlab.com/final-project5855325/schroedingers_chat.git"
 INSTALL_DIR="/opt/schroedingers-chat"
 
 echo "========================================="
