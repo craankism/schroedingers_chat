@@ -125,8 +125,7 @@ public class ChatMessageService {
     }
 
     public String getRecentChatHistory(int roomId, int currentMessageId) {
-        List<ChatMessage> prompts =
-                chatMessageRepository.findRecentAiPrompts(roomId, currentMessageId);
+        List<ChatMessage> prompts = chatMessageRepository.findRecentAiPrompts(roomId, currentMessageId);
 
         if (prompts.isEmpty()) {
             return "";
@@ -136,16 +135,14 @@ public class ChatMessageService {
                 .map(ChatMessage::getMessageId)
                 .toList();
 
-        List<ChatMessage> aiAnswers =
-                chatMessageRepository.findAiAnswersForPrompts(roomId, promptIds);
+        List<ChatMessage> aiAnswers = chatMessageRepository.findAiAnswersForPrompts(roomId, promptIds);
 
         Map<Integer, ChatMessage> answerByPromptId = aiAnswers.stream()
                 .filter(answer -> answer.getAiPromptMessageId() != null)
                 .collect(Collectors.toMap(
                         ChatMessage::getAiPromptMessageId,
                         answer -> answer,
-                        (first, second) -> first
-                ));
+                        (first, second) -> first));
 
         Collections.reverse(prompts);
 
@@ -210,6 +207,7 @@ public class ChatMessageService {
 
         return MessageDTO.builder()
                 .messageId(message.getMessageId())
+                .userId(message.getCreatedBy().getUserId())
                 .content(decryptContent(message))
                 .sender(sender)
                 .creationDate(message.getCreationDate())

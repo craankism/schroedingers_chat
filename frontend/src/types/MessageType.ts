@@ -4,6 +4,7 @@ export type MessageType = {
 
 export type MessageInput = {
     messageId: number,
+    userId: number,
     content: string | null,
     sender: string,
     creationDate: string
