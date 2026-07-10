@@ -6,6 +6,7 @@ import { Clear } from "@mui/icons-material";
 import { widthMinusSidebar } from "../../../types/constants/constants.ts";
 import { useMessageStore } from "../../../stores/MessageStore.ts";
 import Markdown from "react-markdown";
+import { useUserStore } from "../../../stores/UserStore.ts";
 
 type MessagesDisplayProps = {
   connectionStatus: string;
@@ -21,6 +22,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const { messages } = useMessageStore();
+  const { users } = useUserStore();
 
   // Scroll to the last message whenever messages change.
   useEffect(() => {
@@ -60,7 +62,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
             sx={{ display: "flex" }}
             ref={id === messages.length - 1 ? lastMessageRef : null}
           >
-            {decodeJwt()?.displayName === message.sender ? (
+            {decodeJwt()?.userId === message.userId ? (
               <Box
                 sx={{ marginLeft: "auto", textAlign: "right" }}
                 onMouseEnter={() => setHoveredId(id)}
@@ -68,7 +70,10 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
               >
                 <Box>
                   <Typography sx={{ color: "cyan" }}>
-                    {message.sender}
+                    {
+                      users.find((user) => user.userId === message.userId)
+                        ?.displayName
+                    }
                   </Typography>
                   {message.content != null ? (
                     <Box
@@ -98,7 +103,12 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
               </Box>
             ) : (
               <Box>
-                <Typography sx={{ color: "red" }}>{message.sender}</Typography>
+                <Typography sx={{ color: "red" }}>
+                  {
+                    users.find((user) => user.userId === message.userId)
+                      ?.displayName
+                  }
+                </Typography>
                 {message.content != null ? (
                   <Box
                     sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
