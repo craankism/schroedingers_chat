@@ -26,7 +26,7 @@ type AuthState = {
   token: string | null;
   currentUser: UserType | null;
   isAuthenticated: boolean;
-  setIsAuthenticated: (change: boolean) => void;
+  checkAuthentication: () => Promise<boolean>;
   login: (login: AuthLoginType) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
@@ -42,8 +42,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   currentUser: decodeJwt(),
   isAuthenticated: !!localStorage.getItem("jwt"),
 
-  setIsAuthenticated: (change: boolean) => {
-    set({ isAuthenticated: change });
+  checkAuthentication: async () => {
+    useNotificationStore.getState().startLoading();
+    try {
+      const data = await authApi.checkAuthentication();
+      set({ isAuthenticated: data });
+      return data;
+    } catch {
+      set({ isAuthenticated: false });
+      return false;
+    } finally {
+      useNotificationStore.getState().stopLoading();
+    }
   },
 
   login: async (login: AuthLoginType) => {
@@ -58,9 +68,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         .addNotification("Login successful", "success");
     } catch (e) {
       set({ error: "Fehler" + e });
-      useNotificationStore
-        .getState()
-        .addNotification("Login error", "error");
+      useNotificationStore.getState().addNotification("Login error", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }

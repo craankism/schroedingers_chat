@@ -48,6 +48,12 @@ public class UserService {
         return convertToDTO(user);
     }
 
+    public UserDTO getCurrentUser(String authenticatedEmail) {
+        User user = getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+
+        return convertToDTO(user);
+    }
+
     @Transactional
     public UserDTO editUser(int userId, EditUserDTO editUserDTO, String authenticatedEmail) {
         User authenticatedUser = getUserByEmail(userRepository.findByEmail(authenticatedEmail));
