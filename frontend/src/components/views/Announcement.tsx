@@ -8,14 +8,17 @@ import type { MessageType } from "../../types/MessageType";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { decodeJwt } from "../../stores/AuthStore";
 import { useMessageStore } from "../../stores/MessageStore";
+import { useUserStore } from "../../stores/UserStore";
 
 const Announcement = (): JSX.Element => {
   const clientRef = useRef<Client | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
   const [message, setMessage] = useState<string>("");
-  const isTrainer = decodeJwt()?.isTrainer === true;
-  const isAdmin = decodeJwt()?.isAdmin === true;
+  const { users } = useUserStore();
+  const user = users.find((user) => user.userId === decodeJwt()?.userId);
+  const isTrainer = user?.isTrainer === true;
+  const isAdmin = user?.isAdmin === true;
   const { setMessages, markMessageDeleted, getMessages } = useMessageStore();
 
   const getWsUrl = () => {
