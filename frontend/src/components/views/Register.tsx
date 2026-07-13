@@ -1,12 +1,5 @@
 import type { JSX } from "@emotion/react/jsx-runtime";
-import {
-  Button,
-  Container,
-  Grid,
-  Link,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserStore } from "../../stores/UserStore";
@@ -20,6 +13,8 @@ const Register = (): JSX.Element => {
   const [displayName, setDisplayName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [repeatPassword, setRepeatPassword] = useState<string>("");
+
   const { addUser } = useUserStore();
 
   const hasUpperCase = (password: string) => {
@@ -31,13 +26,23 @@ const Register = (): JSX.Element => {
 
   const submitHandler = (e: React.SubmitEvent<HTMLFormElement>): void => {
     e.preventDefault();
+    if (password !== repeatPassword) {
+      useNotificationStore
+        .getState()
+        .addNotification("Passwords don't match", "error");
+      return;
+    }
     if (displayName.length > 16) {
       useNotificationStore
         .getState()
         .addNotification("Username too long (max. 16 characters)", "error");
       return;
     }
-    if (!hasUpperCase(password) || !hasNumber(password) || password.length < 8) {
+    if (
+      !hasUpperCase(password) ||
+      !hasNumber(password) ||
+      password.length < 8
+    ) {
       useNotificationStore
         .getState()
         .addNotification(
@@ -52,10 +57,11 @@ const Register = (): JSX.Element => {
 
   return (
     <form onSubmit={submitHandler}>
-      <Container
+      <Box
         sx={{
           display: "flex",
-          minHeight: { xs: "calc(100vh - 68.5px)", md: "calc(100vh - 64px)" },
+          width: "100vw",
+          height: "100vh",
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -63,7 +69,7 @@ const Register = (): JSX.Element => {
         <Grid
           container
           sx={{
-            maxWidth: { xs: "90%", md: "30%" },
+            maxWidth: { xs: "90%", md: "20%" },
             gap: 2,
           }}
         >
@@ -110,21 +116,33 @@ const Register = (): JSX.Element => {
             />
           </Grid>
           <Grid size={12}>
+            <TextField
+              id="repeatPassword"
+              type="password"
+              label="Repeat Password"
+              variant="outlined"
+              fullWidth
+              defaultValue={repeatPassword}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setRepeatPassword(e.target.value)
+              }
+            />
+          </Grid>
+          <Grid size={12}>
             <Button type="submit" variant="contained">
               REGISTER
             </Button>
-          </Grid>
-          <Grid>
-            <Link
-              onClick={() => navigate("/login")}
-              underline="none"
-              sx={{ cursor: "pointer" }}
+            <Button
+              type="button"
+              variant="contained"
+              sx={{ ml: 1 }}
+              onClick={() => navigate("/register")}
             >
-              <Typography>Already have an Account?</Typography>
-            </Link>
+              Back
+            </Button>
           </Grid>
         </Grid>
-      </Container>
+      </Box>
     </form>
   );
 };

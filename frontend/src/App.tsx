@@ -51,7 +51,7 @@ const App = (): JSX.Element => {
   }, [isAuthenticated]);
 
   return (
-    <Box sx={{display: "flex", width: "100vw", height: "100vh"}}>
+    <Box sx={{ display: "flex", width: "100vw", height: "100vh" }}>
       {isAuthenticated === true ? (
         <>
           <LiveUpdates />
@@ -63,7 +63,7 @@ const App = (): JSX.Element => {
       <NotificationBanner />
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route path="/" />
+          <Route path="/" element={<Announcement />} />
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/chat" element={<Chat roomId={roomId} />} />
           <Route path="/files" element={<Files />} />

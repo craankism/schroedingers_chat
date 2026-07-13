@@ -1,5 +1,5 @@
 import type { JSX } from "@emotion/react/jsx-runtime";
-import { Button, Container, Grid, TextField, Typography } from "@mui/material";
+import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/AuthStore";
@@ -23,10 +23,11 @@ const EnterCode = (): JSX.Element => {
 
   return (
     <form onSubmit={submitHandler}>
-      <Container
+      <Box
         sx={{
           display: "flex",
-          minHeight: { xs: "calc(100vh - 68.5px)", md: "calc(100vh - 64px)" },
+          height: "100vh",
+          width: "100vw",
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -34,7 +35,7 @@ const EnterCode = (): JSX.Element => {
         <Grid
           container
           sx={{
-            maxWidth: { xs: "90%", md: "30%" },
+            maxWidth: { xs: "90%", md: "20%" },
             gap: 2,
           }}
         >
@@ -58,9 +59,17 @@ const EnterCode = (): JSX.Element => {
             <Button type="submit" variant="contained">
               Submit
             </Button>
+            <Button
+              type="button"
+              variant="contained"
+              sx={{ml: 1}}
+              onClick={() => navigate("/login")}
+            >
+              Back
+            </Button>
           </Grid>
         </Grid>
-      </Container>
+      </Box>
     </form>
   );
 };
