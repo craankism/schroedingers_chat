@@ -2,18 +2,16 @@ package sc.backend.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import sc.backend.components.CryptoUtil;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.entities.ChatMessage;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
+import sc.backend.exceptions.PermissionException;
 import sc.backend.repositories.ChatMessageRepository;
-import sc.backend.repositories.UserRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -26,14 +24,13 @@ import java.util.stream.Collectors;
 public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
-    private final UserRepository userRepository;
     private final RoomService roomService;
     private final UserService userService;
     private final CryptoUtil cryptoUtil;
 
     @Transactional
     public MessageDTO createMessage(int roomId, SendMessageDTO request, String authenticatedEmail) {
-        User creator = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User creator = userService.findUserByEmail(authenticatedEmail);
         Room room = roomService.findRoomById(roomId);
 
         String plaintext = request.getContent();
@@ -94,30 +91,20 @@ public class ChatMessageService {
 
     @Transactional
     public void deleteMessage(int messageId, String authenticatedEmail) {
-        User authenticatedUser = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User authenticatedUser = userService.findUserByEmail(authenticatedEmail);
 
         ChatMessage chatMessage = chatMessageRepository.findById(messageId)
                 .orElseThrow(() -> new EntityNotFoundException("Message with id " + messageId + " not found"));
 
         User user = chatMessage.getCreatedBy();
-        // Room room = chatMessage.getRoom();
 
         if (user == null) {
             if (!authenticatedUser.isAdmin()) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete AI messages");
+                throw new PermissionException("Only admins can delete AI messages");
             }
         } else if (authenticatedUser.getUserId() != user.getUserId() && !authenticatedUser.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this message");
+            throw new PermissionException("You are not allowed to delete this message");
         }
-
-        // Messages don't get deleted atm, just content changes
-        // if (user != null) {
-        // user.removeChatMessage(chatMessage);
-        // }
-
-        // if (room != null) {
-        // room.removeChatMessage(chatMessage);
-        // }
 
         // Don't delete Message, just set content to null
         chatMessage.setContent(null);

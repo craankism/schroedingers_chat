@@ -5,6 +5,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import sc.backend.enums.AiMode;
+import sc.backend.exceptions.AIException;
 
 @Profile("prod")
 @RequiredArgsConstructor
@@ -59,10 +60,14 @@ public class AIService {
                 .defaultSystem(systemPrompt)
                 .build();
 
-        return chatClient.prompt()
-                .user(userPrompt)
-                .call()
-                .content();
+        try {
+            return chatClient.prompt()
+                    .user(userPrompt)
+                    .call()
+                    .content();
+        } catch (Exception e) {
+            throw new AIException("AI request failed: " + e.getMessage(), e);
+        }
     }
 
     private String systemPromptFor(AiMode mode) {
