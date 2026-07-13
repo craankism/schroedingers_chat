@@ -3,9 +3,11 @@ import IconSC from "../../assets/iconSC.png";
 import { Menu } from "@mui/icons-material";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { usePropStore } from "../../stores/PropStore";
+import { useAuthStore } from "../../stores/AuthStore";
 
 const MobileNav = (): JSX.Element => {
   const { openSidebar, setOpenSidebar } = usePropStore();
+  const { isAuthenticated } = useAuthStore();
 
   return (
     <>
@@ -44,11 +46,11 @@ const MobileNav = (): JSX.Element => {
         </Typography>
         <Box
           sx={{
+            display: isAuthenticated ? "flex" : "none",
             position: "fixed",
             right: 20,
             scale: 2,
             cursor: "pointer",
-            display: "flex",
           }}
           onClick={() => setOpenSidebar(!openSidebar)}
         >
