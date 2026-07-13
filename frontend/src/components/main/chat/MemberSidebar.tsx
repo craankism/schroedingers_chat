@@ -54,7 +54,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
           },
         }}
       >
-        <ListItem>
+        <ListItem sx={{ height: 64 }}>
           <ListItemText primary={"Members:"} />
           <EditChat roomId={roomId} />
         </ListItem>

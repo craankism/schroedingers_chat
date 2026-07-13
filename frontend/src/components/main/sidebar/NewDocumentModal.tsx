@@ -30,6 +30,7 @@ const NewDocumentModal = (): JSX.Element => {
 
   const [name, setName] = React.useState<string>("");
   const [userList, setUserList] = React.useState<number[]>([]);
+  const currentUserId = decodeJwt()?.userId;
 
   const { newDocModalOpen, setNewDocModalOpen } = usePropStore();
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const NewDocumentModal = (): JSX.Element => {
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    createDocument({title: name, documentMembershipList: userList});
+    createDocument({ title: name, documentMembershipList: userList });
     setUserList([]);
     setName("");
     handleClose();
@@ -88,7 +89,7 @@ const NewDocumentModal = (): JSX.Element => {
                   users.map((user, index) => {
                     const isSelected =
                       userList.includes(user.userId) ||
-                      decodeJwt()?.userId == user.userId;
+                      currentUserId == user.userId;
                     return (
                       <Grid size={{ xs: 6, md: 3 }} key={index}>
                         <ListItemButton
@@ -97,7 +98,7 @@ const NewDocumentModal = (): JSX.Element => {
                             p: 1,
                           }}
                           selected={isSelected}
-                          disabled={decodeJwt()?.userId == user.userId}
+                          disabled={currentUserId == user.userId}
                           onClick={() => {
                             if (isSelected) {
                               setUserList((prev) =>
