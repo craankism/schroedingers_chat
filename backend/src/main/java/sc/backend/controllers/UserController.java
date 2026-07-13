@@ -28,6 +28,11 @@ public class UserController {
         return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
+    @GetMapping("check")
+    public ResponseEntity<UserDTO> getCurrentUser(Principal principal) {
+        return new ResponseEntity<>(userService.getCurrentUser(principal.getName()), HttpStatus.OK);
+    }
+
     @GetMapping("{userId}")
     public ResponseEntity<UserDTO> getUser(@PathVariable int userId) {
         return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);

@@ -169,6 +169,15 @@ export const messageApi = {
 };
 
 export const authApi = {
+  checkAuthentication: async (): Promise<boolean> => {
+    try {
+      await api.get(`${userUrl}/check`);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
   createRegistrationCode: async (
     registration: boolean,
   ): Promise<registrationReturn> => {

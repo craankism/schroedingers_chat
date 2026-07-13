@@ -22,6 +22,8 @@ import type { JSX } from "@emotion/react/jsx-runtime";
 import NewDocumentModal from "./NewDocumentModal";
 import { useUserStore } from "../../../stores/UserStore";
 import { heightMinusTopNav } from "../../../types/constants/constants";
+import { useDocumentStore } from "../../../stores/DocumentStore";
+import { useFileStore } from "../../../stores/FileStore";
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files", "Editor"];
@@ -32,12 +34,17 @@ const Sidebar = (): JSX.Element => {
   const [select, setSelect] = useState<string>("");
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { users } = useUserStore();
+  const { isAuthenticated, logout, currentUser, checkAuthentication } =
+    useAuthStore();
+  const { openSidebar, setOpenSidebar, setOpenProfile, newDocModalOpen } =
+    usePropStore();
+  const { getAllDocuments } = useDocumentStore();
+  const { getAllFilesMeta } = useFileStore();
+  const { getAllRooms } = useRoomStore();
+  const { getAllUsers } = useUserStore();
   const userId = decodeJwt()?.userId || 0;
   const isAdmin = users.find((user) => user.userId === userId)?.isAdmin;
   const { rooms } = useRoomStore();
-  const { isAuthenticated, logout, currentUser } = useAuthStore();
-  const { openSidebar, setOpenSidebar, setOpenProfile, newDocModalOpen } =
-    usePropStore();
 
   const roomItems: string[] = [];
   const userRooms: RoomType[] = [];
@@ -63,6 +70,15 @@ const Sidebar = (): JSX.Element => {
   const md = useMediaQuery(theme.breakpoints.up("md"));
 
   useEffect(() => {
+    const check = async () => {
+      const authenticated = await checkAuthentication();
+      if (!authenticated) return;
+      getAllDocuments();
+      getAllFilesMeta();
+      getAllRooms();
+      getAllUsers();
+    };
+    check();
     if (md) {
       // eslint-disable-next-line
       setVariant("permanent");
