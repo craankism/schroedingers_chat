@@ -12,10 +12,9 @@ import sc.backend.entities.Document;
 import sc.backend.entities.DocumentMembership;
 import sc.backend.entities.User;
 import sc.backend.enums.DocumentRole;
-import sc.backend.exceptions.DocumentPermissionException;
+import sc.backend.exceptions.PermissionException;
 import sc.backend.repositories.DocumentMembershipRepository;
 import sc.backend.repositories.DocumentRepository;
-import sc.backend.repositories.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,11 +28,10 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentMembershipRepository documentMembershipRepository;
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @Transactional
     public DocumentDTO createDocument(CreateDocumentDTO createDocumentDTO, String authenticatedEmail) {
-        User creator = getUserFromEmail(authenticatedEmail);
+        User creator = userService.findUserByEmail(authenticatedEmail);
 
         Document createdDocument = Document.builder()
                 .createdAt(LocalDateTime.now())
@@ -60,7 +58,7 @@ public class DocumentService {
 
     @Transactional
     public List<DocumentMetaDTO> showByUser(String authenticatedEmail) {
-        List<DocumentMembership> membershipList = documentMembershipRepository.findByUser(getUserFromEmail(authenticatedEmail));
+        List<DocumentMembership> membershipList = documentMembershipRepository.findByUser(userService.findUserByEmail(authenticatedEmail));
 
         List<DocumentMetaDTO> documentMetaDTOList = new ArrayList<>();
 
@@ -75,7 +73,7 @@ public class DocumentService {
     public DocumentMetaDTO shareDocument(int documentId, String authenticatedEmail, int userId) {
         Document document = findDocumentById(documentId);
 
-        checkOwner(document, getUserFromEmail(authenticatedEmail).getUserId());
+        checkOwner(document, userService.findUserByEmail(authenticatedEmail).getUserId());
 
         User newMember = userService.findUserById(userId);
 
@@ -93,7 +91,7 @@ public class DocumentService {
     @Transactional
     public void deleteDocument(int documentId, String authenticatedEmail) {
         Document document = findDocumentById(documentId);
-        checkOwner(document, getUserFromEmail(authenticatedEmail).getUserId());
+        checkOwner(document, userService.findUserByEmail(authenticatedEmail).getUserId());
         List<DocumentMembership> membershipList = documentMembershipRepository.findByDocument(document);
         documentMembershipRepository.deleteAll(membershipList);
         documentRepository.delete(document);
@@ -110,21 +108,17 @@ public class DocumentService {
 
     @Transactional
     public EditorAuthDTO hasAccess(int documentId, String authenticatedEmail) {
-        User user = getUserFromEmail(authenticatedEmail);
+        User user = userService.findUserByEmail(authenticatedEmail);
         if (documentMembershipRepository.existsByDocumentAndUser(findDocumentById(documentId), user)) {
             return convertToEditorAuthDTO(user);
         } else {
-            throw new DocumentPermissionException("User has no Access to Document");
+            throw new PermissionException("User has no Access to Document");
         }
     }
 
     private Document findDocumentById(int documentId) {
         return documentRepository.findById(documentId).orElseThrow(() ->
                 new EntityNotFoundException("Document not found"));
-    }
-
-    private User getUserFromEmail(String authenticatedEmail) {
-        return userRepository.findByEmail(authenticatedEmail).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     private List<Integer> getMembershipList(Document document) {
@@ -136,7 +130,7 @@ public class DocumentService {
 
     private void checkOwner(Document document, int userId) {
         if (document.getCreator().getUserId() != userId) {
-            throw new DocumentPermissionException("User is not Owner, no Permission");
+            throw new PermissionException("User is not Owner, no Permission");
         }
     }
 

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sc.backend.entities.RefreshToken;
 import sc.backend.entities.User;
+import sc.backend.exceptions.AccountInactiveException;
 import sc.backend.exceptions.TokenInvalidException;
 import sc.backend.repositories.RefreshTokenRepository;
 
@@ -135,7 +136,7 @@ public class TokenService {
 
         if(!token.getUser().isActive()) {
             refreshTokenRepository.delete(token);
-            throw new TokenInvalidException("User is deactivated");
+            throw new AccountInactiveException("User is deactivated");
         }
 
         return token;

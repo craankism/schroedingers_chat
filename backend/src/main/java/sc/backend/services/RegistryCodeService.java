@@ -41,14 +41,12 @@ public class RegistryCodeService {
         if (wordList == null || wordList.isEmpty()) {
             throw new IllegalStateException("WordList not loaded!");
         }
-        System.out.println(wordList);
         StringBuilder code = new StringBuilder();
         for (int i = 0; i < 4; i++) {
             String word = wordList.get(random.nextInt(wordList.size()));
             if (i>0) code.append("-");
             code.append(word);
         }
-        System.out.println(code);
         return code.toString();
     }
 }
