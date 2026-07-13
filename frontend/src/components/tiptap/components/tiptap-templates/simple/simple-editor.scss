@@ -1,0 +1,65 @@
+.editor-scroll-container {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.floating-toolbar-wrapper {
+  position: sticky;
+  top: 84px;
+  z-index: 1200;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.floating-toolbar {
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  overflow-x: auto;
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
+}
+
+.editor-page-background {
+  padding: 100px 20px 60px;
+}
+
+.editor-sheet {
+  padding: 50px 60px;
+  min-height: 60vh;
+  border-radius: 8px;
+}
+
+.simple-editor-content {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.simple-editor-content .tiptap.ProseMirror.simple-editor {
+  padding: 0 0 30vh;
+  outline: none;
+}
+
+@media screen and (max-width: 480px) {
+  .floating-toolbar-wrapper {
+    top: 76px;
+  }
+
+  .editor-page-background {
+    padding: 16px 8px 40px;
+  }
+
+  .editor-sheet {
+    padding: 24px 16px;
+  }
+
+  .simple-editor-content .tiptap.ProseMirror.simple-editor {
+    padding: 0 0 30vh;
+  }
+
+  body {
+    --tt-toolbar-height: 64px;
+  }
+}

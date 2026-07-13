@@ -6,49 +6,38 @@ import {
   List,
   ListItem,
   ListItemButton,
-  Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SidebarHelper from "./SidebarHelper";
 import { decodeJwt, useAuthStore } from "../../../stores/AuthStore";
 import NewRoomModal from "./NewRoomModal";
 import { useRoomStore } from "../../../stores/RoomStore";
 import type { RoomType } from "../../../types/RoomType";
 import AddIcon from "@mui/icons-material/Add";
-import { useUserStore } from "../../../stores/UserStore";
 import { usePropStore } from "../../../stores/PropStore";
-
-type SidebarProps = {
-  activeView: string;
-  setActiveView(view: string): void;
-  select: string;
-  setSelect(selection: string): void;
-};
+import type { JSX } from "@emotion/react/jsx-runtime";
+import NewDocumentModal from "./NewDocumentModal";
+import { useUserStore } from "../../../stores/UserStore";
+import { heightMinusTopNav } from "../../../types/constants/constants";
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
-const navItems = ["Announcement", "Files"];
+const navItems = ["Announcement", "Files", "Editor"];
 const itemNames = [...adminItems, ...navItems];
 
-const Sidebar: React.FC<SidebarProps> = ({
-  activeView,
-  setActiveView,
-  select,
-  setSelect,
-}) => {
+const Sidebar = (): JSX.Element => {
+  const [activeView, setActiveView] = useState<string>("");
+  const [select, setSelect] = useState<string>("");
   const [openModal, setOpenModal] = useState<boolean>(false);
-  const isAdmin = decodeJwt()?.isAdmin;
+  const { users } = useUserStore();
   const userId = decodeJwt()?.userId || 0;
-  const { getAllRooms, rooms } = useRoomStore();
-  const { getAllUsers } = useUserStore();
+  const isAdmin = users.find((user) => user.userId === userId)?.isAdmin;
+  const { rooms } = useRoomStore();
   const { isAuthenticated, logout, currentUser } = useAuthStore();
-  const { openSidebar, setOpenSidebar, setOpenProfile } = usePropStore();
-
-  useEffect(() => {
-    getAllRooms();
-  }, [getAllRooms]);
+  const { openSidebar, setOpenSidebar, setOpenProfile, newDocModalOpen } =
+    usePropStore();
 
   const roomItems: string[] = [];
   const userRooms: RoomType[] = [];
@@ -96,10 +85,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             width: { xs: "100vw", md: 240 },
             height: "100vh",
             boxSizing: "border-box",
+            pt: heightMinusTopNav,
           },
         }}
       >
-        <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           {isAdmin && (
             <>
@@ -128,7 +117,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
               onClick={() => {
                 openModalFunc();
-                getAllUsers();
               }}
             />
             <NewRoomModal
@@ -145,6 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               select={select}
               setSelect={setSelect}
             />
+            {newDocModalOpen ? <NewDocumentModal /> : null}
             {!md ? (
               <div>
                 <Divider
@@ -181,7 +170,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                   }}
                 >
                   <ListItemButton
-                    onClick={logout}
+                    onClick={() => {
+                      logout();
+                    }}
                     sx={{ justifyContent: "center" }}
                   >
                     <Typography>

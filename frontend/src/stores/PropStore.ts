@@ -11,6 +11,8 @@ type PropState = {
   setOpenConfirmation: (open: boolean) => void;
   confirmation: boolean;
   setConfirmation: (yes: boolean) => void;
+  newDocModalOpen: boolean;
+  setNewDocModalOpen: (open: boolean) => void;
 };
 
 export const usePropStore = create<PropState>((set) => ({
@@ -19,6 +21,7 @@ export const usePropStore = create<PropState>((set) => ({
   roomId: 2,
   confirmation: false,
   openConfirmation: false,
+  newDocModalOpen: false,
 
   setOpenSidebar: (open: boolean) => {
     set({ openSidebar: open });
@@ -38,5 +41,9 @@ export const usePropStore = create<PropState>((set) => ({
 
   setConfirmation: (yes: boolean) => {
     set({ confirmation: yes });
+  },
+
+  setNewDocModalOpen: (open: boolean) => {
+    set({ newDocModalOpen: open });
   },
 }));

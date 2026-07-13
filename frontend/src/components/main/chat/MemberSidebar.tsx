@@ -1,6 +1,6 @@
 import type React from "react";
 import { useUserStore } from "../../../stores/UserStore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRoomStore } from "../../../stores/RoomStore";
 import {
   Box,
@@ -16,29 +16,27 @@ import { heightMinusTopNav } from "../../../types/constants/constants";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditChat from "./EditChat";
+import { Lens } from "@mui/icons-material";
 
 type MemberSidebarProps = {
   roomId: number;
 };
 
 const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
-  const { getAllUsers, users } = useUserStore();
-  const { getAllRooms, rooms } = useRoomStore();
+  const { users, onlineList } = useUserStore();
+  const { rooms } = useRoomStore();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [open, setOpen] = useState<boolean>(false);
-
-  useEffect(() => {
-    getAllUsers();
-    getAllRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId]);
 
   const currentRoom = rooms.find((r) => r.roomId === roomId);
   const userDisplay = currentRoom
     ? users
         .filter((user) => currentRoom.userList.includes(user.userId))
-        .map((user) => user.displayName)
+        .sort(
+          (a, b) =>
+            (onlineList[b.userId] ? 1 : 0) - (onlineList[a.userId] ? 1 : 0),
+        )
     : [];
 
   return (
@@ -56,14 +54,19 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
           },
         }}
       >
-        <ListItem sx={{ mt: 1 }}>
+        <ListItem sx={{ height: 64 }}>
           <ListItemText primary={"Members:"} />
           <EditChat roomId={roomId} />
         </ListItem>
         <Divider />
-        {userDisplay.map((username, index) => (
+        {userDisplay.map((user, index) => (
           <ListItem key={index}>
-            <ListItemText primary={username} />
+            <ListItemText primary={user.displayName} />
+            {onlineList[user.userId] ? (
+              <Lens sx={{ color: "green", mr: 1.7 }} />
+            ) : (
+              <Lens sx={{ color: "grey", mr: 1.7 }} />
+            )}
           </ListItem>
         ))}
       </Drawer>

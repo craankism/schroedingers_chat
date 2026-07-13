@@ -23,10 +23,9 @@ public class StoredFileController {
     private final FileStorageService fileStorageService;
     private final WebSocketController webSocketController;
 
-    private void broadcastFileUpdate() {
-        webSocketController.broadcastUpdate("FILE_UPDATE");
+    private void broadcastFileUpdate(int fileId) {
+        webSocketController.broadcastUpdate("FILE_UPDATE", fileId);
     }
-
 
     /**
      * Upload Endpunkt
@@ -38,7 +37,7 @@ public class StoredFileController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName);
-        broadcastFileUpdate();
+        broadcastFileUpdate(storedFileMetaDTO.getFileId());
         return new ResponseEntity<>(storedFileMetaDTO, HttpStatus.OK);
     }
 
@@ -73,10 +72,9 @@ public class StoredFileController {
     }
 
     @DeleteMapping("/{fileId}")
-    public ResponseEntity<?> deleteFileById(@PathVariable int fileId) throws Exception{
+    public ResponseEntity<?> deleteFileById(@PathVariable int fileId) throws Exception {
         fileStorageService.deleteFile(fileId);
-        broadcastFileUpdate();
+        broadcastFileUpdate(0);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
-

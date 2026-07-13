@@ -60,10 +60,12 @@ const EditChat: React.FC<EditChatProps> = (roomId) => {
             handleClick(event);
           }}
           size="small"
-          sx={{ ml: 2 }}
           aria-controls={open ? "account-menu" : undefined}
           aria-haspopup="true"
           aria-expanded={open}
+          sx={{
+            display: roomId.roomId === 2 ? "none" : "inline-flex",
+          }}
         >
           <MoreVert sx={{ width: 32, height: 32 }} />
         </IconButton>
@@ -136,7 +138,7 @@ const EditChat: React.FC<EditChatProps> = (roomId) => {
             setRoomId(2);
             handleClose();
           }}
-          disabled={!creator || roomId.roomId === 2}
+          disabled={!creator}
         >
           <ListItemIcon>
             <Delete sx={{ color: "red" }} fontSize="small" />

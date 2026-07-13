@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Schroedingers Chat - Environment Setup Script
-# Zwingt manuelle Eingabe für sensible Werte ohne Default.
+# Requires manual input for sensitive values, no defaults.
 
 ENV_FILE=".env"
 
 if [ -f "$ENV_FILE" ]; then
-    echo "Es existiert bereits eine .env Datei."
-    read -p "Überschreiben? (y/N) " overwrite
+    echo "A .env file already exists."
+    read -p "Overwrite? (y/N) " overwrite
     if [[ ! "$overwrite" =~ ^[Yy]$ ]]; then
-        echo "Abgebrochen. Bestehende .env wird beibehalten."
+        echo "Aborted. Existing .env will be kept."
         exit 0
     fi
 fi
@@ -18,76 +18,76 @@ echo ""
 echo "========================================="
 echo "  Schroedingers Chat - Setup"
 echo "========================================="
-echo "Bitte gib die folgenden Werte ein."
-echo "Nicht sensible Werte haben Defaults (Enter = übernehmen)."
+echo "Please enter the following values."
+echo "Non-sensitive values have defaults (press Enter to accept)."
 echo ""
 
-# Domain Konfiguration (Optional - mit Default fuer Entwicklung)
-read -p "Domain fuer HTTPS (leer = localhost fuer Development): " domain_input
+# Domain Configuration (Optional - with default for development)
+read -p "Domain for HTTPS (leave empty for localhost development): " domain_input
 domain=${domain_input:-localhost}
 
 if [ "$domain" != "localhost" ]; then
-    echo "ACHTUNG: Fuer Production Deployment wird $domain verwendet."
-    echo "Stelle sicher, dass diese Domain auf Server IP zeigt!"
+    echo "WARNING: $domain will be used for production deployment."
+    echo "Make sure this domain points to the server IP!"
 fi
 
-# Datenbank (Nicht sensitiv - kann Default haben)
+# Database (Non-sensitive - can have defaults)
 read -p "DB User [postgresql]: " db_user
 db_user=${db_user:-postgresql}
 
 read -p "DB Name [schroedingers_chat]: " db_name
 db_name=${db_name:-schroedingers_chat}
 
-# JWT SECRET (Sensitive - KEIN DEFAULT!)
-echo "[REQUIRED] JWT Secret eingeben:"
+# JWT SECRET (Sensitive - NO DEFAULT!)
+echo "[REQUIRED] Enter JWT Secret:"
 while true; do
     read -r jwt_secret
     if [ -z "$jwt_secret" ]; then
-        echo "FEHLER: JWT Secret darf nicht leer sein!"
+        echo "ERROR: JWT Secret must not be empty!"
         continue
     fi
     if [ ${#jwt_secret} -lt 32 ]; then
-        echo "WARNUNG: JWT Secret sollte mindestens 32 Zeichen lang sein."
-        read -p "Trotzdem fortfahren? (y/N) " confirm
+        echo "WARNING: JWT Secret should be at least 32 characters long."
+        read -p "Continue anyway? (y/N) " confirm
         [[ "$confirm" =~ ^[Yy]$ ]] && break || continue
     fi
     break
 done
 
-# Datenbank Passwort (Sensitive - KEIN DEFAULT!)
-echo "[REQUIRED] DB Password eingeben:"
+# Database Password (Sensitive - NO DEFAULT!)
+echo "[REQUIRED] Enter DB Password:"
 while true; do
-    read -rsp "DB Password (mindestens 8 Zeichen): " db_password
+    read -rsp "DB Password (at least 8 characters): " db_password
     echo ""
     if [ -z "$db_password" ]; then
-        echo "FEHLER: DB Password darf nicht leer sein!"
+        echo "ERROR: DB Password must not be empty!"
         continue
     fi
     if [ ${#db_password} -lt 8 ]; then
-        echo "FEHLER: DB Password muss mindestens 8 Zeichen lang sein!"
+        echo "ERROR: DB Password must be at least 8 characters long!"
         continue
     fi
     break
 done
 
-# Super Admin Passwort (Sensitive - KEIN DEFAULT!)
-echo "[REQUIRED] Super Admin Password eingeben:"
+# Super Admin Password (Sensitive - NO DEFAULT!)
+echo "[REQUIRED] Enter Super Admin Password:"
 while true; do
     read -rsp "Super Admin Password: " admin_password
     echo ""
     if [ -z "$admin_password" ]; then
-        echo "FEHLER: Super Admin Password darf nicht leer sein!"
+        echo "ERROR: Super Admin Password must not be empty!"
         continue
     fi
     if [ ${#admin_password} -lt 8 ]; then
-        echo "FEHLER: Password muss mindestens 8 Zeichen lang sein!"
+        echo "ERROR: Password must be at least 8 characters long!"
         continue
     fi
-    # Bestätigung abfragen
-    read -rsp "Bestätigen: " admin_confirm
+    # Confirmation
+    read -rsp "Confirm: " admin_confirm
     echo ""
     if [ "$admin_password" != "$admin_confirm" ]; then
-        echo "FEHLER: Passwords stimmen nicht überein!"
+        echo "ERROR: Passwords do not match!"
         continue
     fi
     break
@@ -96,20 +96,20 @@ done
 read -p "Super Admin E-Mail [super@admin.at]: " admin_email
 admin_email=${admin_email:-super@admin.at}
 
-# MinIO credentials (Sensitive - KEIN DEFAULT!)
+# MinIO credentials (Sensitive - NO DEFAULT!)
 read -p "MinIO Root User [minioadmin]: " minio_user
 minio_user=${minio_user:-minioadmin}
 
-echo "[REQUIRED] MinIO Root Password eingeben:"
+echo "[REQUIRED] Enter MinIO Root Password:"
 while true; do
-    read -rsp "MinIO Password (mindestens 6 Zeichen): " minio_password
+    read -rsp "MinIO Password (at least 6 characters): " minio_password
     echo ""
     if [ -z "$minio_password" ]; then
-        echo "FEHLER: MinIO Password darf nicht leer sein!"
+        echo "ERROR: MinIO Password must not be empty!"
         continue
     fi
     if [ ${#minio_password} -lt 6 ]; then
-        echo "FEHLER: MinIO Password muss mindestens 6 Zeichen lang sein!"
+        echo "ERROR: MinIO Password must be at least 6 characters long!"
         continue
     fi
     break
@@ -118,26 +118,59 @@ done
 read -p "MinIO Bucket [schroedinger-files]: " minio_bucket
 minio_bucket=${minio_bucket:-schroedinger-files}
 
-# AI API Key (Optional - aber wenn gesetzt, nicht leer)
-# read -p "OpenAI API Key (leer lassen, falls nicht benötigt): " ai_key
+# Mailtrap credentials (Optional - for email delivery)
+echo ""
+echo "[OPTIONAL] Mailtrap credentials for email delivery (leave empty if not needed):"
+read -p "Mailtrap Username: " mailtrap_username
+read -sp "Mailtrap Password: " mailtrap_password
+echo ""
 
-echo "[REQUIRED] Encryption Master Key eingeben:"
+# Encryption Master Key (Sensitive - NO DEFAULT!)
+echo "[REQUIRED] Enter Encryption Master Key:"
 while true; do
-    read -rsp "Master Key (mindestens 32 Zeichen): " enc_master_key
+    read -rsp "Master Key (at least 32 characters): " enc_master_key
     echo ""
     if [ -z "$enc_master_key" ]; then
-        echo "FEHLER: Master Key darf nicht leer sein!"
+        echo "ERROR: Master Key must not be empty!"
         continue
     fi
     if [ ${#enc_master_key} -lt 32 ]; then
-        echo "FEHLER: Master Key muss mindestens 32 Zeichen lang sein!"
+        echo "ERROR: Master Key must be at least 32 characters long!"
         continue
     fi
     break
 done
 
+# GPU Configuration
 echo ""
-echo "Schreibe $ENV_FILE ..."
+echo "========================================="
+echo "  GPU Configuration"
+echo "========================================="
+read -p "Is an NVIDIA GPU available? (y/N) " has_gpu
+
+if [[ "$has_gpu" =~ ^[Yy]$ ]]; then
+    SELECTED_MODEL="qwen2.5-coder:7b"
+    echo "GPU Mode: 7B model with GPU acceleration"
+    cat > "compose.gpu.yaml" << 'EOF'
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+EOF
+    echo "compose.gpu.yaml (GPU driver) has been created."
+else
+    SELECTED_MODEL="qwen2.5-coder:3b"
+    echo "CPU Mode: 3B model without GPU"
+    rm -f "compose.gpu.yaml"
+fi
+
+echo ""
+echo "Writing $ENV_FILE ..."
 
 cat > "$ENV_FILE" << EOF
 # Schroedingers Chat - Environment Configuration
@@ -166,12 +199,17 @@ MINIO_BUCKET=$minio_bucket
 # AES Encryption Key
 ENCRYPTION_MASTER_KEY=$enc_master_key
 
+# Mailtrap Email Service (Optional)
+MAILTRAP_USERNAME=$mailtrap_username
+MAILTRAP_PASSWORD=$mailtrap_password
+
+# AI Model Configuration
+OLLAMA_MODEL=$SELECTED_MODEL
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest
+
 EOF
 
-# AI (optional)
-#OPENAI_API_KEY=$ai_key
-
 echo ""
-echo ".env Datei wurde erfolgreich erstellt."
+echo ".env file has been created successfully."
 echo ""
-echo "Jetzt starten mit: docker compose up -d --build"
+echo "Start with: docker compose up -d --build"

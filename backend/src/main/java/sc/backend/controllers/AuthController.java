@@ -1,6 +1,7 @@
 package sc.backend.controllers;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,10 +19,31 @@ import sc.backend.services.AuthService;
 public class AuthController {
 
     private final AuthService authService;
+    private final WebSocketController webSocketController;
+    
+    @GetMapping("/verify/{token}")
+    public ResponseEntity<String> handleVerification(@PathVariable String token) {
+        try {
+            String result = authService.verifyEmail(token);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private void broadcastAuthUpdate(int userId, boolean online) {
+        webSocketController.broadcastUpdate("AUTH_UPDATE", userId, online);
+    }
+
+    private void broadcastUserUpdate(int userId) {
+        webSocketController.broadcastUpdate("USER_UPDATE", userId);
+    }
 
     @PostMapping("/register/{code}")
     public ResponseEntity<AuthDTO> register(@PathVariable String code, @RequestBody RegisterDTO registerDTO) {
-        return new ResponseEntity<>(authService.register(code, registerDTO), HttpStatus.CREATED);
+        AuthDTO userAuthDTO = authService.register(code, registerDTO);
+        broadcastUserUpdate(userAuthDTO.getUserId());
+        return new ResponseEntity<>(userAuthDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/register/validation/{code}")
@@ -43,6 +65,11 @@ public class AuthController {
         return new ResponseEntity<>(authDTO, HttpStatus.OK);
     }
 
+    @PostMapping("/online/{userId}")
+    public void onlineStatus(@PathVariable int userId, @RequestBody boolean status) {
+        broadcastAuthUpdate(userId, status);
+    }
+
     @PostMapping("/refresh")
     public AuthDTO refresh(@RequestBody RefreshRequestDTO request) {
         return authService.refresh(request.getRefreshToken());
@@ -50,7 +77,8 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestBody RefreshRequestDTO request) {
-        authService.logout(request.getRefreshToken());
+        int userId = authService.logout(request.getRefreshToken());
+        broadcastAuthUpdate(userId, false);
         return ResponseEntity.noContent().build();
     }
 

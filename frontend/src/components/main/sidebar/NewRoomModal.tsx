@@ -40,6 +40,8 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
   const [name, setName] = React.useState<string>("");
   const [userIdSet, setUserIdSet] = React.useState<number[]>([]);
   const [editMode, setEditMode] = React.useState<boolean>(false);
+  const currentUserId = decodeJwt()?.userId;
+
   const handleClose = () => {
     closeModal(false);
   };
@@ -66,7 +68,6 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
       setUserIdSet(room.userList);
       setEditMode(true);
     } else {
-      const currentUserId = decodeJwt()?.userId;
       setUserIdSet(currentUserId ? [currentUserId] : []);
       setEditMode(false);
     }
@@ -113,16 +114,16 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
                   users.map((user, index) => {
                     const isSelected =
                       userIdSet.includes(user.userId) ||
-                      decodeJwt()?.userId == user.userId;
+                      currentUserId == user.userId;
                     return (
-                      <Grid size={{ xs: 4, md: 3 }} key={index}>
+                      <Grid size={{ xs: 6, md: 3 }} key={index}>
                         <ListItemButton
                           sx={{
                             border: "solid, 0.5px",
                             p: 1,
                           }}
                           selected={isSelected}
-                          disabled={decodeJwt()?.userId == user.userId}
+                          disabled={currentUserId == user.userId}
                           onClick={() => {
                             if (isSelected) {
                               setUserIdSet((prev) =>

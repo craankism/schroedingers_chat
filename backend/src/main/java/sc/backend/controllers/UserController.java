@@ -19,8 +19,8 @@ public class UserController {
     private final UserService userService;
     private final WebSocketController webSocketController;
 
-    private void broadcastUserUpdate() {
-        webSocketController.broadcastUpdate("USER_UPDATE");
+    private void broadcastUserUpdate(int userId) {
+        webSocketController.broadcastUpdate("USER_UPDATE", userId);
     }
 
     @GetMapping
@@ -34,16 +34,17 @@ public class UserController {
     }
 
     @PutMapping("{userId}")
-    public ResponseEntity<UserDTO> editUser(@PathVariable int userId, @RequestBody EditUserDTO editUserDTO, Principal principal) {
+    public ResponseEntity<UserDTO> editUser(@PathVariable int userId, @RequestBody EditUserDTO editUserDTO,
+            Principal principal) {
         UserDTO user = userService.editUser(userId, editUserDTO, principal.getName());
-        broadcastUserUpdate();
+        broadcastUserUpdate(userId);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @DeleteMapping("{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable int userId, Principal principal) {
         userService.deleteUser(userId, principal.getName());
-        broadcastUserUpdate();
+        broadcastUserUpdate(0);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -18,12 +18,21 @@ public class ChatMessage {
     private int messageId;
 
     //TODO: length?
-    @Column(nullable = false, length = 2000)
+    @Lob
     private String content;
 
     //TODO: best date type?
     @Column(nullable = false)
     private LocalDateTime creationDate;
+
+    @Column(nullable = false)
+    private String senderType;
+
+    @Column(nullable = false)
+    private boolean aiPrompt;
+
+    @Column
+    private Integer aiPromptMessageId;
 
     @ManyToOne
     @JoinColumn(name = "userId")

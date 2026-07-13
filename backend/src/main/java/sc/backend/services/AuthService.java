@@ -1,6 +1,9 @@
 package sc.backend.services;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +23,10 @@ import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Optional;
 
 @Transactional(readOnly = true)
@@ -35,11 +41,41 @@ public class AuthService {
     private final RegistrationRepository registrationRepository;
     private final RoomRepository roomRepository;
     private final UserService userService;
+    private final JavaMailSender mailSender;
+
+    @Transactional
+    public String verifyEmail(String token) {
+        String email = tokenService.extractEmail(token);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isActive()) {
+            return "Email is already verified";
+        }
+
+        user.setActive(true);
+        userRepository.save(user);
+        return "Email verification successful";
+    }
+
+    public void sendVerificationEmail(User user) {
+        String token = tokenService.generateToken(new HashMap<>(), user);
+        String verifyUrl = "http://localhost:5173/api/auth/verify/" +
+                URLEncoder.encode(token, StandardCharsets.UTF_8);
+
+        String message = "Click below to verify your email:\n" + verifyUrl;
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(user.getEmail());
+        mail.setSubject("Verify your email");
+        mail.setText(message);
+        mailSender.send(mail);
+    }
 
     @Transactional
     public AuthDTO register(String registryKey, RegisterDTO registerDTO) {
-        Registration registration = registrationRepository.findByRegistrationCode(registryKey).orElseThrow(() ->
-                        new KeyInvalidException("Key is not valid!"));
+        Registration registration = registrationRepository.findByRegistrationCode(registryKey)
+                .orElseThrow(() -> new KeyInvalidException("Key is not valid!"));
 
         if (registration.getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
             registrationRepository.delete(registration);
@@ -52,15 +88,15 @@ public class AuthService {
                 .displayName(registerDTO.getDisplayName())
                 .isAdmin(false)
                 .isTrainer(registration.isTrainer())
-                .isActive(true)
+                .isActive(false)
                 .build();
+        sendVerificationEmail(user);
         userRepository.save(user);
 
-        Room announcements = roomRepository.findById(1).orElseThrow(() ->
-                new EmptyOptionalException("Room not found!"));
+        Room announcements = roomRepository.findById(1)
+                .orElseThrow(() -> new EmptyOptionalException("Room not found!"));
 
-        Room room = roomRepository.findById(2).orElseThrow(() ->
-                new EmptyOptionalException("Room not found!"));
+        Room room = roomRepository.findById(2).orElseThrow(() -> new EmptyOptionalException("Room not found!"));
 
         announcements.addUser(user);
         room.addUser(user);
@@ -85,6 +121,9 @@ public class AuthService {
     @Transactional
     public AuthDTO login(LoginDTO loginDTO) {
         User user = userService.getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
+        if (user.isActive() == false) {
+            throw new RuntimeException("Account is not active");
+        }
         String email = user.getEmail();
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, loginDTO.getPassword()));
@@ -104,8 +143,11 @@ public class AuthService {
         return convertToAuthDTO(user, newJwt, newRefreshTokenStr);
     }
 
-    public void logout(String rawRefreshToken) {
+    public int logout(String rawRefreshToken) {
+        RefreshToken validateToken = tokenService.validateRefreshToken(rawRefreshToken);
+        int userId = validateToken.getUser().getUserId();
         tokenService.deleteRefreshToken(rawRefreshToken);
+        return userId;
     }
 
     private AuthDTO convertToAuthDTO(User user, String jwt, String refreshToken) {

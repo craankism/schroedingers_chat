@@ -9,11 +9,13 @@ import type {
   AuthResponseType,
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
+import type { DocumentType } from "../types/DocumentType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
 const roomUrl = "/room";
 const messageUrl = "/messages";
+const documentUrl = "/documents";
 
 const authUrl = "/auth";
 const adminUrl = "/admin";
@@ -52,6 +54,40 @@ export const fileApi = {
   },
 };
 
+export const documentApi = {
+  create: async (document: DocumentType): Promise<DocumentType> => {
+    const response = await api.post<DocumentType>(documentUrl, document);
+    return response.data;
+  },
+
+  getAll: async (): Promise<DocumentType[]> => {
+    const response = await api.get<DocumentType[]>(documentUrl);
+    return response.data;
+  },
+
+  getById: async (documentId: number): Promise<DocumentType> => {
+    const response = await api.get<DocumentType>(
+      `${documentUrl}/${documentId}`,
+    );
+    return response.data;
+  },
+
+  update: async (
+    document: DocumentType,
+    documentId: number,
+  ): Promise<DocumentType> => {
+    const response = await api.put<DocumentType>(
+      `${documentUrl}/${documentId}`,
+      document,
+    );
+    return response.data;
+  },
+
+  delete: async (documentId: number): Promise<void> => {
+    await api.delete(`${documentUrl}/${documentId}`);
+  },
+};
+
 export const userApi = {
   getAll: async (): Promise<UserType[]> => {
     const response = await api.get<UserType[]>(userUrl);
@@ -86,11 +122,6 @@ export const userApi = {
 };
 
 export const roomApi = {
-  getMessages: async (roomId: number): Promise<MessageInput[]> => {
-    const response = await api.get(`${websocket}/${roomId}`);
-    return response.data;
-  },
-
   getAll: async (): Promise<RoomType[]> => {
     const response = await api.get<RoomType[]>(roomUrl);
     return response.data;
@@ -122,8 +153,8 @@ export const messageApi = {
     return response.data;
   },
 
-  getById: async (messageId: number): Promise<MessageType> => {
-    const response = await api.get<MessageType>(`${messageUrl}/${messageId}`);
+  getMessages: async (roomId: number): Promise<MessageInput[]> => {
+    const response = await api.get(`${websocket}/${roomId}`);
     return response.data;
   },
 
@@ -154,6 +185,10 @@ export const authApi = {
       credentials,
     );
     return response.data;
+  },
+
+  onlineStatus: async (userId: number, status: boolean): Promise<void> => {
+    await api.post<boolean>(`${authUrl}/online/${userId}`, status);
   },
 
   validateCode: async (

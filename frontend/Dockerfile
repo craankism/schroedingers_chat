@@ -1,23 +1,24 @@
-# Use an official Node.js runtime as the base image
-FROM node:26-alpine
-
-# Set the working directory in the container
+# Build Stage (wird nur fuer prod genutzt)
+FROM node:22-alpine AS build
 WORKDIR /app
-
-# Copy the package.json and package-lock.json files to the container
-COPY package.json package-lock.json ./
-
-# Install project dependencies
-RUN npm install
-
-# Copy the rest of the project files to the container
+COPY package*.json ./
+RUN npm ci
 COPY . .
-
-# Build the React app
 RUN npm run build
 
-# Expose the port that the server will listen on
-EXPOSE 3000
+# Production Stage
+FROM node:22-alpine AS prod
+WORKDIR /app
+RUN npm install -g serve
+COPY --from=build /app/dist ./dist
+EXPOSE 5173
+CMD ["serve", "-s", "dist", "-l", "5173"]
 
-# Start the server
-CMD ["npm", "run", "dev"]
+# Development Stage
+FROM node:22-alpine AS dev
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

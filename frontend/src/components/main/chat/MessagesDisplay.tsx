@@ -2,29 +2,32 @@ import { Box, List, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { decodeJwt } from "../../../stores/AuthStore";
-import type { MessageInput } from "../../../types/MessageType.ts";
 import { Clear } from "@mui/icons-material";
 import { widthMinusSidebar } from "../../../types/constants/constants.ts";
+import { useMessageStore } from "../../../stores/MessageStore.ts";
+import Markdown from "react-markdown";
+import { useUserStore } from "../../../stores/UserStore.ts";
+
 type MessagesDisplayProps = {
   connectionStatus: string;
-  messageHistory: MessageInput[];
   handleDeleteMessage: (messageId: number) => void;
   announcement: boolean;
 };
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   connectionStatus,
-  messageHistory,
   handleDeleteMessage,
   announcement,
 }) => {
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const { messages } = useMessageStore();
+  const { users } = useUserStore();
 
-  // Scroll to the last message when messageHistory changes
+  // Scroll to the last message whenever messages change.
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messageHistory]);
+  }, [messages]);
 
   let md = 30;
   if (announcement) {
@@ -53,13 +56,13 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
           pr: 1,
         }}
       >
-        {messageHistory.map((message, id) => (
+        {messages.map((message, id) => (
           <Box
             key={id}
             sx={{ display: "flex" }}
-            ref={id === messageHistory.length - 1 ? lastMessageRef : null}
+            ref={id === messages.length - 1 ? lastMessageRef : null}
           >
-            {decodeJwt()?.displayName === message.sender ? (
+            {decodeJwt()?.userId === message.userId ? (
               <Box
                 sx={{ marginLeft: "auto", textAlign: "right" }}
                 onMouseEnter={() => setHoveredId(id)}
@@ -67,12 +70,30 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
               >
                 <Box>
                   <Typography sx={{ color: "cyan" }}>
-                    {message.sender}
+                    {
+                      users.find((user) => user.userId === message.userId)
+                        ?.displayName
+                    }
                   </Typography>
-                  <Typography>{message.content}</Typography>
+                  {message.content != null ? (
+                    <Box
+                      sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                    >
+                      <Markdown>{message.content}</Markdown>
+                    </Box>
+                  ) : (
+                    <Typography sx={{ opacity: "30%" }}>
+                      Message deleted
+                    </Typography>
+                  )}
                 </Box>
                 <Box
-                  sx={{ visibility: hoveredId === id ? "visible" : "hidden" }}
+                  sx={{
+                    visibility:
+                      hoveredId === id && message.content != null
+                        ? "visible"
+                        : "hidden",
+                  }}
                 >
                   <Clear
                     sx={{ cursor: "pointer" }}
@@ -82,8 +103,36 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
               </Box>
             ) : (
               <Box>
-                <Typography sx={{ color: "red" }}>{message.sender}</Typography>
-                <Typography>{message.content}</Typography>
+                <Typography sx={{ color: "red" }}>
+                  {
+                    users.find((user) => user.userId === message.userId)
+                      ?.displayName
+                  }
+                </Typography>
+                {message.content != null ? (
+                  <Box
+                    sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                  >
+                    <Markdown>{message.content}</Markdown>
+                  </Box>
+                ) : (
+                  <Typography sx={{ opacity: "30%" }}>
+                    Message deleted
+                  </Typography>
+                )}
+                <Box
+                  sx={{
+                    visibility:
+                      hoveredId === id && message.content != null
+                        ? "visible"
+                        : "hidden",
+                  }}
+                >
+                  <Clear
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => handleDeleteMessage(message.messageId)}
+                  />
+                </Box>
               </Box>
             )}
           </Box>
