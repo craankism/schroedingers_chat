@@ -107,7 +107,7 @@ const Sidebar = (): JSX.Element => {
       >
         <Box sx={{ overflow: "auto" }}>
           {isAdmin && (
-            <>
+            <List>
               <SidebarHelper
                 items={adminItems}
                 itemNames={itemNames}
@@ -117,7 +117,7 @@ const Sidebar = (): JSX.Element => {
                 setSelect={setSelect}
               />
               <Divider />
-            </>
+            </List>
           )}
           <List>
             <SidebarHelper
