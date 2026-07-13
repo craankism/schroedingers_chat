@@ -42,8 +42,8 @@ public class RoomController {
     }
 
     @PutMapping("{roomId}")
-    public ResponseEntity<RoomDTO> editRoom(@PathVariable int roomId, @RequestBody EditRoomDTO addUserToRoomDTO) {
-        RoomDTO room = roomService.editRoom(roomId, addUserToRoomDTO);
+    public ResponseEntity<RoomDTO> editRoom(@PathVariable int roomId, @RequestBody EditRoomDTO addUserToRoomDTO, Principal principal) {
+        RoomDTO room = roomService.editRoom(roomId, addUserToRoomDTO, principal.getName());
         broadcastRoomUpdate(roomId);
         return new ResponseEntity<>(room, HttpStatus.OK);
     }

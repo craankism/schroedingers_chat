@@ -1,12 +1,18 @@
 package sc.backend.dtos.res;
 
+import lombok.*;
+
 import java.time.LocalDateTime;
 
-public record ErrorResponseDTO(
-        int status,
-        String error,
-        String message,
-        LocalDateTime timestamp,
-        String path
-) {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+public class ErrorResponseDTO{
+        private int status;
+        private String error;
+        private String message;
+        private LocalDateTime timestamp;
+        private String path;
 }

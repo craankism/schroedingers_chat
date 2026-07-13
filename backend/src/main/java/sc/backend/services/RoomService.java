@@ -64,8 +64,16 @@ public class RoomService {
     }
 
     @Transactional
-    public RoomDTO editRoom(int roomId, EditRoomDTO editRoomDTO) {
+    public RoomDTO editRoom(int roomId, EditRoomDTO editRoomDTO, String authenticatedEmail) {
         Room room = findRoomById(roomId);
+
+        User authenticatedUser = userService.findUserByEmail(authenticatedEmail);
+
+        User creator = room.getCreatedBy();
+
+        if (authenticatedUser.getUserId() != creator.getUserId() && !authenticatedUser.isAdmin()) {
+            throw new PermissionException("You are not allowed to edit this room");
+        }
 
         if (!room.getName().equals(editRoomDTO.getName())) {
             room.setName(editRoomDTO.getName());

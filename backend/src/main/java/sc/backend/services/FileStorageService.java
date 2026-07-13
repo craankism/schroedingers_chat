@@ -87,7 +87,21 @@ public class FileStorageService {
                 .encryptedDek(null)
                 .build();
 
-        return convertStoredFileToDto(storedFileRepository.save(storedFile));
+        try {
+            return convertStoredFileToDto(storedFileRepository.save(storedFile));
+        } catch (Exception e) {
+            try {
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(storedFileName)
+                                .build()
+                );
+            } catch (Exception cleanupEx) {
+                log.error("Failed to cleanup orphaned file: {}", storedFileName, cleanupEx);
+            }
+            throw new FileStorageException("Failed to save file metadata", e);
+        }
     }
 
     public InputStream downloadFile(Integer fileId) {

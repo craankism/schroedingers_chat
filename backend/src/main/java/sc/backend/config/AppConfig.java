@@ -1,6 +1,5 @@
 package sc.backend.config;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import sc.backend.exceptions.UserNotFoundException;
 import sc.backend.repositories.UserRepository;
 
 @RequiredArgsConstructor
@@ -42,6 +42,6 @@ public class AppConfig {
     @Bean
     UserDetailsService userDetailsService() {
         return email -> userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+                .orElseThrow(() -> new UserNotFoundException("User not found!"));
     }
 }

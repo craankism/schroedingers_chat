@@ -187,14 +187,14 @@ public class ChatMessageService {
         String sender;
 
         if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) || message.getCreatedBy() == null) {
-            sender = "Void 😺";
+            sender = "Void 🐈‍⬛";
         } else {
             sender = message.getCreatedBy().getDisplayName();
         }
 
         return MessageDTO.builder()
                 .messageId(message.getMessageId())
-                .userId(message.getCreatedBy().getUserId())
+                .userId(message.getCreatedBy() != null ? message.getCreatedBy().getUserId() : null)
                 .content(decryptContent(message))
                 .sender(sender)
                 .creationDate(message.getCreationDate())
