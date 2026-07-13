@@ -3,11 +3,10 @@ import { Box } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
-import { heightMinusTopNav } from "../../types/constants/constants";
 import type { MessageType} from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
-import ICQSound from "../../sounds/ICQSound.mp3";
+import ICQSound from "../../assets/ICQSound.mp3";
 import {decodeJwt} from "../../stores/AuthStore.ts";
 
 type ChatProps = {
