@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RefreshRequestDTO;
@@ -23,12 +22,7 @@ public class AuthController {
     
     @GetMapping("/verify/{token}")
     public ResponseEntity<String> handleVerification(@PathVariable String token) {
-        try {
-            String result = authService.verifyEmail(token);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(authService.verifyEmail(token), HttpStatus.OK);
     }
 
     private void broadcastAuthUpdate(int userId, boolean online) {
@@ -53,16 +47,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
-        AuthDTO authDTO;
-
-        try {
-            authDTO = authService.login(loginDTO);
-        } catch (UsernameNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(authDTO, HttpStatus.OK);
+        return new ResponseEntity<>(authService.login(loginDTO), HttpStatus.OK);
     }
 
     @PostMapping("/online/{userId}")

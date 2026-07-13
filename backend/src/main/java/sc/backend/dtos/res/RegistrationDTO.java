@@ -13,7 +13,6 @@ public class RegistrationDTO {
 
     private int registrationId;
     private boolean isTrainer;
-    //TODO: best date type?
     private LocalDateTime createdAt;
     private String registrationCode;
     private int createdBy;

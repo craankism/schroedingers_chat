@@ -10,6 +10,8 @@ import sc.backend.entities.User;
 import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
+
+//TODO für Prod entfernen!
 @Component
 public class SuperAdminInitializer implements CommandLineRunner {
 
