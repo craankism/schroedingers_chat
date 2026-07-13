@@ -39,21 +39,21 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
       sx={{
         display: "flex",
         flexDirection: "column",
-        flexGrow: 1,
-        p: 2,
+        pl: 2,
+        pr: 2,
         mr: { xs: "0", md: md },
         ml: widthMinusSidebar,
-        mb: 7,
+        overflow: "auto",
+        height: "92vh",
       }}
     >
-      <Typography sx={{ mb: 2 }}>
+      <Typography sx={{ mb: 2, mt: 2 }}>
         The WebSocket is currently {connectionStatus}
       </Typography>
       <List
         sx={{
           display: "flex",
           flexDirection: "column",
-          pr: 1,
         }}
       >
         {messages.map((message, id) => (
