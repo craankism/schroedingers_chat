@@ -107,10 +107,9 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     <Box
       component="main"
       sx={{
-        flexGrow: 1,
         display: "flex",
         flexDirection: "column",
-        mt: heightMinusTopNav,
+        height: "100vh",
         overflow: "hidden",
       }}
     >

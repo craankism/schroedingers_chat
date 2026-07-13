@@ -1,10 +1,4 @@
-import {
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { ListItem, ListItemButton, ListItemText } from "@mui/material";
 import React from "react";
 import type { RoomType } from "../../../types/RoomType";
 import { usePropStore } from "../../../stores/PropStore";
@@ -29,8 +23,6 @@ const SidebarHelper: React.FC<{
   setSelect,
   rooms,
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { setOpenSidebar, setRoomId, setNewDocModalOpen } = usePropStore();
   const navigate = useNavigate();
   const { documents, currentDocumentId, setCurrentDocumentId } =
@@ -75,13 +67,14 @@ const SidebarHelper: React.FC<{
 
                     setCurrentDocumentId(selectedDocumentId);
                     navigate("/" + item.toLowerCase());
+                    setOpenSidebar(false);
                   }
                 } else {
-                  if (isMobile) setOpenSidebar(false);
+                  setOpenSidebar(false);
                   navigate("/" + item.toLowerCase());
                 }
               } else {
-                if (isMobile) setOpenSidebar(false);
+                setOpenSidebar(false);
                 navigate("/chat");
                 setActiveView("Chats");
               }

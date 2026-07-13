@@ -1,27 +1,22 @@
 package sc.backend.services;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import sc.backend.dtos.req.EditUserDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.entities.ChatMessage;
 import sc.backend.entities.Registration;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
-import sc.backend.exceptions.EmptyOptionalException;
+import sc.backend.exceptions.PermissionException;
+import sc.backend.exceptions.UserNotFoundException;
 import sc.backend.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -29,7 +24,6 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final ConversionService conversionService;
     private final PasswordEncoder passwordEncoder;
 
     public List<UserDTO> getAllUsers() {
@@ -56,16 +50,16 @@ public class UserService {
 
     @Transactional
     public UserDTO editUser(int userId, EditUserDTO editUserDTO, String authenticatedEmail) {
-        User authenticatedUser = getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User authenticatedUser = findUserByEmail(authenticatedEmail);
 
         if (authenticatedUser.getUserId() != userId && !authenticatedUser.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to edit this user");
+            throw new PermissionException("You are not allowed to edit this user");
         }
 
         User user = findUserById(userId);
 
         if (!passwordEncoder.matches(editUserDTO.getOldPassword(), user.getPassword())) {
-            throw new AccessDeniedException("Old password is incorrect");
+            throw new PermissionException("Old password is incorrect");
         }
 
         if (editUserDTO.getDisplayName() != null && !editUserDTO.getDisplayName().isBlank()) {
@@ -81,10 +75,10 @@ public class UserService {
 
     @Transactional
     public void deleteUser(int userId, String authenticatedEmail) {
-        User authenticatedUser = getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User authenticatedUser = findUserByEmail(authenticatedEmail);
 
         if (authenticatedUser.getUserId() != userId && !authenticatedUser.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this user");
+            throw new PermissionException("You are not allowed to delete this user");
         }
 
         User user = findUserById(userId);
@@ -110,18 +104,11 @@ public class UserService {
 
     public User findUserById(int userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User #" + userId + " not found!"));
+                .orElseThrow(() -> new UserNotFoundException("User #" + userId + " not found!"));
     }
 
-    public User getUserByEmail(Optional<User> userOptional) {
-        User user;
-
-        try {
-            user = conversionService.getEntityFromOptional(userOptional);
-        } catch (EmptyOptionalException e) {
-            throw new UsernameNotFoundException("Email not found!");
-        }
-        return user;
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User " + email + " not found"));
     }
 
     public UserDTO convertToDTO(User user) {

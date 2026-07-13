@@ -1,5 +1,6 @@
 package sc.backend.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -17,8 +18,7 @@ import sc.backend.entities.RefreshToken;
 import sc.backend.entities.Registration;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
-import sc.backend.exceptions.EmptyOptionalException;
-import sc.backend.exceptions.KeyInvalidException;
+import sc.backend.exceptions.*;
 import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
@@ -47,7 +47,7 @@ public class AuthService {
     public String verifyEmail(String token) {
         String email = tokenService.extractEmail(token);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found " + email));
 
         if (user.isActive()) {
             return "Email is already verified";
@@ -79,7 +79,7 @@ public class AuthService {
 
         if (registration.getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
             registrationRepository.delete(registration);
-            throw new KeyInvalidException("Registration has expired!");
+            throw new RegistrationExpiredException("Registration has expired!");
         }
 
         User user = User.builder()
@@ -94,9 +94,9 @@ public class AuthService {
         userRepository.save(user);
 
         Room announcements = roomRepository.findById(1)
-                .orElseThrow(() -> new EmptyOptionalException("Room not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("Announcement Room not found!"));
 
-        Room room = roomRepository.findById(2).orElseThrow(() -> new EmptyOptionalException("Room not found!"));
+        Room room = roomRepository.findById(2).orElseThrow(() -> new EntityNotFoundException("Default chat Room not found!"));
 
         announcements.addUser(user);
         room.addUser(user);
@@ -120,9 +120,9 @@ public class AuthService {
 
     @Transactional
     public AuthDTO login(LoginDTO loginDTO) {
-        User user = userService.getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
-        if (user.isActive() == false) {
-            throw new RuntimeException("Account is not active");
+        User user = userService.findUserByEmail(loginDTO.getEmail());
+        if (!user.isActive()) {
+            throw new AccountInactiveException("Account is not active");
         }
         String email = user.getEmail();
 

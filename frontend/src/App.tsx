@@ -21,6 +21,7 @@ import { SimpleEditor } from "./components/tiptap/components/tiptap-templates/si
 import { useEffect } from "react";
 import { decodeJwt } from "./stores/AuthStore.ts";
 import GlobalLoader from "./components/main/GlobalLoader.tsx";
+import { Box } from "@mui/material";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
@@ -50,7 +51,7 @@ const App = (): JSX.Element => {
   }, [isAuthenticated]);
 
   return (
-    <>
+    <Box sx={{ display: "flex", width: "100vw", height: "100vh" }}>
       {isAuthenticated === true ? (
         <>
           <LiveUpdates />
@@ -62,7 +63,7 @@ const App = (): JSX.Element => {
       <NotificationBanner />
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route path="/" />
+          <Route path="/" element={<Announcement />} />
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/chat" element={<Chat roomId={roomId} />} />
           <Route path="/files" element={<Files />} />
@@ -77,7 +78,7 @@ const App = (): JSX.Element => {
         <Route path="/register" element={<EnterCode />} />
         <Route path="/register/:inviteKey" element={<Register />} />
       </Routes>
-    </>
+    </Box>
   );
 };
 

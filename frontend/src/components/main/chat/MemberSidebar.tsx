@@ -17,6 +17,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditChat from "./EditChat";
 import { Lens } from "@mui/icons-material";
+import { usePropStore } from "../../../stores/PropStore";
 
 type MemberSidebarProps = {
   roomId: number;
@@ -28,6 +29,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [open, setOpen] = useState<boolean>(false);
+  const { openSidebar } = usePropStore();
 
   const currentRoom = rooms.find((r) => r.roomId === roomId);
   const userDisplay = currentRoom
@@ -52,6 +54,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
             boxSizing: "border-box",
             pt: heightMinusTopNav,
           },
+          overflow: "scroll",
         }}
       >
         <ListItem sx={{ height: 64 }}>
@@ -74,7 +77,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
         onClick={() => setOpen(!open)}
         size="small"
         sx={{
-          display: { xs: "flex", md: "none" },
+          display: { xs: openSidebar ? "none" : "block", md: "none" },
           position: "fixed",
           right: open ? "calc(100vw - 10vw)" : "0",
           top: "55%",

@@ -9,7 +9,6 @@ import sc.backend.dtos.res.UserDTO;
 import sc.backend.entities.Registration;
 import sc.backend.entities.User;
 import sc.backend.repositories.RegistrationRepository;
-import sc.backend.repositories.UserRepository;
 
 import java.time.LocalDateTime;
 
@@ -18,16 +17,13 @@ import java.time.LocalDateTime;
 @Service
 public class AdminService {
 
-    private final UserRepository userRepository;
     private final RegistrationRepository registrationRepository;
-    // MH: added Service for Random Code
     private final RegistryCodeService registryCodeService;
     private final UserService userService;
 
     public RegistrationDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO, String creatorEmail) {
-        User creator = userService.getUserByEmail(userRepository.findByEmail(creatorEmail));
+        User creator = userService.findUserByEmail(creatorEmail);
 
-        // MH: changed Code to use new Service
         String registryKey = registryCodeService.generateRegistryCode();
 
         Registration registration = Registration.builder()
