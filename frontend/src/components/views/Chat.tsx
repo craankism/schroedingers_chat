@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
-import { heightMinusTopNav } from "../../types/constants/constants";
 import type { MessageType } from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
@@ -101,10 +100,9 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     <Box
       component="main"
       sx={{
-        flexGrow: 1,
         display: "flex",
         flexDirection: "column",
-        mt: heightMinusTopNav,
+        height: "100vh",
         overflow: "hidden",
       }}
     >
