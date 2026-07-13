@@ -32,7 +32,8 @@ const NewDocumentModal = (): JSX.Element => {
   const [userList, setUserList] = React.useState<number[]>([]);
   const currentUserId = decodeJwt()?.userId;
 
-  const { newDocModalOpen, setNewDocModalOpen } = usePropStore();
+  const { newDocModalOpen, setNewDocModalOpen, setOpenSidebar } =
+    usePropStore();
   const navigate = useNavigate();
 
   const handleClose = () => {
@@ -47,6 +48,7 @@ const NewDocumentModal = (): JSX.Element => {
     setUserList([]);
     setName("");
     handleClose();
+    setOpenSidebar(false);
     navigate("/editor");
   };
 
