@@ -21,6 +21,7 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 @Controller
@@ -29,7 +30,7 @@ public class WebSocketController {
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
     private final Optional<AIMessageResponseService> aiMessageResponseService;
-    Map<Integer, Boolean> onlineList = new HashMap<>();
+    Map<Integer, Boolean> onlineList = new ConcurrentHashMap<>();
 
     public void broadcastUpdate(String updateType, int id, boolean online) {
         onlineList.put(id, online);
