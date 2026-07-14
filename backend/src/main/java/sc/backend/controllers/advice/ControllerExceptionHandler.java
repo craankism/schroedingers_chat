@@ -231,4 +231,17 @@ public class ControllerExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
+
+    @ExceptionHandler(CryptoException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCrypto(CryptoException e, WebRequest request) {
+        log.error("Crypto operation failed", e);
+        ErrorResponseDTO body = new ErrorResponseDTO(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "CRYPTO_ERROR",
+                "Encryption or decryption operation failed",
+                LocalDateTime.now(),
+                request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    }
 }

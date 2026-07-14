@@ -27,42 +27,30 @@ public class StoredFileController {
         webSocketController.broadcastUpdate("FILE_UPDATE", fileId);
     }
 
-    /**
-     * Upload Endpunkt
-     * - Nimmt multipart/form-data entgegen
-     * - roomId und userId kommen als RequestParam (spaeter aus JWT)
-     */
     @PostMapping("/upload")
     public ResponseEntity<StoredFileMetaDTO> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folderId", required = false) Integer folderId) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assert authentication != null;
         String userName = authentication.getName();
         StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName, folderId);
         broadcastFileUpdate(storedFileMetaDTO.getFileId());
         return new ResponseEntity<>(storedFileMetaDTO, HttpStatus.OK);
     }
 
-    /**
-     * Download Endpunkt
-     * - Streamt die Datei direkt aus MinIO zum Client
-     */
     @GetMapping("/download/{fileId}")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Integer fileId) throws Exception {
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Integer fileId) {
         StoredFileMetaDTO metadata = fileStorageService.getFileMetadata(fileId);
         InputStream stream = fileStorageService.downloadFile(fileId);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(metadata.getMimeType()))
-                // Header setzt den Dateinamen fuer den Browser-Download
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + metadata.getFilename() + "\"")
                 .body(new InputStreamResource(stream));
     }
 
-    /**
-     * Metadaten abrufen (fuer Frontend Dateiliste)
-     */
     @GetMapping("/{fileId}")
     public ResponseEntity<StoredFileMetaDTO> getFileMetadata(@PathVariable Integer fileId) {
         return new ResponseEntity<>(fileStorageService.getFileMetadata(fileId), HttpStatus.OK);
@@ -74,7 +62,7 @@ public class StoredFileController {
     }
 
     @DeleteMapping("/{fileId}")
-    public ResponseEntity<?> deleteFileById(@PathVariable int fileId) throws Exception {
+    public ResponseEntity<?> deleteFileById(@PathVariable int fileId) {
         fileStorageService.deleteFile(fileId);
         broadcastFileUpdate(0);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

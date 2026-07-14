@@ -3,6 +3,7 @@ package sc.backend.services;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,6 +44,9 @@ public class AuthService {
     private final UserService userService;
     private final JavaMailSender mailSender;
 
+    @Value("${DOMAIN:http://localhost:5173}")
+    private String domain;
+
     @Transactional
     public String verifyEmail(String token) {
         String email = tokenService.extractEmail(token);
@@ -60,7 +64,7 @@ public class AuthService {
 
     public void sendVerificationEmail(User user) {
         String token = tokenService.generateToken(new HashMap<>(), user);
-        String verifyUrl = "http://localhost:5173/api/auth/verify/" +
+        String verifyUrl = domain + "/api/auth/verify/" +
                 URLEncoder.encode(token, StandardCharsets.UTF_8);
 
         String message = "Click below to verify your email:\n" + verifyUrl;
@@ -90,8 +94,9 @@ public class AuthService {
                 .isTrainer(registration.isTrainer())
                 .isActive(false)
                 .build();
-        sendVerificationEmail(user);
+
         userRepository.save(user);
+        sendVerificationEmail(user);
 
         Room announcements = roomRepository.findById(1)
                 .orElseThrow(() -> new EntityNotFoundException("Announcement Room not found!"));

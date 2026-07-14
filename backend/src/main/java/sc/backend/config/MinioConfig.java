@@ -45,7 +45,7 @@ public class MinioConfig {
             }
             return true;
         } catch (Exception e) {
-            throw new RuntimeException("Konnte MinIO Bucket nicht erstellen: " + bucketName, e);
+            throw new IllegalStateException("Konnte MinIO Bucket nicht erstellen: " + bucketName, e);
         }
     }
 }

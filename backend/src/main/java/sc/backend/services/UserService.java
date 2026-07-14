@@ -44,7 +44,6 @@ public class UserService {
 
     public UserDTO getCurrentUser(String authenticatedEmail) {
         User user = findUserByEmail(authenticatedEmail);
-
         return convertToDTO(user);
     }
 

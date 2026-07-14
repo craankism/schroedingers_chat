@@ -63,8 +63,8 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                 <Box>
                   <Typography sx={{ color: "cyan" }}>
                     {
-                      users.find((user) => user.userId === message.userId)
-                        ?.displayName
+                        users.find((user) => user.userId == message.userId)
+                              ?.displayName
                     }
                   </Typography>
                   {message.content != null ? (
@@ -96,10 +96,10 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
             ) : (
               <Box>
                 <Typography sx={{ color: "red" }}>
-                  {
-                    users.find((user) => user.userId === message.userId)
-                      ?.displayName
-                  }
+                    {
+                        users.find((user) => user.userId === message.userId)?.displayName ??
+                        "Void 🐈‍⬛"
+                    }
                 </Typography>
                 {message.content != null ? (
                   <Box
