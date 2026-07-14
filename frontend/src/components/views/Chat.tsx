@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
-import type { MessageType} from "../../types/MessageType";
+import type {MessageInput, MessageType} from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
 import ICQSound from "../../assets/ICQSound.mp3";
@@ -13,11 +13,24 @@ type ChatProps = {
   roomId: number;
 };
 
+const containsVoidMention = (
+    content: string
+): boolean => {
+    return /@void/i.test(content ?? "");
+};
+
+const isMessageFromVoid = (
+    message: MessageInput,
+): boolean => {
+    return message.sender.trim() === "Void 🐈‍⬛"
+};
+
 const Chat: React.FC<ChatProps> = (roomId) => {
   const clientRef = useRef<Client | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
   const [message, setMessage] = useState<string>("");
+  const [isVoidThinking, setIsVoidThinking] = useState<boolean>(false);
   const { setMessages, markMessageDeleted, getMessages } = useMessageStore();
 
   const getWsUrl = () => {
@@ -27,7 +40,10 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   };
 
   useEffect(() => {
-    const handleConnectionClose = () => setConnectionStatus("Closed");
+    const handleConnectionClose = () => {
+        setConnectionStatus("Closed");
+        setIsVoidThinking(false);
+    };
 
     const client = new Client({
       brokerURL: getWsUrl(),
@@ -43,6 +59,13 @@ const Chat: React.FC<ChatProps> = (roomId) => {
           (incomingMessage) => {
               const receivedMessage = JSON.parse(incomingMessage.body);
               setMessages(receivedMessage);
+              if (isMessageFromVoid(receivedMessage)) {
+                  setIsVoidThinking(false);
+              } else if (
+                  containsVoidMention(receivedMessage.content)
+              ) {
+                  setIsVoidThinking(true);
+              }
               if (receivedMessage.userId !== decodeJwt()?.userId) {
                   new Audio(ICQSound).play();
               }
@@ -68,7 +91,8 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     client.activate();
 
     return () => {
-      void client.deactivate();
+        setIsVoidThinking(false);
+        void client.deactivate();
     };
     // eslint-disable-next-line
   }, [roomId.roomId]);
@@ -87,17 +111,32 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   );
 
   const handleClickSendMessage = useCallback(() => {
-    if (!message.trim() || !clientRef.current?.connected) {
-      return;
-    }
+      const content = message.trim();
 
-    clientRef.current.publish({
-      destination: "/app/chat/" + roomId.roomId,
-      body: JSON.stringify({
-        content: message,
-      } as MessageType),
-    });
-    setMessage("");
+      if (!content || !clientRef.current?.connected) {
+          return;
+      }
+
+      const isVoidPrompt = containsVoidMention(content);
+
+      if (isVoidPrompt) {
+          setIsVoidThinking(true);
+      }
+
+      try {
+          clientRef.current.publish({
+              destination: "/app/chat/" + roomId.roomId,
+              body: JSON.stringify({
+                  content: message,
+              } as MessageType),
+          });
+          setMessage("");
+      } catch (error) {
+          if (isVoidPrompt) {
+              setIsVoidThinking(false);
+          }
+          console.error("Error sending message:", error);
+      }
   }, [message, roomId]);
 
   const isConnected = connectionStatus === "Open";
@@ -116,6 +155,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         connectionStatus={connectionStatus}
         handleDeleteMessage={handleDeleteMessage}
         announcement={false}
+        isVoidThinking={isVoidThinking}
       />
       <MemberSidebar roomId={roomId.roomId} />
       <Message

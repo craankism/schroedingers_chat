@@ -1,4 +1,4 @@
-import { Box, List, Typography } from "@mui/material";
+import {Box, CircularProgress, List, Typography} from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { decodeJwt } from "../../../stores/AuthStore";
@@ -12,12 +12,14 @@ type MessagesDisplayProps = {
   connectionStatus: string;
   handleDeleteMessage: (messageId: number) => void;
   announcement: boolean;
+  isVoidThinking: boolean;
 };
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
-  connectionStatus,
-  handleDeleteMessage,
-  announcement,
+    connectionStatus,
+    handleDeleteMessage,
+    announcement,
+    isVoidThinking,
 }) => {
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
@@ -27,7 +29,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   // Scroll to the last message whenever messages change.
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isVoidThinking]);
 
   let md = 30;
   if (announcement) {
@@ -60,7 +62,8 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
           <Box
             key={id}
             sx={{ display: "flex" }}
-            ref={id === messages.length - 1 ? lastMessageRef : null}
+            //ref is used at the bottom now
+            //ref={id === messages.length - 1 ? lastMessageRef : null}
           >
             {decodeJwt()?.userId === message.userId ? (
               <Box
@@ -137,6 +140,31 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
             )}
           </Box>
         ))}
+
+          {isVoidThinking && (
+              <Box
+                  sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mt: 2,
+                      mb: 1,
+                      opacity: 0.7,
+                  }}
+              >
+                  <CircularProgress size={16} />
+
+                  <Typography
+                      variant="body2"
+                      sx={{ fontStyle: "italic" }}
+                  >
+                      Void is both thinking and not thinking...
+                  </Typography>
+              </Box>
+          )}
+
+          {/*Scroll both for messages and Void thinking*/}
+          <Box ref={lastMessageRef} />
       </List>
     </Box>
   );
