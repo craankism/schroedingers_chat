@@ -7,7 +7,7 @@ import type { MessageInput, MessageType } from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
 import { decodeJwt } from "../../stores/AuthStore.ts";
-import ICQSound from "../../sounds/ICQSound.mp3";
+import ICQSound from "../../assets/ICQSound.mp3";
 
 type ChatProps = {
   roomId: number;
