@@ -3,11 +3,9 @@ import { Box } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
-import type { MessageType} from "../../types/MessageType";
+import type { MessageType } from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
-import ICQSound from "../../assets/ICQSound.mp3";
-import {decodeJwt} from "../../stores/AuthStore.ts";
 
 type ChatProps = {
   roomId: number;
@@ -41,11 +39,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         client.subscribe(
           "/topic/" + roomId.roomId + "/messages",
           (incomingMessage) => {
-              const receivedMessage = JSON.parse(incomingMessage.body);
-              setMessages(receivedMessage);
-              if (receivedMessage.userId !== decodeJwt()?.userId) {
-                  new Audio(ICQSound).play();
-              }
+            setMessages(JSON.parse(incomingMessage.body));
           },
         );
 
@@ -116,6 +110,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       <MessagesDisplay
         connectionStatus={connectionStatus}
         handleDeleteMessage={handleDeleteMessage}
+        announcement={false}
       />
       <MemberSidebar roomId={roomId.roomId} />
       <Message
@@ -123,6 +118,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         setMessage={setMessage}
         handleClickSendMessage={handleClickSendMessage}
         isConnected={isConnected}
+        announcement={false}
       />
     </Box>
   );
