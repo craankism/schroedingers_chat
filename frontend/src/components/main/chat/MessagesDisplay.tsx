@@ -11,13 +11,11 @@ import { useUserStore } from "../../../stores/UserStore.ts";
 type MessagesDisplayProps = {
   connectionStatus: string;
   handleDeleteMessage: (messageId: number) => void;
-  announcement: boolean;
 };
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   connectionStatus,
   handleDeleteMessage,
-  announcement,
 }) => {
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
@@ -29,11 +27,6 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  let md = 30;
-  if (announcement) {
-    md = 0;
-  }
-
   return (
     <Box
       sx={{
@@ -41,7 +34,6 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         flexDirection: "column",
         pl: 2,
         pr: 2,
-        mr: { xs: "0", md: md },
         ml: widthMinusSidebar,
         overflow: "auto",
         height: "92vh",

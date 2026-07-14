@@ -28,11 +28,13 @@ public class StoredFileController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<StoredFileMetaDTO> uploadFile(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<StoredFileMetaDTO> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "folderId", required = false) Integer folderId) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assert authentication != null;
         String userName = authentication.getName();
-        StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName);
+        StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName, folderId);
         broadcastFileUpdate(storedFileMetaDTO.getFileId());
         return new ResponseEntity<>(storedFileMetaDTO, HttpStatus.OK);
     }

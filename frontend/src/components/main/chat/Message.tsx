@@ -1,6 +1,7 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
 import type React from "react";
 import { useState } from "react";
+import { widthMinusSidebar } from "../../../types/constants/constants";
 
 type MessageProps = {
   message: string;
@@ -18,22 +19,23 @@ const Message: React.FC<MessageProps> = ({
   announcement,
 }) => {
   const [messageTooLong, setMessageTooLong] = useState<boolean>(false);
-  let md = "240px";
+  let md = 30;
   if (announcement) {
-    md = "0px";
+    md = 0;
   }
+
   return (
     <Box
       sx={{
-        ml: { xs: 0, md: "240px" },
-        mr: { xs: 0, md: md },
         display: "flex",
         gap: 1,
         p: 1,
         bgcolor: "background.paper",
+        ml: widthMinusSidebar,
+        mr: { xs: 0, md: md },
       }}
     >
-      <Box sx={{ position: "relative", flexGrow: 1 }}>
+      <Box sx={{ flex: 1, position: "relative" }}>
         <TextField
           id="message"
           variant="outlined"

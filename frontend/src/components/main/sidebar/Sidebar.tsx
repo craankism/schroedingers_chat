@@ -24,6 +24,7 @@ import { useUserStore } from "../../../stores/UserStore";
 import { heightMinusTopNav } from "../../../types/constants/constants";
 import { useDocumentStore } from "../../../stores/DocumentStore";
 import { useFileStore } from "../../../stores/FileStore";
+import { useFolderStore } from "../../../stores/FolderStore";
 
 const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files", "Editor"];
@@ -42,6 +43,7 @@ const Sidebar = (): JSX.Element => {
   const { getAllFilesMeta } = useFileStore();
   const { getAllRooms } = useRoomStore();
   const { getAllUsers } = useUserStore();
+  const { getAllFolders } = useFolderStore();
   const userId = decodeJwt()?.userId || 0;
   const isAdmin = users.find((user) => user.userId === userId)?.isAdmin;
   const { rooms } = useRoomStore();
@@ -73,6 +75,7 @@ const Sidebar = (): JSX.Element => {
     const check = async () => {
       const authenticated = await checkAuthentication();
       if (!authenticated) return;
+      getAllFolders();
       getAllDocuments();
       getAllFilesMeta();
       getAllRooms();

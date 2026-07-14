@@ -107,15 +107,15 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       component="main"
       sx={{
         display: "flex",
+        width: "100%",
+        height: "100%",
         flexDirection: "column",
-        height: "100vh",
         overflow: "hidden",
       }}
     >
       <MessagesDisplay
         connectionStatus={connectionStatus}
         handleDeleteMessage={handleDeleteMessage}
-        announcement={false}
       />
       <MemberSidebar roomId={roomId.roomId} />
       <Message
@@ -123,7 +123,6 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         setMessage={setMessage}
         handleClickSendMessage={handleClickSendMessage}
         isConnected={isConnected}
-        announcement={false}
       />
     </Box>
   );
