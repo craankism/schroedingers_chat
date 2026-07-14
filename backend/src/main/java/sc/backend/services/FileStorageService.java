@@ -146,7 +146,7 @@ public class FileStorageService {
                 .orElseThrow(() -> new FileNotFoundException("File not Found" + fileId)));
     }
 
-    public List<StoredFileMetaDTO> getAllFilesMetaDate() {
+    public List<StoredFileMetaDTO> getAllFilesMetaData() {
         List<StoredFileMetaDTO> fileDtoList = new ArrayList<>();
 
         for (StoredFile file : storedFileRepository.findAll()) {

@@ -4,14 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sc.backend.dtos.res.StoredFileMetaDTO;
 import sc.backend.services.FileStorageService;
 
 import java.io.InputStream;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -30,13 +29,10 @@ public class StoredFileController {
     @PostMapping("/upload")
     public ResponseEntity<StoredFileMetaDTO> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "folderId", required = false) Integer folderId) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        assert authentication != null;
-        String userName = authentication.getName();
-        StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName, folderId);
+            @RequestParam(value = "folderId", required = false) Integer folderId, Principal principal) {
+        StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, principal.getName(), folderId);
         broadcastFileUpdate(storedFileMetaDTO.getFileId());
-        return new ResponseEntity<>(storedFileMetaDTO, HttpStatus.OK);
+        return new ResponseEntity<>(storedFileMetaDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/download/{fileId}")
@@ -58,7 +54,7 @@ public class StoredFileController {
 
     @GetMapping()
     public ResponseEntity<List<StoredFileMetaDTO>> getAllFilesMetadata() {
-        return new ResponseEntity<>(fileStorageService.getAllFilesMetaDate(), HttpStatus.OK);
+        return new ResponseEntity<>(fileStorageService.getAllFilesMetaData(), HttpStatus.OK);
     }
 
     @DeleteMapping("/{fileId}")

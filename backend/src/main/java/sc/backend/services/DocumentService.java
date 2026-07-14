@@ -50,7 +50,7 @@ public class DocumentService {
         documentMembershipRepository.saveAndFlush(creatorMembership);
 
         for (Integer userId : createDocumentDTO.getDocumentMembershipList()) {
-            shareDocument(createdDocument.getDocumentId(), creator.getEmail(), userId);
+            addMember(createdDocument, userId);
         }
 
         return convertToDto(createdDocument);
@@ -72,19 +72,8 @@ public class DocumentService {
     @Transactional
     public DocumentMetaDTO shareDocument(int documentId, String authenticatedEmail, int userId) {
         Document document = findDocumentById(documentId);
-
         checkOwner(document, userService.findUserByEmail(authenticatedEmail).getUserId());
-
-        User newMember = userService.findUserById(userId);
-
-        if (!documentMembershipRepository.existsByDocumentAndUser(document, newMember)) {
-            DocumentMembership documentMembership = DocumentMembership.builder()
-                    .document(document)
-                    .user(newMember)
-                    .role(DocumentRole.EDITOR)
-                    .build();
-            documentMembershipRepository.saveAndFlush(documentMembership);
-        }
+        addMember(document, userId);
         return convertToMetaDto(document);
     }
 
@@ -113,6 +102,19 @@ public class DocumentService {
             return convertToEditorAuthDTO(user);
         } else {
             throw new PermissionException("User has no Access to Document");
+        }
+    }
+
+    private void addMember(Document document, int userId) {
+        User newMember = userService.findUserById(userId);
+
+        if (!documentMembershipRepository.existsByDocumentAndUser(document, newMember)) {
+            DocumentMembership membership = DocumentMembership.builder()
+                    .document(document)
+                    .user(newMember)
+                    .role(DocumentRole.EDITOR)
+                    .build();
+            documentMembershipRepository.saveAndFlush(membership);
         }
     }
 

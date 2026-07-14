@@ -116,10 +116,20 @@ public class AuthService {
     public CodeDTO checkValidity(String code) {
         Optional<Registration> registration = registrationRepository.findByRegistrationCode(code);
 
-        boolean valid = registration.isPresent();
+        if (registration.isEmpty()) {
+            return CodeDTO.builder()
+                    .isValid(false)
+                    .build();
+        }
+
+        if (registration.get().getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
+            return CodeDTO.builder()
+                    .isValid(false)
+                    .build();
+        }
 
         return CodeDTO.builder()
-                .isValid(valid)
+                .isValid(true)
                 .build();
     }
 
