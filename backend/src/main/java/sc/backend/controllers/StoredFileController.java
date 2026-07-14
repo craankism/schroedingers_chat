@@ -33,10 +33,12 @@ public class StoredFileController {
      * - roomId und userId kommen als RequestParam (spaeter aus JWT)
      */
     @PostMapping("/upload")
-    public ResponseEntity<StoredFileMetaDTO> uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<StoredFileMetaDTO> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "folderId", required = false) Integer folderId) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
-        StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName);
+        StoredFileMetaDTO storedFileMetaDTO = fileStorageService.uploadFile(file, userName, folderId);
         broadcastFileUpdate(storedFileMetaDTO.getFileId());
         return new ResponseEntity<>(storedFileMetaDTO, HttpStatus.OK);
     }
