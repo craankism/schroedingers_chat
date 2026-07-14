@@ -10,12 +10,14 @@ import type {
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
 import type { DocumentType } from "../types/DocumentType.ts";
+import type { FolderInput, FolderType } from "../types/FolderType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
 const roomUrl = "/room";
 const messageUrl = "/messages";
 const documentUrl = "/documents";
+const folderUrl = "/folder";
 
 const authUrl = "/auth";
 const adminUrl = "/admin";
@@ -35,8 +37,12 @@ export const fileApi = {
   upload: async (fileInput: FileInput): Promise<FileType> => {
     const formData = new FormData();
     formData.append("file", fileInput.file);
+    const url =
+      fileInput.folderId != null
+        ? `${fileUrl}/upload?folderId=${fileInput.folderId}`
+        : `${fileUrl}/upload`;
 
-    const response = await api.post<FileType>(fileUrl + "/upload", formData, {
+    const response = await api.post<FileType>(url, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -51,6 +57,23 @@ export const fileApi = {
 
   delete: async (fileId: number): Promise<void> => {
     await api.delete(`${fileUrl}/${fileId}`);
+  },
+};
+
+export const folderApi = {
+  getAll: async (): Promise<FolderType[]> => {
+    const response = await api.get<FolderType[]>(folderUrl);
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<FolderType> => {
+    const response = await api.get<FolderType>(`${folderUrl}/${id}`);
+    return response.data;
+  },
+
+  create: async (folderInput: FolderInput): Promise<FolderType> => {
+    const response = await api.post<FolderType>(folderUrl, folderInput);
+    return response.data;
   },
 };
 

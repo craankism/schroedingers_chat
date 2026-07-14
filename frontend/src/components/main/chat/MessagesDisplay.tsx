@@ -43,8 +43,8 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         flexDirection: "column",
         pl: 2,
         pr: 2,
-        mr: { xs: "0", md: md },
         ml: widthMinusSidebar,
+        mr: { xs: 0, md: md },
         overflow: "auto",
         height: "92vh",
       }}
@@ -74,8 +74,8 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                 <Box>
                   <Typography sx={{ color: "cyan" }}>
                     {
-                        users.find((user) => user.userId == message.userId)
-                              ?.displayName
+                      users.find((user) => user.userId === message.userId)
+                        ?.displayName
                     }
                   </Typography>
                   {message.content != null ? (
@@ -107,10 +107,10 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
             ) : (
               <Box>
                 <Typography sx={{ color: "red" }}>
-                    {
-                        users.find((user) => user.userId === message.userId)?.displayName ??
-                        "Void 🐈‍⬛"
-                    }
+                  {
+                    users.find((user) => user.userId === message.userId)
+                      ?.displayName
+                  }
                 </Typography>
                 {message.content != null ? (
                   <Box

@@ -6,8 +6,6 @@ import Message from "../main/chat/Message";
 import type {MessageInput, MessageType} from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
-import ICQSound from "../../assets/ICQSound.mp3";
-import {decodeJwt} from "../../stores/AuthStore.ts";
 
 type ChatProps = {
   roomId: number;
@@ -146,8 +144,9 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       component="main"
       sx={{
         display: "flex",
+        width: "100%",
+        height: "100%",
         flexDirection: "column",
-        height: "100vh",
         overflow: "hidden",
       }}
     >

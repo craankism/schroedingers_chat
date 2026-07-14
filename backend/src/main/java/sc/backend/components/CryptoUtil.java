@@ -24,7 +24,7 @@ public class CryptoUtil {
 
     public CryptoUtil(@Value("${encryption.master-key}") String masterKey) {
         if (masterKey == null || masterKey.length() < 32) {
-            throw new IllegalStateException("Encryption master key must be at least 16 characters");
+            throw new IllegalStateException("Encryption master key must be at least 32 characters");
         }
         this.key = deriveKey(masterKey);
     }

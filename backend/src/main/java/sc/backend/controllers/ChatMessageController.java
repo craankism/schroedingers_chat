@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.services.ChatMessageService;
 
+import java.security.Principal;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class ChatMessageController {
     private final ChatMessageService chatMessageService;
 
     @GetMapping("{roomId}")
-    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable int roomId) {
-        return new ResponseEntity<>(chatMessageService.getAllMessages(roomId), HttpStatus.OK);
+    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable int roomId, Principal principal) {
+        return new ResponseEntity<>(chatMessageService.getAllMessages(roomId, principal.getName()), HttpStatus.OK);
     }
 }

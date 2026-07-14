@@ -2,6 +2,7 @@ package sc.backend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sc.backend.entities.Folder;
 
 import java.time.LocalDateTime;
 
@@ -34,6 +35,10 @@ public class StoredFile {
     @ManyToOne
     @JoinColumn(name = "userId")
     private User uploadedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "folder_id")
+    private Folder folder;
 
     @Column(nullable = false)
     private byte[] iv;

@@ -31,14 +31,16 @@ public class AdminController {
 
     @PutMapping("/user/setAdmin/{userId}")
     public ResponseEntity<UserDTO> setAdmin(@PathVariable int userId) {
+        UserDTO userDTO = adminService.setAdmin(userId);
         broadcastUserUpdate(userId);
-        return new ResponseEntity<>(adminService.setAdmin(userId), HttpStatus.OK);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PutMapping("/user/setTrainer/{userId}")
     public ResponseEntity<UserDTO> setTrainer(@PathVariable int userId) {
+        UserDTO userDTO = adminService.setTrainer(userId);
         broadcastUserUpdate(userId);
-        return new ResponseEntity<>(adminService.setTrainer(userId), HttpStatus.OK);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PutMapping("/user/setActive/{userId}")
