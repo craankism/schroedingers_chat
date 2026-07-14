@@ -3,9 +3,11 @@ import { Box } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
-import type {MessageInput, MessageType} from "../../types/MessageType";
+import type { MessageInput, MessageType } from "../../types/MessageType";
 import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
+import { decodeJwt } from "../../stores/AuthStore.ts";
+import ICQSound from "../../sounds/ICQSound.mp3";
 
 type ChatProps = {
   roomId: number;
@@ -25,6 +27,7 @@ const isMessageFromVoid = (
 
 const Chat: React.FC<ChatProps> = (roomId) => {
   const clientRef = useRef<Client | null>(null);
+  const voidTimeoutRef = useRef<number | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
   const [message, setMessage] = useState<string>("");
@@ -41,6 +44,11 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     const handleConnectionClose = () => {
         setConnectionStatus("Closed");
         setIsVoidThinking(false);
+
+        if (voidTimeoutRef.current !== null) {
+            window.clearTimeout(voidTimeoutRef.current);
+            voidTimeoutRef.current = null;
+        }
     };
 
     const client = new Client({
@@ -57,13 +65,18 @@ const Chat: React.FC<ChatProps> = (roomId) => {
           (incomingMessage) => {
               const receivedMessage = JSON.parse(incomingMessage.body);
               setMessages(receivedMessage);
+
               if (isMessageFromVoid(receivedMessage)) {
                   setIsVoidThinking(false);
-              } else if (
-                  containsVoidMention(receivedMessage.content)
-              ) {
+
+                  if (voidTimeoutRef.current !== null) {
+                      window.clearTimeout(voidTimeoutRef.current);
+                      voidTimeoutRef.current = null;
+                  }
+              } else if (containsVoidMention(receivedMessage.content)) {
                   setIsVoidThinking(true);
               }
+
               if (receivedMessage.userId !== decodeJwt()?.userId) {
                   new Audio(ICQSound).play();
               }
@@ -90,6 +103,12 @@ const Chat: React.FC<ChatProps> = (roomId) => {
 
     return () => {
         setIsVoidThinking(false);
+
+        if (voidTimeoutRef.current !== null) {
+            window.clearTimeout(voidTimeoutRef.current);
+            voidTimeoutRef.current = null;
+        }
+
         void client.deactivate();
     };
     // eslint-disable-next-line
@@ -119,6 +138,17 @@ const Chat: React.FC<ChatProps> = (roomId) => {
 
       if (isVoidPrompt) {
           setIsVoidThinking(true);
+
+          if (voidTimeoutRef.current !== null) {
+              window.clearTimeout(voidTimeoutRef.current);
+          }
+
+          voidTimeoutRef.current = window.setTimeout(() => {
+              setIsVoidThinking(false);
+              voidTimeoutRef.current = null;
+
+              console.error("Void did not respond in time");
+          }, 120000);
       }
 
       try {
