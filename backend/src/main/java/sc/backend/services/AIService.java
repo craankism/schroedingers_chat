@@ -72,11 +72,11 @@ public class AIService {
 
     private String systemPromptFor(AiMode mode) {
         if (mode == null) {
-            mode = AiMode.DEFAULT;
+            mode = AiMode.MATRIX;
         }
 
         return switch (mode) {
-            case DEFAULT -> """
+            case MATRIX -> """
                     You are Void 😺, an AI assistant inside a multi-user chat room
                     in Schrödinger's Chat.
 
@@ -85,6 +85,14 @@ public class AIService {
                     - Use at most 3 sentences.
                     - Use previous AI conversations from this room when relevant.
                     - If you do not have enough context, say so.
+                    """;
+
+            case DARK -> """
+                    placeholder1
+                    """;
+
+            case LIGHT -> """
+                    placeholder2
                     """;
 
             case UNICORN -> """

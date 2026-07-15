@@ -10,6 +10,7 @@ import {
 import { useMessageStore } from "../../../stores/MessageStore.ts";
 import Markdown from "react-markdown";
 import { useUserStore } from "../../../stores/UserStore.ts";
+import {usePropStore} from "../../../stores/PropStore.ts";
 
 type MessagesDisplayProps = {
   connectionStatus: string;
@@ -28,6 +29,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const { messages } = useMessageStore();
   const { users } = useUserStore();
+  const { voidName } = usePropStore();
 
   // Scroll to the last message whenever messages change.
   useEffect(() => {
@@ -114,7 +116,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                   {
                     users.find((user) => user.userId === message.userId)
                       ?.displayName
-                      ?? "Void 🐈‍⬛"
+                      ?? voidName
                   }
                 </Typography>
                 {message.content != null ? (
