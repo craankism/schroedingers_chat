@@ -210,6 +210,7 @@ public class ChatMessageService {
                 .content(decryptContent(message))
                 .sender(sender)
                 .creationDate(message.getCreationDate())
+                .promptMessageId(message.getAiPromptMessageId())
                 .build();
     }
 

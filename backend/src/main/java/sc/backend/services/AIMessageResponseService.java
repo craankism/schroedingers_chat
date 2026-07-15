@@ -25,6 +25,7 @@ public class AIMessageResponseService {
     private final AIService aiService;
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final OllamaAvailabilityService ollamaAvailabilityService;
 
     @Async("aiTaskExecutor")
     public void answerAsync(
@@ -34,6 +35,24 @@ public class AIMessageResponseService {
             int promptMessageId
     ) {
         try {
+            if (!ollamaAvailabilityService.isAvailable()) {
+                MessageDTO errorMessage =
+                        chatMessageService.createAIMessage(
+                                roomId,
+                                "Void cannot reach the quantum realm right now. "
+                                        + "*taps the empty food bowl* "
+                                        + "Ollama appears to be unavailable.",
+                                promptMessageId
+                        );
+
+                messagingTemplate.convertAndSend(
+                        "/topic/" + roomId + "/messages",
+                        errorMessage
+                );
+
+                return;
+            }
+
             String aiAnswer = aiService.ask(
                     roomId,
                     prompt,

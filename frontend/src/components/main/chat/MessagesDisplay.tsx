@@ -110,6 +110,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                   {
                     users.find((user) => user.userId === message.userId)
                       ?.displayName
+                      ?? "Void 🐈‍⬛"
                   }
                 </Typography>
                 {message.content != null ? (
