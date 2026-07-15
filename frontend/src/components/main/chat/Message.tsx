@@ -1,7 +1,8 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, TextField, Typography, Tooltip, IconButton } from "@mui/material";
 import type React from "react";
 import { useState } from "react";
 import { widthMinusSidebar } from "../../../types/constants/constants";
+import { InfoOutlined } from "@mui/icons-material";
 
 type MessageProps = {
   message: string;
@@ -19,6 +20,7 @@ const Message: React.FC<MessageProps> = ({
   announcement,
 }) => {
   const [messageTooLong, setMessageTooLong] = useState<boolean>(false);
+  const [showAiHint, setShowAiHint] = useState<boolean>(true);
   let md = 30;
   if (announcement) {
     md = 0;
@@ -27,14 +29,43 @@ const Message: React.FC<MessageProps> = ({
   return (
     <Box
       sx={{
-        display: "flex",
-        gap: 1,
         p: 1,
         bgcolor: "background.paper",
         ml: widthMinusSidebar,
         mr: { xs: 0, md: md },
       }}
     >
+        {!announcement && showAiHint && (
+            <Box
+                sx={{
+                    mb: 1,
+                    px: 1.5,
+                    py: 1,
+                    borderRadius: 1,
+                    bgcolor: "action.hover",
+                }}
+            >
+                <Typography variant="caption" color="text.secondary">
+                    Ask our Artificial Meowligence 🐈‍⬛ with <Box component="strong">@void</Box> · Mention a filename to let Void inspect it
+                </Typography>
+            </Box>
+        )}
+    <Box
+        sx={{
+            display: "flex",
+            gap: 1,
+        }}
+    >
+        {!announcement && (
+            <Tooltip title={showAiHint ? "Hide AI hint" : "Show AI hint"}>
+                <IconButton
+                    aria-label={showAiHint ? "Hide AI hint" : "Show AI hint"}
+                    onClick={() => setShowAiHint((current) => !current)}
+                >
+                    <InfoOutlined />
+                </IconButton>
+            </Tooltip>
+        )}
       <Box sx={{ flex: 1, position: "relative" }}>
         <TextField
           id="message"
@@ -85,6 +116,7 @@ const Message: React.FC<MessageProps> = ({
       >
         Send
       </Button>
+    </Box>
     </Box>
   );
 };

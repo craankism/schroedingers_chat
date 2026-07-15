@@ -8,6 +8,7 @@ import MemberSidebar from "../main/chat/MemberSidebar";
 import { useMessageStore } from "../../stores/MessageStore";
 import { decodeJwt } from "../../stores/AuthStore.ts";
 import ICQSound from "../../assets/ICQSound.mp3";
+import { useThemeStore } from "../../stores/ThemeStore.ts";
 
 type ChatProps = {
   roomId: number;
@@ -191,12 +192,17 @@ const Chat: React.FC<ChatProps> = (roomId) => {
           return;
       }
 
+      const currentTheme = useThemeStore.getState().currentTheme;
+
+      const outgoingMessage: MessageType = {
+          content,
+          aiMode: currentTheme.toUpperCase() as MessageType["aiMode"],
+      };
+
       try {
           clientRef.current.publish({
               destination: "/app/chat/" + roomId.roomId,
-              body: JSON.stringify({
-                  content: message,
-              } as MessageType),
+              body: JSON.stringify(outgoingMessage)
           });
           setMessage("");
       } catch (error) {

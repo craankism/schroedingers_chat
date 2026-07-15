@@ -1,5 +1,12 @@
+export type AiMode =
+    | "MATRIX"
+    | "DARK"
+    | "LIGHT"
+    | "UNICORN";
+
 export type MessageType = {
     content: string,
+    aiMode: AiMode;
 }
 
 export type MessageInput = {
