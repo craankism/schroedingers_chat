@@ -57,6 +57,15 @@ public class StoredFileController {
         return new ResponseEntity<>(fileStorageService.getAllFilesMetaData(), HttpStatus.OK);
     }
 
+    @PatchMapping("/{fileId}/move")
+    public ResponseEntity<StoredFileMetaDTO> moveFile(
+            @PathVariable int fileId,
+            @RequestParam int folderId) {
+        StoredFileMetaDTO result = fileStorageService.moveFile(fileId, folderId);
+        broadcastFileUpdate(fileId);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     @DeleteMapping("/{fileId}")
     public ResponseEntity<?> deleteFileById(@PathVariable int fileId) {
         fileStorageService.deleteFile(fileId);

@@ -35,6 +35,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
   const userDisplay = currentRoom
     ? users
         .filter((user) => currentRoom.userList.includes(user.userId))
+        .sort((a, b) => a.displayName.localeCompare(b.displayName))
         .sort(
           (a, b) =>
             (onlineList[b.userId] ? 1 : 0) - (onlineList[a.userId] ? 1 : 0),

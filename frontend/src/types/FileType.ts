@@ -4,7 +4,7 @@ export type FileType = {
   size: number;
   mimeType: string;
   uploadedAt: string;
-  uploadedBy: number;
+  uploadedById: number;
   folderId: number | null;
 };
 

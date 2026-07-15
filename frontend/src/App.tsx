@@ -8,7 +8,6 @@ import { useAuthStore } from "./stores/AuthStore.ts";
 import { usePropStore } from "./stores/PropStore.ts";
 import Chat from "./components/views/Chat.tsx";
 import UserManagement from "./components/views/UserManagement.tsx";
-import FileManagement from "./components/views/FileManagement.tsx";
 import RoomManagement from "./components/views/RoomManagement.tsx";
 import Files from "./components/views/Files.tsx";
 import Announcement from "./components/views/Announcement.tsx";
@@ -71,7 +70,6 @@ const App = (): JSX.Element => {
           <Route path="/editor" element={<SimpleEditor />} />
           <Route element={<AdminRoute />}>
             <Route path="/usermanagement" element={<UserManagement />} />
-            <Route path="/filemanagement" element={<FileManagement />} />
             <Route path="/roommanagement" element={<RoomManagement />} />
           </Route>
         </Route>
