@@ -26,7 +26,7 @@ import { useDocumentStore } from "../../../stores/DocumentStore";
 import { useFileStore } from "../../../stores/FileStore";
 import { useFolderStore } from "../../../stores/FolderStore";
 
-const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
+const adminItems = ["Usermanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files", "Editor"];
 const itemNames = [...adminItems, ...navItems];
 
@@ -153,55 +153,39 @@ const Sidebar = (): JSX.Element => {
               setSelect={setSelect}
             />
             {newDocModalOpen ? <NewDocumentModal /> : null}
-            {!md ? (
-              <div>
-                <Divider
-                  sx={{
-                    position: "fixed",
-                    bottom: 48,
-                    width: "100vw",
-                  }}
-                />
-                <ListItem
-                  disablePadding
-                  sx={{
-                    position: "fixed",
-                    bottom: 55,
-                    zIndex: 12,
-                    width: "100vw",
-                  }}
-                >
-                  <ListItemButton
-                    onClick={() => setOpenProfile(true)}
-                    sx={{ justifyContent: "center" }}
-                  >
-                    <Avatar sx={{ mr: 2 }} />
-                    {currentUser?.displayName}
-                  </ListItemButton>
-                </ListItem>
-                <ListItem
-                  disablePadding
-                  sx={{
-                    position: "fixed",
-                    bottom: 4,
-                    zIndex: 12,
-                    width: "100vw",
-                  }}
-                >
-                  <ListItemButton
-                    onClick={() => {
-                      logout();
-                    }}
-                    sx={{ justifyContent: "center" }}
-                  >
-                    <Typography>
-                      {isAuthenticated ? "Logout" : "Login"}
-                    </Typography>
-                  </ListItemButton>
-                </ListItem>
-              </div>
-            ) : null}
           </List>
+          {!md ? (
+            <List>
+              <ListItem
+                disablePadding
+                sx={{
+                  width: "100vw",
+                  borderTop: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                <ListItemButton
+                  onClick={() => setOpenProfile(true)}
+                  sx={{ justifyContent: "center" }}
+                >
+                  <Avatar sx={{ mr: 2 }} />
+                  {currentUser?.displayName}
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    logout();
+                  }}
+                  sx={{ justifyContent: "center" }}
+                >
+                  <Typography>
+                    {isAuthenticated ? "Logout" : "Login"}
+                  </Typography>
+                </ListItemButton>
+              </ListItem>
+            </List>
+          ) : null}
         </Box>
       </Drawer>
     </Box>
