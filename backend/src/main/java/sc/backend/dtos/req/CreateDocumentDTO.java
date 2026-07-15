@@ -1,7 +1,6 @@
 package sc.backend.dtos.req;
 
 import lombok.*;
-import sc.backend.entities.DocumentMembership;
 
 import java.util.List;
 

@@ -30,8 +30,10 @@ public class ChatMessageService {
 
     @Transactional
     public MessageDTO createMessage(int roomId, SendMessageDTO request, String authenticatedEmail) {
-        User creator = userService.findUserByEmail(authenticatedEmail);
+        User sender = userService.findUserByEmail(authenticatedEmail);
         Room room = roomService.findRoomById(roomId);
+
+        checkRoomMembership(room, sender);
 
         String plaintext = request.getContent();
 
@@ -47,7 +49,7 @@ public class ChatMessageService {
                 .aiPromptMessageId(null)
                 .build();
 
-        creator.addChatMessage(chatMessage);
+        sender.addChatMessage(chatMessage);
         room.addChatMessage(chatMessage);
         chatMessageRepository.save(chatMessage);
 
@@ -78,8 +80,12 @@ public class ChatMessageService {
         return convertToDTO(chatMessage);
     }
 
-    public List<MessageDTO> getAllMessages(int roomId) {
+    public List<MessageDTO> getAllMessages(int roomId, String authenticatedEmail) {
+        User user = userService.findUserByEmail(authenticatedEmail);
         Room room = roomService.findRoomById(roomId);
+
+        checkRoomMembership(room, user);
+
         List<MessageDTO> messageDTOList = new ArrayList<>();
 
         for (ChatMessage chatMessage : chatMessageRepository.findAllByRoom(room)) {
@@ -152,7 +158,7 @@ public class ChatMessageService {
                 String answerContent = cleanForPrompt(decryptContent(aiAnswer));
 
                 if (!answerContent.isBlank()) {
-                    transcript.append("Void 😺: ")
+                    transcript.append("Void 🐈‍⬛: ")
                             .append(answerContent)
                             .append("\n");
                 }
@@ -183,6 +189,12 @@ public class ChatMessageService {
         chatMessageRepository.save(message);
     }
 
+    private void checkRoomMembership(Room room, User user) {
+        if (room.getUserSet().stream().noneMatch(u -> u.getUserId() == user.getUserId())) {
+            throw new PermissionException("You are not a Member of this Room");
+        }
+    }
+
     private MessageDTO convertToDTO(ChatMessage message) {
         String sender;
 
@@ -198,6 +210,7 @@ public class ChatMessageService {
                 .content(decryptContent(message))
                 .sender(sender)
                 .creationDate(message.getCreationDate())
+                .promptMessageId(message.getAiPromptMessageId())
                 .build();
     }
 

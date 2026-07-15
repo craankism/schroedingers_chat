@@ -16,4 +16,5 @@ public class MessageDTO {
     private String content;
     private String sender;
     private LocalDateTime creationDate;
+    private Integer promptMessageId;
 }

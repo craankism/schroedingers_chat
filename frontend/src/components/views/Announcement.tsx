@@ -103,6 +103,7 @@ const Announcement = (): JSX.Element => {
         connectionStatus={connectionStatus}
         handleDeleteMessage={handleDeleteMessage}
         announcement={true}
+        isVoidThinking={false}
       />
       {isTrainer || isAdmin ? (
         <Message
