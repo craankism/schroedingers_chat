@@ -294,7 +294,9 @@ const Files = (): JSX.Element => {
                 <DownloadIcon />
               </IconButton>
               <IconButton
-                disabled={!isAdmin && !isFileCreator}
+                disabled={
+                  (!isAdmin && !isFileCreator) || fileSelectList === null
+                }
                 onClick={() => {
                   if (fileSelectList === undefined || fileSelectList === null)
                     return;
