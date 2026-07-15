@@ -8,7 +8,8 @@ type FolderState = {
   error: string | null;
   getAllFolders: () => void;
   getFolderById: (id: number) => void;
-  createFolder: (folderData: FolderInput) => void;
+  createFolder: (folderData: FolderInput) => Promise<FolderType | null>;
+  deleteFolder: (folderId: number) => Promise<void>;
 };
 
 export const useFolderStore = create<FolderState>((set) => ({
@@ -35,8 +36,8 @@ export const useFolderStore = create<FolderState>((set) => ({
     try {
       const data = await folderApi.getById(id);
       set((state: FolderState) => ({
-        folders: state.folders.some((f) => f.id === id)
-          ? state.folders.map((f) => (f.id === id ? data : f))
+        folders: state.folders.some((f) => f.folderId === id)
+          ? state.folders.map((f) => (f.folderId === id ? data : f))
           : [...state.folders, data],
       }));
     } catch (e) {
@@ -57,11 +58,33 @@ export const useFolderStore = create<FolderState>((set) => ({
       useNotificationStore
         .getState()
         .addNotification("Folder created", "success");
+      return data;
     } catch (e) {
       set({ error: "Error" + e });
       useNotificationStore
         .getState()
         .addNotification("Error creating folder", "error");
+      return null;
+    } finally {
+      useNotificationStore.getState().stopLoading();
+    }
+  },
+
+  deleteFolder: async (folderId: number) => {
+    useNotificationStore.getState().startLoading();
+    try {
+      await folderApi.delete(folderId);
+      set((state: FolderState) => ({
+        folders: state.folders.filter((folder) => folder.folderId !== folderId),
+      }));
+      useNotificationStore
+        .getState()
+        .addNotification("Folder successfully deleted", "success");
+    } catch (e) {
+      set({ error: "Error" + e });
+      useNotificationStore
+        .getState()
+        .addNotification("Error deleting folder", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }

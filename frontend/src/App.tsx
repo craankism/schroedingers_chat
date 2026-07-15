@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import { decodeJwt } from "./stores/AuthStore.ts";
 import GlobalLoader from "./components/main/GlobalLoader.tsx";
 import { Box } from "@mui/material";
+import RedirectRoute from "./components/RedirectRoute.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
@@ -74,9 +75,11 @@ const App = (): JSX.Element => {
             <Route path="/roommanagement" element={<RoomManagement />} />
           </Route>
         </Route>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<EnterCode />} />
-        <Route path="/register/:inviteKey" element={<Register />} />
+        <Route element={<RedirectRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<EnterCode />} />
+          <Route path="/register/:inviteKey" element={<Register />} />
+        </Route>
       </Routes>
     </Box>
   );

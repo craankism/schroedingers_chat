@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import MessagesDisplay from "../main/chat/MessagesDisplay";
 import Message from "../main/chat/Message";
-import { heightMinusTopNav } from "../../types/constants/constants";
 import type { MessageType } from "../../types/MessageType";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { decodeJwt } from "../../stores/AuthStore";
@@ -97,7 +96,6 @@ const Announcement = (): JSX.Element => {
         flexGrow: 1,
         display: "flex",
         flexDirection: "column",
-        mt: heightMinusTopNav,
         overflow: "hidden",
       }}
     >

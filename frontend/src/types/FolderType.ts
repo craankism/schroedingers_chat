@@ -1,7 +1,8 @@
 export type FolderType = {
-  id: number;
+  folderId: number;
   name: string;
   parentFolderId: number | null;
+  createdBy: number;
 };
 
 export type FolderInput = {

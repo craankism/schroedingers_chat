@@ -21,13 +21,13 @@ const style = {
 type NewFolderModalProps = {
   openFolderModal: boolean;
   setOpenFolderModal: (open: boolean) => void;
-  subFolder: number | null;
+  setFolderSelect: (folderId: number) => void;
 };
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({
   openFolderModal,
   setOpenFolderModal,
-  subFolder,
+  setFolderSelect,
 }) => {
   const [name, setName] = React.useState<string>("");
   const { createFolder } = useFolderStore();
@@ -40,7 +40,13 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    createFolder({ name, parentFolderId: subFolder });
+    const storedFolder = localStorage.getItem("selectedFolder");
+    const folder = await createFolder({
+      name,
+      parentFolderId:
+        storedFolder && storedFolder !== "null" ? Number(storedFolder) : null,
+    });
+    if (folder) setFolderSelect(folder.folderId);
     setName("");
     handleClose();
   };
@@ -53,7 +59,7 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style} onClick={(e) => e.stopPropagation()} >
+        <Box sx={style} onClick={(e) => e.stopPropagation()}>
           <form onSubmit={submitHandler}>
             <Grid container spacing={2} sx={{ alignItems: "center" }}>
               <Grid size={12}>

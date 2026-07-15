@@ -75,6 +75,10 @@ export const folderApi = {
     const response = await api.post<FolderType>(folderUrl, folderInput);
     return response.data;
   },
+
+  delete: async (folderId: number): Promise<void> => {
+    await api.delete(`${folderUrl}/${folderId}`);
+  },
 };
 
 export const documentApi = {

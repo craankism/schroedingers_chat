@@ -180,7 +180,7 @@ public class FileStorageService {
                 .size(storedFile.getSize())
                 .uploadDate(storedFile.getUploadDate())
                 .mimeType(storedFile.getMimeType())
-                .folderId(storedFile.getFolder() != null ? storedFile.getFolder().getId() : null)
+                .folderId(storedFile.getFolder() != null ? storedFile.getFolder().getFolderId() : null)
                 .build();
     }
 

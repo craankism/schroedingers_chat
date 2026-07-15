@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface FolderRepository extends JpaRepository<Folder, Integer> {
     List<Folder> findByParentFolderIsNull();
+
+    List<Folder> findByParentFolder(Folder parentFolder);
 }
