@@ -8,4 +8,5 @@ export type MessageInput = {
     content: string | null,
     sender: string,
     creationDate: string
+    promptMessageId?: number | null
 }
