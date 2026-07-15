@@ -1,14 +1,16 @@
+import React, { useEffect } from "react";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import {
   Box,
   Button,
   Grid,
   IconButton,
+  List,
   ListItem,
+  ListItemButton,
   Toolbar,
   Typography,
 } from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DownloadIcon from "@mui/icons-material/Download";
 import { useState } from "react";
 import { useFileStore } from "../../stores/FileStore.ts";
@@ -18,27 +20,114 @@ import { widthMinusSidebar } from "../../types/constants/constants.ts";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 import NewFolderModal from "../main/files/NewFolderModal.tsx";
+import { SvgIcon } from "@mui/material";
+import DocxSvg from "../../assets/fileIcons/docx_icon.svg?react";
+import PDFSvg from "../../assets/fileIcons/PDF_file_icon.svg?react";
+import XLSSvg from "../../assets/fileIcons/xlsx_icon.svg?react";
+
+import {
+  DescriptionTwoTone,
+  FolderOff,
+  InsertDriveFileTwoTone,
+  InsertPhotoTwoTone,
+  Upload,
+} from "@mui/icons-material";
+import { useSimpleTreeViewApiRef } from "@mui/x-tree-view";
+import type { FileType } from "../../types/FileType.ts";
+import { useUserStore } from "../../stores/UserStore.ts";
+import { decodeJwt } from "../../stores/AuthStore.ts";
+import { usePropStore } from "../../stores/PropStore.ts";
+import ConfirmationModal from "../main/user_management/ConfirmationModal.tsx";
 
 const Files = (): JSX.Element => {
   const { uploadFile, downloadFile, deleteFile, files } = useFileStore();
-  const { folders } = useFolderStore();
+  const { folders, deleteFolder } = useFolderStore();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedFolder, setSelectedFolder] = useState<number | null>(null);
+  const [fileSelectList, setFileSelectList] = useState<FileType | null>();
+
+  const setSelectedFolder = (id: number | null) => {
+    localStorage.setItem("selectedFolder", String(id));
+  };
+
+  const lastSelectedFolder = Number(localStorage.getItem("selectedFolder"));
+  const [folderSelect, setFolderSelect] = useState<number | null>(
+    lastSelectedFolder,
+  );
+
+  // Test Files Dummy
+  // const files = [
+  //   {
+  //     fileId: 1,
+  //     filename: "project-proposal.pdf",
+  //     folderId: 2,
+  //     size: 1024,
+  //     mimeType: "application/pdf",
+  //     uploadedAt: "20.02.2026",
+  //     uploadedBy: 1,
+  //   },
+  //   {
+  //     fileId: 2,
+  //     filename: "meeting-notes.docx",
+  //     folderId: 2,
+  //     size: 2048,
+  //     mimeType:
+  //       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  //     uploadedAt: "20.02.2026",
+  //     uploadedBy: 1,
+  //   },
+  //   {
+  //     fileId: 3,
+  //     filename: "architecture-diagram.png",
+  //     folderId: 2,
+  //     size: 4096,
+  //     mimeType: "image/png",
+  //     uploadedAt: "20.02.2026",
+  //     uploadedBy: 1,
+  //   },
+  //   {
+  //     fileId: 4,
+  //     filename: "budget-overview.xlsx",
+  //     folderId: 2,
+  //     size: 3072,
+  //     mimeType:
+  //       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     uploadedAt: "20.02.2026",
+  //     uploadedBy: 1,
+  //   },
+  //   {
+  //     fileId: 5,
+  //     filename: "readme.txt",
+  //     folderId: 2,
+  //     size: 512,
+  //     mimeType: "text/plain",
+  //     uploadedAt: "20.02.2026",
+  //     uploadedBy: 1,
+  //   },
+  // ];
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    // Reset input so selecting the same file again triggers onChange.
+    e.target.value = "";
   };
 
   const handleUpload = () => {
     if (!selectedFile) return;
     uploadFile({
       file: selectedFile,
-      folderId: selectedFolder ?? undefined,
+      folderId: folderSelect ?? undefined,
     });
     setSelectedFile(null);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line
+    if (selectedFile !== null) handleUpload();
+    // eslint-disable-next-line
+  }, [selectedFile]);
 
   const [openFolderModal, setOpenFolderModal] = useState<boolean>(false);
   const newFolder = () => {
@@ -50,29 +139,110 @@ const Files = (): JSX.Element => {
       .filter((f) => f.parentFolderId === folderId)
       .map((folder) => (
         <TreeItem
-          key={folder.id}
-          itemId={String(folder.id)}
+          key={folder.folderId}
+          itemId={String(folder.folderId)}
           label={folder.name}
           onClick={(e) => {
             e.stopPropagation();
-            setSelectedFolder(folder.id);
+            setSelectedFolder(folder.folderId);
+            setFolderSelect(folder.folderId);
+            setFileSelectList(null);
           }}
         >
-          {renderFolder(folder.id)}
+          {renderFolder(folder.folderId)}
         </TreeItem>
       ));
 
+  const iconMap: Record<string, React.ElementType> = {
+    pdf: PDFSvg,
+    docx: DocxSvg,
+    png: InsertPhotoTwoTone,
+    jpg: InsertPhotoTwoTone,
+    jpeg: InsertPhotoTwoTone,
+    gif: InsertPhotoTwoTone,
+    svg: InsertPhotoTwoTone,
+    txt: DescriptionTwoTone,
+    xls: XLSSvg,
+    xlsx: XLSSvg,
+  };
+
+  const Icon = ({ filename }: { filename: string }): JSX.Element => {
+    const fileType = filename.split(".").pop() ?? "";
+    const SvgComponent = iconMap[fileType];
+
+    if (!SvgComponent) return <InsertDriveFileTwoTone sx={{ mr: 1 }} />;
+
+    return <SvgIcon component={SvgComponent} inheritViewBox sx={{ mr: 1 }} />;
+  };
+
+  const apiRef = useSimpleTreeViewApiRef();
+
+  const handleCollapseClick = () => {
+    if (folderSelect === null) return;
+    for (let i: number = 1; i < folderSelect; i++) {
+      apiRef.current!.setItemExpansion({
+        itemId: "" + i,
+        shouldBeExpanded: true,
+      });
+    }
+  };
+
+  useEffect(() => {
+    handleCollapseClick();
+    // eslint-disable-next-line
+  }, [folderSelect]);
+
+  const { users } = useUserStore();
+  const isFileCreator = decodeJwt()?.userId === fileSelectList?.uploadedBy;
+  const currentUserId = decodeJwt()?.userId;
+  const getAllSubfolderIds = (folderId: number): number[] => {
+    const children = folders.filter((f) => f.parentFolderId === folderId);
+    return children.flatMap((c) => [
+      c.folderId,
+      ...getAllSubfolderIds(c.folderId),
+    ]);
+  };
+  const isFolderCreator = (() => {
+    if (folderSelect === null) return false;
+    const selected = folders.find((f) => f.folderId === folderSelect);
+    if (selected?.createdBy !== currentUserId) return false;
+    const subfolderIds = getAllSubfolderIds(folderSelect);
+    return subfolderIds.every(
+      (id) =>
+        folders.find((f) => f.folderId === id)?.createdBy === currentUserId,
+    );
+  })();
+  const isAdmin = users.find((user) => user.userId === currentUserId)?.isAdmin;
+
+  const { confirmation, setConfirmation, setOpenConfirmation } = usePropStore();
+  const [deleteF, setDeleteF] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (confirmation == true && deleteF === true && folderSelect) {
+      deleteFolder(folderSelect);
+      setConfirmation(false);
+      // eslint-disable-next-line
+      setDeleteF(false);
+      setFolderSelect(null);
+    }
+    // eslint-disable-next-line
+  }, [confirmation]);
+
   return (
-    <Box
-      component="main"
-      sx={{ flexGrow: 1, p: 3, ml: widthMinusSidebar }}
-      onClick={() => setSelectedFolder(null)}
-    >
+    <Box component="main" sx={{ flexGrow: 1, p: 3, ml: widthMinusSidebar }}>
       <Toolbar />
       <Typography variant="h5">Files</Typography>
 
-      <Grid container spacing={2}>
-        <Grid size={6}>
+      <Grid container sx={{ height: "85vh" }}>
+        <Grid
+          size={4}
+          sx={{ border: "1px solid" }}
+          onClick={() => {
+            setSelectedFolder(null);
+            setFolderSelect(null);
+            setFileSelectList(null);
+          }}
+        >
           <Button
             variant="contained"
             fullWidth
@@ -84,78 +254,99 @@ const Files = (): JSX.Element => {
             New Folder
           </Button>
           <SimpleTreeView
-            selectedItems={
-              selectedFolder !== null ? String(selectedFolder) : null
-            }
-            onSelectedItemsChange={(_, itemId) => {
-              if (typeof itemId === "string") {
-                setSelectedFolder(Number(itemId));
-                return;
-              }
-              setSelectedFolder(null);
-            }}
+            apiRef={apiRef}
+            expansionTrigger="iconContainer"
+            selectedItems={folderSelect !== null ? String(folderSelect) : null}
           >
             {renderFolder(null)}
           </SimpleTreeView>
         </Grid>
-        <Grid size={6}>
+        <Grid size={8}>
           <Box
-            sx={{ display: "flex", gap: 2, mb: 3 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => setFileSelectList(null)}
+            sx={{
+              height: "85vh",
+              borderBottom: "1px solid",
+              borderRight: "1px solid",
+            }}
           >
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<CloudUploadIcon />}
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                ml: -1,
+                border: "solid, 1px",
+                borderRight: "none",
+                height: 39.5,
+              }}
             >
-              Select File
-              <input type="file" hidden onChange={handleSelect} />
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleUpload}
-              disabled={!selectedFile}
-            >
-              Upload
-            </Button>
-          </Box>
-
-          {selectedFile && (
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Selected: {selectedFile.name} (
-              {(selectedFile.size / 1024).toFixed(1)} KB)
-            </Typography>
-          )}
-          {files
-            .filter((f) => f.folderId === selectedFolder)
-            .map((f) => (
-              <ListItem
-                key={f.fileId}
-                secondaryAction={
-                  <>
-                    <IconButton
-                      onClick={() => downloadFile(f.fileId, f.filename)}
-                    >
-                      <DownloadIcon />
-                    </IconButton>
-                    <IconButton onClick={() => deleteFile(f.fileId)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </>
-                }
+              <IconButton component="label" sx={{ ml: 2 }}>
+                <Upload />
+                <input type="file" hidden onChange={handleSelect} />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  if (fileSelectList === undefined || fileSelectList === null)
+                    return;
+                  downloadFile(fileSelectList.fileId, fileSelectList.filename);
+                }}
               >
-                <Typography>{f.filename}</Typography>
-              </ListItem>
-            ))}
+                <DownloadIcon />
+              </IconButton>
+              <IconButton
+                disabled={!isAdmin && !isFileCreator}
+                onClick={() => {
+                  if (fileSelectList === undefined || fileSelectList === null)
+                    return;
+                  deleteFile(fileSelectList.fileId);
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+              <IconButton
+                disabled={
+                  (!isAdmin && !isFolderCreator) || folderSelect === null
+                }
+                onClick={() => {
+                  if (folderSelect === null) return;
+                  setOpenConfirmation(true);
+                  setDeleteF(true);
+                }}
+              >
+                <FolderOff />
+              </IconButton>
+            </Box>
+            <List onClick={() => setFileSelectList(null)}>
+              {files
+                .filter((f) => f.folderId === folderSelect)
+                .map((f, index) => (
+                  <ListItem key={index}>
+                    <ListItemButton
+                      selected={
+                        fileSelectList?.fileId === f.fileId ? true : false
+                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFileSelectList(f);
+                      }}
+                    >
+                      <Icon filename={f.filename} />
+                      <Typography>{f.filename}</Typography>
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+            </List>
+          </Box>
         </Grid>
       </Grid>
       {openFolderModal ? (
         <NewFolderModal
           openFolderModal={openFolderModal}
           setOpenFolderModal={setOpenFolderModal}
-          subFolder={selectedFolder}
+          setFolderSelect={setFolderSelect}
         />
       ) : null}
+      <ConfirmationModal />
     </Box>
   );
 };

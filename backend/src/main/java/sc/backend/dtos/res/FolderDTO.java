@@ -8,7 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FolderDTO {
-    private int id;
+    private int folderId;
     private String name;
     private Integer parentFolderId;
+    private int createdBy;
 }

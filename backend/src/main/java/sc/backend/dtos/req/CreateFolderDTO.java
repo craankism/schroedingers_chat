@@ -9,4 +9,5 @@ import lombok.*;
 public class CreateFolderDTO {
     private String name;
     private Integer parentFolderId;
+    private Integer creatorId;
 }

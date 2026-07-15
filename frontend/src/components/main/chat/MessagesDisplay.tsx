@@ -3,7 +3,10 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { decodeJwt } from "../../../stores/AuthStore";
 import { Clear } from "@mui/icons-material";
-import { widthMinusSidebar } from "../../../types/constants/constants.ts";
+import {
+  heightMinusTopNav,
+  widthMinusSidebar,
+} from "../../../types/constants/constants.ts";
 import { useMessageStore } from "../../../stores/MessageStore.ts";
 import Markdown from "react-markdown";
 import { useUserStore } from "../../../stores/UserStore.ts";
@@ -45,6 +48,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         pr: 2,
         ml: widthMinusSidebar,
         mr: { xs: 0, md: md },
+        mt: heightMinusTopNav,
         overflow: "auto",
         height: "92vh",
       }}

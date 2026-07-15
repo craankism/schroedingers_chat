@@ -8,6 +8,7 @@ import sc.backend.dtos.req.CreateFolderDTO;
 import sc.backend.dtos.res.FolderDTO;
 import sc.backend.services.FolderService;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -23,9 +24,9 @@ public class FolderController {
     }
 
     @PostMapping
-    public ResponseEntity<FolderDTO> createFolder(@RequestBody CreateFolderDTO createFolderDTO) {
-        FolderDTO folder = folderService.createFolder(createFolderDTO);
-        broadcastFolderUpdate(folder.getId());
+    public ResponseEntity<FolderDTO> createFolder(@RequestBody CreateFolderDTO createFolderDTO, Principal principal) {
+        FolderDTO folder = folderService.createFolder(createFolderDTO, principal.getName());
+        broadcastFolderUpdate(folder.getFolderId());
         return new ResponseEntity<>(folder, HttpStatus.CREATED);
     }
 
@@ -35,7 +36,14 @@ public class FolderController {
     }
 
     @GetMapping("/{folderId}")
-    public ResponseEntity<FolderDTO> getFolderById(@PathVariable int folderId) {
-        return ResponseEntity.ok(folderService.getFolderById(folderId));
+    public ResponseEntity<FolderDTO> getFolderById(@PathVariable int folderId, Principal principal) {
+        return ResponseEntity.ok(folderService.getFolderById(folderId, principal.getName()));
+    }
+
+    @DeleteMapping("/{folderId}")
+    public ResponseEntity<?> deleteFileById(@PathVariable int folderId, Principal principal) {
+        folderService.deleteFolder(folderId, principal.getName());
+        broadcastFolderUpdate(0);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
