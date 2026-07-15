@@ -105,8 +105,7 @@ public class FileStorageService {
                         RemoveObjectArgs.builder()
                                 .bucket(bucketName)
                                 .object(storedFileName)
-                                .build()
-                );
+                                .build());
             } catch (Exception cleanupEx) {
                 log.error("Failed to cleanup orphaned file: {}", storedFileName, cleanupEx);
             }
@@ -153,6 +152,15 @@ public class FileStorageService {
             fileDtoList.add(convertStoredFileToDto(file));
         }
         return fileDtoList;
+    }
+
+    public StoredFileMetaDTO moveFile(Integer fileId, Integer folderId) {
+        StoredFile file = storedFileRepository.findById(fileId)
+                .orElseThrow(() -> new FileNotFoundException("File not found: " + fileId));
+        Folder folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new IllegalArgumentException("Folder not found: " + folderId));
+        file.setFolder(folder);
+        return convertStoredFileToDto(storedFileRepository.save(file));
     }
 
     public void deleteFile(Integer fileId) {

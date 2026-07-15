@@ -58,6 +58,13 @@ export const fileApi = {
   delete: async (fileId: number): Promise<void> => {
     await api.delete(`${fileUrl}/${fileId}`);
   },
+
+  move: async (fileId: number, folderId: number): Promise<FileType> => {
+    const response = await api.patch<FileType>(
+      `${fileUrl}/${fileId}/move?folderId=${folderId}`,
+    );
+    return response.data;
+  },
 };
 
 export const folderApi = {
