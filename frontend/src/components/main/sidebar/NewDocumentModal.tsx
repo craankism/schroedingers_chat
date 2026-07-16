@@ -11,18 +11,7 @@ import type { JSX } from "@emotion/react/jsx-runtime";
 import { useDocumentStore } from "../../../stores/DocumentStore";
 import { usePropStore } from "../../../stores/PropStore";
 import { useNavigate } from "react-router-dom";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: { xs: "90vw", md: 800 },
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+import {modalStyle} from "../../../types/constants/constants.ts";
 
 const NewDocumentModal = (): JSX.Element => {
   const { users } = useUserStore();
@@ -60,7 +49,7 @@ const NewDocumentModal = (): JSX.Element => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
+        <Box sx={modalStyle}>
           <form onSubmit={submitHandler}>
             <Grid container spacing={2} sx={{ alignItems: "center" }}>
               <Grid size={12}>

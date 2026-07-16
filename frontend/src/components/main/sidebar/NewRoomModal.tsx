@@ -8,18 +8,7 @@ import { useUserStore } from "../../../stores/UserStore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useRoomStore } from "../../../stores/RoomStore";
 import { decodeJwt } from "../../../stores/AuthStore";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: { xs: "90vw", md: 800 },
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+import {modalStyle} from "../../../types/constants/constants.ts";
 
 type NewRoomModalProps = {
   roomId?: number;
@@ -82,7 +71,7 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
+        <Box sx={modalStyle}>
           <form onSubmit={submitHandler}>
             <Grid container spacing={2} sx={{ alignItems: "center" }}>
               <Grid size={12}>

@@ -8,18 +8,7 @@ import AddLinkIcon from "@mui/icons-material/AddLink";
 import { Checkbox, FormControlLabel, Grid, TextField } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useAuthStore } from "../../../stores/AuthStore";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 350,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+import {modalStyle} from "../../../types/constants/constants.ts";
 
 const InviteModal = (): JSX.Element => {
   const [isTrainer, setIsTrainer] = React.useState<boolean>(false);
@@ -52,7 +41,7 @@ const InviteModal = (): JSX.Element => {
         aria-describedby="modal-modal-description"
       >
         <form onSubmit={submitHandler}>
-          <Box sx={style}>
+          <Box sx={modalStyle}>
             <Grid container spacing={2} sx={{ alignItems: "center" }}>
               <Grid size={12}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">

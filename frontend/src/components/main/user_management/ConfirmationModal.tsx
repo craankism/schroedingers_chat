@@ -2,18 +2,7 @@ import { Box, Button, Grid, Modal, Typography } from "@mui/material";
 import React from "react";
 import { usePropStore } from "../../../stores/PropStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: { xs: "90vw", md: 800 },
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+import {modalStyle} from "../../../types/constants/constants.ts";
 
 const ConfirmationModal = (): JSX.Element => {
   const { setOpenConfirmation, openConfirmation, setConfirmation } =
@@ -31,7 +20,7 @@ const ConfirmationModal = (): JSX.Element => {
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
       >
-        <Box sx={{ ...style, width: 230, height: 150 }}>
+        <Box sx={{ ...modalStyle, width: 230, height: 150 }}>
           <Grid container spacing={2} sx={{ alignItems: "center" }}>
             <Grid size={12}>
               <Typography variant="h6">Are you Sure?</Typography>

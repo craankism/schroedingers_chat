@@ -11,7 +11,12 @@ import type {
 import api from "./axiosConfig.ts";
 import type { DocumentType } from "../types/DocumentType.ts";
 import type { FolderInput, FolderType } from "../types/FolderType.ts";
-import type { ProfilePictureMeta } from "../types/ProfilePictureType.ts";
+import type {
+  SmtpConfigConfirmedType,
+  SmtpConfigType,
+  SmtpReturnType,
+  SmtpTestAddressType
+} from "../types/SmtpConfigType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
@@ -290,3 +295,26 @@ export const authApi = {
     await api.post(`${authUrl}/logout`, { refreshToken });
   },
 };
+
+export const smtpApi = {
+  submitSmtp: async (smtpConfig: SmtpConfigType): Promise<SmtpReturnType> => {
+    const response = await api.post(smtpUrl, smtpConfig);
+    return response.data;
+  },
+
+  testSmtp: async (testEmail: SmtpTestAddressType): Promise<SmtpReturnType> => {
+    const response = await api.put(`${smtpUrl}/test`, testEmail);
+    return response.data;
+  },
+
+  confirmSmtp: async (smtpConfirmation: SmtpConfigConfirmedType): Promise<SmtpReturnType> => {
+    const response = await api.put(`${smtpUrl}/confirm`, smtpConfirmation);
+    return response.data;
+  },
+
+  getSmtp: async (): Promise<SmtpReturnType> => {
+    const response = await api.get(smtpUrl);
+    return response.data;
+  }
+
+}

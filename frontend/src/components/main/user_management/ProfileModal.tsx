@@ -52,6 +52,8 @@ const ProfileModal = (): JSX.Element => {
     setOpenConfirmation,
     confirmation,
     setConfirmation,
+    smtpModalOpen,
+    setSmtpModalOpen,
   } = usePropStore();
   const { uploadProfilePicture, profilePictures, deleteProfilePicture } =
     useProfilePictureStore();
@@ -159,6 +161,7 @@ const ProfileModal = (): JSX.Element => {
   }, [selectedFile]);
 
   return (
+      <>
     <Modal
       open={openProfile}
       onClose={handleClose}
@@ -172,7 +175,7 @@ const ProfileModal = (): JSX.Element => {
       }}
     >
       <form onSubmit={submitHandler}>
-        <Box sx={style}>
+        <Box sx={modalStyle}>
           <Grid container spacing={2} sx={{ alignItems: "stretch" }}>
             <Grid
               size={{ xs: 12, md: 4 }}
@@ -269,10 +272,17 @@ const ProfileModal = (): JSX.Element => {
                 sx={{
                   width: "100%",
                   display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
                   justifyContent: "center",
                   pb: 1,
                 }}
               >
+                {(userId === 1) && (
+                    <Button onClick={() =>  {
+                      setSmtpModalOpen(!smtpModalOpen);
+                    }}>SMTP Config</Button>
+                )}
                 <ThemeSwitcher />
               </Box>
             </Grid>
@@ -367,6 +377,8 @@ const ProfileModal = (): JSX.Element => {
         </Box>
       </form>
     </Modal>
+  <SMTPModal />
+      </>
   );
 };
 
