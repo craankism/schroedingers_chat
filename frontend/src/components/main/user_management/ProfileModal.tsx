@@ -18,17 +18,8 @@ import { usePropStore } from "../../../stores/PropStore";
 import { useNotificationStore } from "../../../stores/NotificationStore";
 import ConfirmationModal from "./ConfirmationModal";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
-
-const style = {
-  margin: "auto",
-  width: { xs: "90vw", md: 800 },
-  maxHeight: "90vh",
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-  overflowY: "auto",
-};
+import {modalStyle} from "../../../types/constants/constants.ts";
+import SMTPModal from "../sidebar/SMTPModal.tsx";
 
 const ProfileModal = (): JSX.Element => {
   const { updateUser, getUser, getAllUsers, deleteUser } = useUserStore();
@@ -47,6 +38,8 @@ const ProfileModal = (): JSX.Element => {
     setOpenConfirmation,
     confirmation,
     setConfirmation,
+    smtpModalOpen,
+    setSmtpModalOpen,
   } = usePropStore();
 
   React.useEffect(() => {
@@ -121,6 +114,7 @@ const ProfileModal = (): JSX.Element => {
   }, [confirmation]);
 
   return (
+      <>
     <Modal
       open={openProfile}
       onClose={handleClose}
@@ -134,7 +128,7 @@ const ProfileModal = (): JSX.Element => {
       }}
     >
       <form onSubmit={submitHandler}>
-        <Box sx={style}>
+        <Box sx={modalStyle}>
           <Grid container spacing={2} sx={{ alignItems: "stretch" }}>
             <Grid
               size={{ xs: 12, md: 4 }}
@@ -172,6 +166,11 @@ const ProfileModal = (): JSX.Element => {
                   pb: 1,
                 }}
               >
+                {(userId === 1) && (
+                    <Button onClick={() =>  {
+                      setSmtpModalOpen(!smtpModalOpen);
+                    }}>SMTP Config</Button>
+                )}
                 <ThemeSwitcher />
               </Box>
             </Grid>
@@ -264,6 +263,8 @@ const ProfileModal = (): JSX.Element => {
         </Box>
       </form>
     </Modal>
+  <SMTPModal />
+      </>
   );
 };
 
