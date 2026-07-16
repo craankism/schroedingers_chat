@@ -11,6 +11,7 @@ import type {
 import api from "./axiosConfig.ts";
 import type { DocumentType } from "../types/DocumentType.ts";
 import type { FolderInput, FolderType } from "../types/FolderType.ts";
+import type { ProfilePictureMeta } from "../types/ProfilePictureType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
@@ -18,10 +19,47 @@ const roomUrl = "/room";
 const messageUrl = "/messages";
 const documentUrl = "/documents";
 const folderUrl = "/folder";
+const ppUrl = "/file/pp";
 
 const authUrl = "/auth";
 const adminUrl = "/admin";
 const websocket = "/messages";
+
+export const ppApi = {
+  getAll: async (): Promise<ProfilePictureMeta[]> => {
+    const response = await api.get<ProfilePictureMeta[]>(ppUrl);
+    return response.data;
+  },
+
+  getMeta: async (fileId: number): Promise<ProfilePictureMeta> => {
+    const response = await api.get<ProfilePictureMeta>(`${ppUrl}/${fileId}`);
+    return response.data;
+  },
+
+  upload: async (fileInput: FileInput): Promise<ProfilePictureMeta> => {
+    const formData = new FormData();
+    formData.append("file", fileInput.file);
+    const response = await api.post<ProfilePictureMeta>(
+      `${ppUrl}/upload`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  download: async (fileId: number): Promise<Blob> => {
+    const response = await api.get(`${ppUrl}/download/${fileId}`, {
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  delete: async (fileId: number): Promise<void> => {
+    await api.delete(`${ppUrl}/${fileId}`);
+  },
+};
 
 export const fileApi = {
   getAllMeta: async (): Promise<FileType[]> => {

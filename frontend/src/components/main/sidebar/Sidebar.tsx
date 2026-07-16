@@ -25,6 +25,7 @@ import { heightMinusTopNav } from "../../../types/constants/constants";
 import { useDocumentStore } from "../../../stores/DocumentStore";
 import { useFileStore } from "../../../stores/FileStore";
 import { useFolderStore } from "../../../stores/FolderStore";
+import { useProfilePictureStore } from "../../../stores/ProfilePictureStore";
 
 const adminItems = ["Usermanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files", "Editor"];
@@ -47,6 +48,10 @@ const Sidebar = (): JSX.Element => {
   const userId = decodeJwt()?.userId || 0;
   const isAdmin = users.find((user) => user.userId === userId)?.isAdmin;
   const { rooms } = useRoomStore();
+  const { getAllProfilePictures, profilePictures } = useProfilePictureStore();
+  const currentPicture = profilePictures.find(
+    (p) => p.userId === decodeJwt()?.userId,
+  );
 
   const roomItems: string[] = [];
   const userRooms: RoomType[] = [];
@@ -80,6 +85,7 @@ const Sidebar = (): JSX.Element => {
       getAllFilesMeta();
       getAllRooms();
       getAllUsers();
+      getAllProfilePictures();
     };
     check();
     if (md) {
@@ -168,7 +174,7 @@ const Sidebar = (): JSX.Element => {
                   onClick={() => setOpenProfile(true)}
                   sx={{ justifyContent: "center" }}
                 >
-                  <Avatar sx={{ mr: 2 }} />
+                  <Avatar sx={{ mr: 2 }} src={currentPicture?.url ?? ""} />
                   {currentUser?.displayName}
                 </ListItemButton>
               </ListItem>
