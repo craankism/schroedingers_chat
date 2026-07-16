@@ -63,7 +63,8 @@ public class WebSocketController {
                         roomId,
                         prompt,
                         aiMode,
-                        messageDTO.getMessageId()
+                        messageDTO.getMessageId(),
+                        message.getFileId()
                 );
             });
         }
@@ -81,7 +82,7 @@ public class WebSocketController {
     }
 
     private boolean aiMentioned(String text) {
-        return text != null && text.matches("(?i).*@void.*");
+        return text != null && text.matches("(?is).*@void.*");
     }
 
     private String removeAiMention(String text) {

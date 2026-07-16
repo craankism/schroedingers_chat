@@ -1,8 +1,9 @@
-import { Box, Button, TextField, Typography, Tooltip, IconButton } from "@mui/material";
-import type React from "react";
-import { useState } from "react";
+import {Box, Button, TextField, Typography, Tooltip, IconButton, MenuItem, Select, type SelectChangeEvent, Chip } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { widthMinusSidebar } from "../../../types/constants/constants";
-import { InfoOutlined } from "@mui/icons-material";
+import { AttachFile, InfoOutlined } from "@mui/icons-material";
+import { useFileStore } from "../../../stores/FileStore.ts";
+import type { FileType } from "../../../types/FileType.ts";
 
 type MessageProps = {
   message: string;
@@ -10,6 +11,8 @@ type MessageProps = {
   handleClickSendMessage(): void;
   isConnected: boolean;
   announcement: boolean;
+  selectedFile?: FileType | null;
+  setSelectedFile?: (file: FileType | null) => void;
 };
 
 const Message: React.FC<MessageProps> = ({
@@ -18,13 +21,30 @@ const Message: React.FC<MessageProps> = ({
   handleClickSendMessage,
   isConnected,
   announcement,
+  selectedFile,
+  setSelectedFile,
 }) => {
   const [messageTooLong, setMessageTooLong] = useState<boolean>(false);
   const [showAiHint, setShowAiHint] = useState<boolean>(true);
+  const { files, getAllFilesMeta } = useFileStore();
   let md = 30;
   if (announcement) {
     md = 0;
   }
+
+  useEffect(() => {
+      if (!announcement) {
+          getAllFilesMeta();
+      }
+  }, [announcement, getAllFilesMeta]);
+
+    const selectFile = (event: SelectChangeEvent<string>) => {
+        const file = files.find(
+            (item) => item.fileId === Number(event.target.value),
+        );
+
+        setSelectedFile?.(file ?? null);
+    };
 
   return (
     <Box
@@ -46,7 +66,7 @@ const Message: React.FC<MessageProps> = ({
                 }}
             >
                 <Typography variant="caption" color="text.secondary">
-                    Ask our Artificial Meowligence 🐈‍⬛ with <Box component="strong">@void</Box> · Mention a filename to let Void inspect it
+                    Ask our Artificial Meowligence 🐈‍⬛ with <Box component="strong">@void</Box> · Use the paperclip to add a file reference for Void
                 </Typography>
             </Box>
         )}
@@ -57,22 +77,101 @@ const Message: React.FC<MessageProps> = ({
         }}
     >
         {!announcement && (
-            <Tooltip title={showAiHint ? "Hide AI hint" : "Show AI hint"}>
-                <IconButton
-                    aria-label={showAiHint ? "Hide AI hint" : "Show AI hint"}
-                    onClick={() => setShowAiHint((current) => !current)}
-                >
-                    <InfoOutlined />
-                </IconButton>
-            </Tooltip>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignSelf: "flex-start",
+                }}
+            >
+                <Tooltip title={showAiHint ? "Hide AI hint" : "Show AI hint"}>
+                    <IconButton
+                        aria-label={showAiHint ? "Hide AI hint" : "Show AI hint"}
+                        onClick={() => setShowAiHint((current) => !current)}
+                        sx={{
+                            borderRadius: "50%",
+                            "&:hover": {
+                                backgroundColor: "transparent",
+                            },
+                        }}
+                    >
+                        <InfoOutlined />
+                    </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Add AI file reference" placement="right">
+                    <Select
+                        value={selectedFile ? String(selectedFile.fileId) : ""}
+                        displayEmpty
+                        onChange={selectFile}
+                        IconComponent={() => null}
+                        renderValue={() => <AttachFile fontSize="small" />}
+                        inputProps={{
+                            "aria-label": "Add AI file reference",
+                        }}
+                        sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: "50%",
+
+                            "& fieldset": {
+                                border: "none",
+                            },
+
+                            "& .MuiSelect-select": {
+                                width: "100%",
+                                height: "100%",
+                                padding: "0 !important",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            },
+                        }}
+                    >
+                        {files.length === 0 ? (
+                            <MenuItem disabled value="">
+                                No files available
+                            </MenuItem>
+                        ) : (
+                            files.map((file) => (
+                                <MenuItem key={file.fileId} value={String(file.fileId)}>
+                                    {file.filename}
+                                </MenuItem>
+                            ))
+                        )}
+                    </Select>
+                </Tooltip>
+            </Box>
         )}
-      <Box sx={{ flex: 1, position: "relative" }}>
+        <Box
+            sx={{
+                flex: 1,
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+            }}
+        >
+            {selectedFile && setSelectedFile && (
+                <Chip
+                    label={selectedFile.filename}
+                    onDelete={() => setSelectedFile(null)}
+                    size="small"
+                    icon={<AttachFile />}
+                    sx={{ mb: 1 }}
+                />
+            )}
         <TextField
           id="message"
           variant="outlined"
           multiline
           fullWidth
-          sx={{ maxHeight: 200, overflow: "scroll" }}
+          sx={{
+              flex: 1,
+              maxHeight: 200,
+              "& .MuiInputBase-root": {
+                  height: "100%",
+              },
+          }}
           slotProps={{ input: { sx: { pb: 3 } } }}
           value={message}
           onChange={(

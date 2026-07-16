@@ -191,11 +191,4 @@ public class FileStorageService {
                 .folderId(storedFile.getFolder() != null ? storedFile.getFolder().getFolderId() : null)
                 .build();
     }
-
-    public StoredFileMetaDTO getFileMetadataByFilename(String filename) {
-        StoredFile file = storedFileRepository.findFirstByFilenameIgnoreCase(filename)
-                .orElseThrow(() -> new FileNotFoundException("File " + filename + " not found"));
-
-        return convertStoredFileToDto(file);
-    }
 }

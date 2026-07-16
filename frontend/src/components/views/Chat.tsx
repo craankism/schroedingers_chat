@@ -9,6 +9,7 @@ import { useMessageStore } from "../../stores/MessageStore";
 import { decodeJwt } from "../../stores/AuthStore.ts";
 import ICQSound from "../../assets/ICQSound.mp3";
 import { useThemeStore } from "../../stores/ThemeStore.ts";
+import type { FileType } from "../../types/FileType.ts";
 
 type ChatProps = {
   roomId: number;
@@ -31,6 +32,7 @@ const VOID_TIMEOUT = 2 * 60 * 1000;
 const Chat: React.FC<ChatProps> = (roomId) => {
   const clientRef = useRef<Client | null>(null);
   const voidTimeoutRefs = useRef<Map<number, number>>(new Map());
+  const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
   const [message, setMessage] = useState<string>("");
@@ -193,10 +195,12 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       }
 
       const currentTheme = useThemeStore.getState().currentTheme;
+      const isAiPrompt = containsVoidMention(content);
 
       const outgoingMessage: MessageType = {
           content,
           aiMode: currentTheme.toUpperCase() as MessageType["aiMode"],
+          fileId: isAiPrompt ? selectedFile?.fileId ?? null : null,
       };
 
       try {
@@ -205,10 +209,14 @@ const Chat: React.FC<ChatProps> = (roomId) => {
               body: JSON.stringify(outgoingMessage)
           });
           setMessage("");
+
+          if (isAiPrompt) {
+              setSelectedFile(null);
+          }
       } catch (error) {
           console.error("Error sending message:", error);
       }
-  }, [message, roomId]);
+  }, [message, roomId, selectedFile]);
 
   const isConnected = connectionStatus === "Open";
 
@@ -236,6 +244,8 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         handleClickSendMessage={handleClickSendMessage}
         isConnected={isConnected}
         announcement={false}
+        selectedFile={selectedFile}
+        setSelectedFile={setSelectedFile}
       />
     </Box>
   );
