@@ -32,7 +32,8 @@ public class AIMessageResponseService {
             int roomId,
             String prompt,
             AiMode aiMode,
-            int promptMessageId
+            int promptMessageId,
+            Integer fileId
     ) {
         try {
             if (!ollamaAvailabilityService.isAvailable()) {
@@ -57,7 +58,8 @@ public class AIMessageResponseService {
                     roomId,
                     prompt,
                     aiMode,
-                    promptMessageId
+                    promptMessageId,
+                    fileId
             );
 
             MessageDTO aiMessageDTO = chatMessageService.createAIMessage(

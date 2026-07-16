@@ -64,7 +64,7 @@ const EditChat: React.FC<EditChatProps> = (roomId) => {
           aria-haspopup="true"
           aria-expanded={open}
           sx={{
-            display: roomId.roomId === 2 ? "none" : "inline-flex",
+            display: roomId.roomId === 2 || roomId.roomId === 3 ? "none" : "inline-flex",
           }}
         >
           <MoreVert sx={{ width: 32, height: 32 }} />

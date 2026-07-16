@@ -10,13 +10,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import sc.backend.components.CryptoUtil;
 import sc.backend.dtos.res.StoredFileMetaDTO;
 import sc.backend.entities.Folder;
 import sc.backend.entities.StoredFile;
+import sc.backend.entities.User;
 import sc.backend.exceptions.FileNotFoundException;
 import sc.backend.exceptions.FileStorageException;
 import sc.backend.exceptions.UserNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import sc.backend.repositories.FolderRepository;
 import sc.backend.repositories.StoredFileRepository;
 import sc.backend.repositories.UserRepository;
@@ -32,7 +35,7 @@ import java.util.UUID;
 @Service
 @Profile("prod")
 @RequiredArgsConstructor
-public class FileStorageService {
+public class ProfilePictureService {
 
     private final MinioClient minioClient;
     private final UserRepository userRepository;
@@ -40,10 +43,40 @@ public class FileStorageService {
     private final FolderRepository folderRepository;
     private final CryptoUtil cryptoUtil;
 
-    @Value("${minio.bucket.name}")
+    @Value("${minio.bucket.name.pp}")
     private String bucketName;
 
-    public StoredFileMetaDTO uploadFile(MultipartFile file, String userName, Integer folderId) {
+    public List<InputStream> downloadAllPictures() {
+        List<StoredFile> storedFiles = storedFileRepository.findAll();
+        List<InputStream> blobList = new ArrayList<>();
+        for (StoredFile file : storedFiles) {
+            InputStream encryptedStream;
+
+            try {
+                encryptedStream = minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(file.getStoredFilename())
+                                .build());
+            } catch (Exception e) {
+                throw new FileStorageException("Failed to download File from Storage: " + file.getFileId(), e);
+            }
+            byte[] ciphertext;
+            try {
+                ciphertext = encryptedStream.readAllBytes();
+            } catch (Exception e) {
+                throw new FileStorageException("Failed to read encrypted stream for file: " + file.getFileId(), e);
+            }
+
+            byte[] decrypted = cryptoUtil.decrypt(ciphertext, file.getIv());
+
+            blobList.add(new ByteArrayInputStream(decrypted));
+        }
+
+        return blobList;
+    };
+
+    public StoredFileMetaDTO uploadPicture(MultipartFile file, String userName) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File may not be empty");
         }
@@ -78,12 +111,6 @@ public class FileStorageService {
             throw new FileStorageException("Failed to upload file to Storage", e);
         }
 
-        Folder folder = null;
-        if (folderId != null) {
-            folder = folderRepository.findById(folderId)
-                    .orElseThrow(() -> new IllegalArgumentException("Folder not found: " + folderId));
-        }
-
         StoredFile storedFile = StoredFile.builder()
                 .filename(file.getOriginalFilename())
                 .storedFilename(storedFileName)
@@ -92,7 +119,6 @@ public class FileStorageService {
                 .uploadDate(LocalDateTime.now())
                 .uploadedBy(userRepository.findByEmail(userName)
                         .orElseThrow(() -> new UserNotFoundException("User not found")))
-                .folder(folder)
                 .iv(iv)
                 .encryptedDek(null)
                 .build();
@@ -113,7 +139,7 @@ public class FileStorageService {
         }
     }
 
-    public InputStream downloadFile(Integer fileId) {
+    public InputStream downloadPicture(Integer fileId) {
         StoredFile file = storedFileRepository.findById(fileId)
                 .orElseThrow(() -> new FileNotFoundException("File not found: " + fileId));
 
@@ -163,9 +189,16 @@ public class FileStorageService {
         return convertStoredFileToDto(storedFileRepository.save(file));
     }
 
-    public void deleteFile(Integer fileId) {
+    public void deleteFile(Integer fileId, String userName) {
         StoredFile file = storedFileRepository.findById(fileId)
                 .orElseThrow(() -> new FileNotFoundException("File not found: " + fileId));
+
+        User caller = userRepository.findByEmail(userName)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (file.getUploadedBy().getUserId() != caller.getUserId() && !caller.isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to delete this file");
+        }
 
         try {
             minioClient.removeObject(
@@ -188,7 +221,13 @@ public class FileStorageService {
                 .size(storedFile.getSize())
                 .uploadDate(storedFile.getUploadDate())
                 .mimeType(storedFile.getMimeType())
-                .folderId(storedFile.getFolder() != null ? storedFile.getFolder().getFolderId() : null)
                 .build();
+    }
+
+    public StoredFileMetaDTO getFileMetadataByFilename(String filename) {
+        StoredFile file = storedFileRepository.findFirstByFilenameIgnoreCase(filename)
+                .orElseThrow(() -> new FileNotFoundException("File " + filename + " not found"));
+
+        return convertStoredFileToDto(file);
     }
 }

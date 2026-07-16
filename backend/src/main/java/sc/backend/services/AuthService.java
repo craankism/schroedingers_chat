@@ -101,10 +101,15 @@ public class AuthService {
         Room announcements = roomRepository.findById(1)
                 .orElseThrow(() -> new EntityNotFoundException("Announcement Room not found!"));
 
-        Room room = roomRepository.findById(2).orElseThrow(() -> new EntityNotFoundException("Default chat Room not found!"));
-
+        Room userRoom = roomRepository.findById(2)
+                .orElseThrow(() -> new EntityNotFoundException("Default chat Room not found!"));
+        Room trainerRoom = roomRepository.findById(3)
+                .orElseThrow(() -> new EntityNotFoundException("Default chat Room not found!"));
+        if (user.isTrainer())
+            trainerRoom.addUser(user);
+        else
+            userRoom.addUser(user);
         announcements.addUser(user);
-        room.addUser(user);
         registrationRepository.delete(registration);
 
         String jwt = tokenService.generateTokenWithClaims(user);

@@ -7,6 +7,7 @@ export type AiMode =
 export type MessageType = {
     content: string,
     aiMode: AiMode;
+    fileId?: number | null;
 }
 
 export type MessageInput = {

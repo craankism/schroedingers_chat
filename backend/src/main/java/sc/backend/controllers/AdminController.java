@@ -40,6 +40,7 @@ public class AdminController {
     public ResponseEntity<UserDTO> setTrainer(@PathVariable int userId) {
         UserDTO userDTO = adminService.setTrainer(userId);
         broadcastUserUpdate(userId);
+        webSocketController.broadcastUpdate("ROOM_UPDATE", 0);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
