@@ -3,6 +3,8 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Avatar,
   Checkbox,
@@ -18,6 +20,7 @@ import { usePropStore } from "../../../stores/PropStore";
 import { useNotificationStore } from "../../../stores/NotificationStore";
 import ConfirmationModal from "./ConfirmationModal";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
+import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
 
 const style = {
   margin: "auto",
@@ -31,9 +34,11 @@ const style = {
 };
 
 const ProfileModal = (): JSX.Element => {
-  const { updateUser, getUser, getAllUsers, deleteUser } = useUserStore();
+  const { updateUser, deleteUser, users } = useUserStore();
 
   const [displayName, setDisplayName] = React.useState<string>("");
+  const [initialDisplayName, setInitialDisplayName] =
+    React.useState<string>("");
   const [oldPassword, setOldPassword] = React.useState<string>("");
   const [newPassword, setNewPassword] = React.useState<string>("");
   const [repeatNewPassword, setRepeatNewPassword] = React.useState<string>("");
@@ -48,20 +53,24 @@ const ProfileModal = (): JSX.Element => {
     confirmation,
     setConfirmation,
   } = usePropStore();
+  const { uploadProfilePicture, profilePictures, deleteProfilePicture } =
+    useProfilePictureStore();
 
   React.useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getUser(decodeJwt()?.userId || 0);
-      if (user) {
-        setDisplayName(user.displayName);
-        setEmail(user.email);
-        setIsAdmin(user.isAdmin ?? false);
-        setIsTrainer(user.isTrainer ?? false);
-        setUserId(user.userId);
-      }
-    };
-    fetchUser();
-  }, [getAllUsers, getUser]);
+    const user = users.find((user) => user.userId === decodeJwt()?.userId);
+    if (user) {
+      // eslint-disable-next-line
+      setDisplayName(user.displayName);
+      setInitialDisplayName(user.displayName);
+      setEmail(user.email);
+      setIsAdmin(user.isAdmin ?? false);
+      setIsTrainer(user.isTrainer ?? false);
+      setUserId(user.userId);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  const currentPicture = profilePictures.find((p) => p.userId === userId);
 
   const handleClose = () => setOpenProfile(false);
 
@@ -95,6 +104,10 @@ const ProfileModal = (): JSX.Element => {
         );
       return;
     }
+    if (displayName === initialDisplayName && !newPassword) {
+      setOpenProfile(false);
+      return;
+    }
     if (newPassword === repeatNewPassword) {
       const response = await updateUser(userId, {
         displayName,
@@ -119,6 +132,31 @@ const ProfileModal = (): JSX.Element => {
     }
     // eslint-disable-next-line
   }, [confirmation]);
+
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+
+  const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    // Reset input so selecting the same file again triggers onChange.
+    e.target.value = "";
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) return;
+    uploadProfilePicture({
+      file: selectedFile,
+    });
+    setSelectedFile(null);
+  };
+
+  React.useEffect(() => {
+    // eslint-disable-next-line
+    if (selectedFile !== null) handleUpload();
+    // eslint-disable-next-line
+  }, [selectedFile]);
 
   return (
     <Modal
@@ -154,16 +192,79 @@ const ProfileModal = (): JSX.Element => {
                   width: "100%",
                 }}
               >
-                <Avatar
-                  alt="profile picture"
-                  src=""
+                <Box
                   sx={{
+                    position: "relative",
                     width: { xs: "40%", md: "100%" },
-                    height: "auto",
                     aspectRatio: "1",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    display: "block",
+                    "&:hover .pp-overlay-top": { opacity: 1 },
+                    "&:hover .pp-overlay-bottom": { opacity: 1 },
                   }}
-                />
+                >
+                  <input
+                    id="pp-file-input"
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleSelect}
+                  />
+                  <Avatar
+                    alt="profile picture"
+                    src={currentPicture?.url ?? ""}
+                    sx={{ width: "100%", height: "100%" }}
+                  />
+                  {/* Top half — upload */}
+                  <Box
+                    component="label"
+                    htmlFor="pp-file-input"
+                    className="pp-overlay-top"
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: "50%",
+                      bgcolor: "rgba(0,0,0,0.45)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: 0,
+                      transition: "opacity 0.2s",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <EditIcon sx={{ color: "white", fontSize: 28 }} />
+                  </Box>
+                  {/* Bottom half — delete */}
+                  <Box
+                    className="pp-overlay-bottom"
+                    onClick={() =>
+                      currentPicture &&
+                      deleteProfilePicture(currentPicture.fileId)
+                    }
+                    sx={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: "50%",
+                      bgcolor: "rgba(180,0,0,0.55)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: 0,
+                      transition: "opacity 0.2s",
+                      cursor: currentPicture ? "pointer" : "default",
+                    }}
+                  >
+                    <DeleteIcon sx={{ color: "white", fontSize: 28 }} />
+                  </Box>
+                </Box>
               </Box>
+
               <Box
                 sx={{
                   width: "100%",
@@ -196,7 +297,9 @@ const ProfileModal = (): JSX.Element => {
                   label="Old Password"
                   variant="outlined"
                   fullWidth
-                  required
+                  required={
+                    displayName !== initialDisplayName || newPassword.length > 0
+                  }
                   value={oldPassword}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setOldPassword(e.target.value)
