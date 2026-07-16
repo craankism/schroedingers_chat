@@ -10,7 +10,6 @@ import sc.backend.entities.User;
 import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
 
-
 //TODO für Prod entfernen!
 @Component
 public class SuperAdminInitializer implements CommandLineRunner {
@@ -25,7 +24,8 @@ public class SuperAdminInitializer implements CommandLineRunner {
     @Value("${superadmin.password}")
     private String adminPassword;
 
-    public SuperAdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder, RoomRepository roomRepository) {
+    public SuperAdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            RoomRepository roomRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roomRepository = roomRepository;
@@ -34,19 +34,22 @@ public class SuperAdminInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        String[] users = {"pascal", "matthias", "sascha", "kevin", "rene", "philipp", "julia", "haru"};
+        String[] users = { "pascal", "matthias", "sascha", "kevin", "rene", "philipp", "julia", "haru" };
+        String[] trainers = { "niko", "alex", "brani" };
 
+        // create super admin
         if (!userRepository.existsByEmail(adminEmail)) {
             User admin = User.builder()
-                .email(adminEmail)
-                .password(passwordEncoder.encode(adminPassword))
-                .displayName("Super Admin")
-                .isAdmin(true)
-                .isTrainer(false)
-                .isActive(true)
-                .build();
+                    .email(adminEmail)
+                    .password(passwordEncoder.encode(adminPassword))
+                    .displayName("Super Admin")
+                    .isAdmin(true)
+                    .isTrainer(false)
+                    .isActive(true)
+                    .build();
             userRepository.save(admin);
 
+            // Create default rooms
             Room announcements = Room.builder()
                     .name("Announcement")
                     .build();
@@ -54,13 +57,19 @@ public class SuperAdminInitializer implements CommandLineRunner {
             announcements.addUser(admin);
             roomRepository.save(announcements);
 
-            Room room = Room.builder()
+            Room userRoom = Room.builder()
                     .name("Schroedingers Box")
                     .build();
-            admin.addCreatedRoom(room);
-            room.addUser(admin);
-            roomRepository.save(room);
+            admin.addCreatedRoom(userRoom);
+            roomRepository.save(userRoom);
 
+            Room trainerRoom = Room.builder()
+                    .name("Schroedingers Box")
+                    .build();
+            admin.addCreatedRoom(trainerRoom);
+            roomRepository.save(trainerRoom);
+
+            // User Dummies
             for (int i = 0; i < users.length; i++) {
                 User user = User.builder()
                         .email(users[i] + "@gmail.com")
@@ -72,7 +81,27 @@ public class SuperAdminInitializer implements CommandLineRunner {
                         .build();
                 userRepository.save(user);
                 announcements.addUser(user);
-                room.addUser(user);
+            }
+            // Trainer Dummies
+            for (int i = 0; i < trainers.length; i++) {
+                User user = User.builder()
+                        .email(trainers[i] + "@gmail.com")
+                        .password(passwordEncoder.encode("123"))
+                        .displayName(trainers[i])
+                        .isAdmin(false)
+                        .isTrainer(true)
+                        .isActive(true)
+                        .build();
+                userRepository.save(user);
+                announcements.addUser(user);
+            }
+            // Add to default room, based on role
+            for (User user : userRepository.findAll()) {
+                if (user.isTrainer()) {
+                    trainerRoom.addUser(user);
+                } else {
+                    userRoom.addUser(user);
+                }
             }
 
             System.out.println("SuperAdmin erstellt: " + adminEmail);
