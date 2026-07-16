@@ -12,4 +12,5 @@ public class SendMessageDTO {
 
     private String content;
     private AiMode aiMode;
+    private Integer fileId;
 }
