@@ -340,15 +340,9 @@ const SMTPModal = (): JSX.Element => {
                         )}
 
                         <Box sx={{mt: 3, display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                            <Button onClick={handleClose} disabled={activeStep > 0}>
+                            <Button onClick={handleClose}>
                                 Cancel
                             </Button>
-                            <Box sx={{display: "flex", alignItems: "center"}}>
-                                <SettingsIcon sx={{fontSize: 16, mr: 1, color: theme.palette.text.disabled}}/>
-                                <Typography variant="caption" color="text.secondary">
-                                    Your credentials are encrypted with AES-256-GCM before storage
-                                </Typography>
-                            </Box>
                         </Box>
                     </Box>
                 </Fade>
