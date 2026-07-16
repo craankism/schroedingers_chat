@@ -21,17 +21,8 @@ import { useNotificationStore } from "../../../stores/NotificationStore";
 import ConfirmationModal from "./ConfirmationModal";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
-
-const style = {
-  margin: "auto",
-  width: { xs: "90vw", md: 800 },
-  maxHeight: "90vh",
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-  overflowY: "auto",
-};
+import {modalStyle} from "../../../types/constants/constants.ts";
+import SMTPModal from "../sidebar/SMTPModal.tsx";
 
 const ProfileModal = (): JSX.Element => {
   const { updateUser, deleteUser, users } = useUserStore();

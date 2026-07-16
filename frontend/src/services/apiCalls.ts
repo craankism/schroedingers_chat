@@ -17,6 +17,7 @@ import type {
   SmtpReturnType,
   SmtpTestAddressType
 } from "../types/SmtpConfigType.ts";
+import type {ProfilePictureMeta} from "../types/ProfilePictureType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
@@ -29,6 +30,8 @@ const ppUrl = "/file/pp";
 const authUrl = "/auth";
 const adminUrl = "/admin";
 const websocket = "/messages";
+
+const smtpUrl = "/smtp";
 
 export const ppApi = {
   getAll: async (): Promise<ProfilePictureMeta[]> => {
