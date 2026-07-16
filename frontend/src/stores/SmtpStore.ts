@@ -74,7 +74,6 @@ export const useSmtpStore = create<SmtpState>((set) => ({
             return data;
         } catch (e) {
             set({error: "Error" + e});
-            useNotificationStore.getState().addNotification("Error fetching SMTP Config", "error");
         } finally {
             useNotificationStore.getState().stopLoading();
         }

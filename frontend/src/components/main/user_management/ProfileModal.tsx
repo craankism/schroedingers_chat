@@ -162,6 +162,8 @@ const ProfileModal = (): JSX.Element => {
                 sx={{
                   width: "100%",
                   display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
                   justifyContent: "center",
                   pb: 1,
                 }}
