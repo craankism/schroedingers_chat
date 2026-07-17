@@ -8,6 +8,7 @@ import { useDocumentStore } from "../../stores/DocumentStore";
 import { decodeJwt } from "../../stores/AuthStore";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import NewDocumentModal from "../main/sidebar/NewDocumentModal";
 
 const MobileNav = (): JSX.Element => {
     const theme = useTheme();
@@ -136,6 +137,7 @@ const MobileNav = (): JSX.Element => {
                     </MenuItem>
                 ))}
             </Menu>
+            <NewDocumentModal />
         </>
     );
 };
