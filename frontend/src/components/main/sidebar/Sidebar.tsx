@@ -116,19 +116,27 @@ const Sidebar = (): JSX.Element => {
       >
         <Box sx={{ overflow: "auto" }}>
           {isAdmin && (
-            <List>
-              <SidebarHelper
-                items={adminItems}
-                itemNames={itemNames}
-                activeView={activeView}
-                setActiveView={setActiveView}
-                select={select}
-                setSelect={setSelect}
-              />
+            <>
+              <List>
+                <ListItem sx={{ justifyContent: "center", p: 0 }}>
+                  <Typography variant="h6">Admin:</Typography>
+                </ListItem>
+                <SidebarHelper
+                  items={adminItems}
+                  itemNames={itemNames}
+                  activeView={activeView}
+                  setActiveView={setActiveView}
+                  select={select}
+                  setSelect={setSelect}
+                />
+              </List>
               <Divider />
-            </List>
+            </>
           )}
           <List>
+            <ListItem sx={{ justifyContent: "center", p: 0 }}>
+              <Typography variant="h6">General:</Typography>
+            </ListItem>
             <SidebarHelper
               items={navItems}
               itemNames={itemNames}
@@ -137,13 +145,20 @@ const Sidebar = (): JSX.Element => {
               select={select}
               setSelect={setSelect}
             />
-            <Divider />
-            <AddIcon
-              sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
-              onClick={() => {
-                openModalFunc();
-              }}
-            />
+          </List>
+          <Divider />
+          <List>
+            <ListItem
+              sx={{ justifyContent: "center", p: 0, position: "relative" }}
+            >
+              <Typography variant="h6">Chats:</Typography>
+              <AddIcon
+                sx={{ cursor: "pointer", position: "absolute", right: 8 }}
+                onClick={() => {
+                  openModalFunc();
+                }}
+              />
+            </ListItem>
             <NewRoomModal
               openModal={openModal}
               closeModal={setOpenModal}
@@ -158,8 +173,8 @@ const Sidebar = (): JSX.Element => {
               select={select}
               setSelect={setSelect}
             />
-            {newDocModalOpen ? <NewDocumentModal /> : null}
           </List>
+          {newDocModalOpen ? <NewDocumentModal /> : null}
           {!md ? (
             <List>
               <ListItem

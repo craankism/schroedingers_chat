@@ -50,10 +50,31 @@ const Files = (): JSX.Element => {
     localStorage.setItem("selectedFolder", String(id));
   };
 
-  const lastSelectedFolder = Number(localStorage.getItem("selectedFolder"));
+  const lastSelectedFolder = (): number | null => {
+    const raw = localStorage.getItem("selectedFolder");
+    const lastFolder = Number(raw);
+    if (!raw || raw === "null" || isNaN(lastFolder)) {
+      localStorage.setItem("selectedFolder", "null");
+      return null;
+    }
+    return lastFolder;
+  };
   const [folderSelect, setFolderSelect] = useState<number | null>(
     lastSelectedFolder,
   );
+
+  useEffect(() => {
+    if (folders.length === 0) return;
+    const lastFolder = lastSelectedFolder();
+    if (
+      lastFolder !== null &&
+      !folders.some((f) => f.folderId === lastFolder)
+    ) {
+      localStorage.setItem("selectedFolder", "null");
+      // eslint-disable-next-line
+      setFolderSelect(null);
+    }
+  }, [folders]);
 
   // Test Files Dummy
   // const files = [
@@ -209,7 +230,9 @@ const Files = (): JSX.Element => {
   const apiRef = useSimpleTreeViewApiRef();
 
   const handleCollapseClick = () => {
-    if (folderSelect === null) return;
+    if (folderSelect === null) {
+      return;
+    }
     for (let i: number = 1; i < folderSelect; i++) {
       apiRef.current!.setItemExpansion({
         itemId: "" + i,
