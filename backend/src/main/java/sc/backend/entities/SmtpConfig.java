@@ -36,7 +36,8 @@ public class SmtpConfig {
     @Column(nullable = false)
     private boolean tlsEnabled;
 
-    private boolean isConfirmed;
+    @Column(nullable = false)
+    private boolean configConfirmed;
 
     private String testAddress;
 }

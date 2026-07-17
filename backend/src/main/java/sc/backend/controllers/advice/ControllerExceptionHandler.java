@@ -244,4 +244,17 @@ public class ControllerExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
+
+    @ExceptionHandler(SmtpConfigurationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleSmtpConfiguration(SmtpConfigurationException e, WebRequest request) {
+        log.warn("SMTP configuration error: {}", e.getMessage());
+        ErrorResponseDTO body = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                "SMTP_CONFIG_ERROR",
+                e.getMessage(),
+                LocalDateTime.now(),
+                request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
 }

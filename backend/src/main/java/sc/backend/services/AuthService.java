@@ -30,9 +30,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -42,7 +45,7 @@ public class AuthService {
     private final RegistrationRepository registrationRepository;
     private final RoomRepository roomRepository;
     private final UserService userService;
-    private final JavaMailSender mailSender;
+    private final DynamicMailSenderService dynamicMailSenderService;
 
     @Value("${DOMAIN:http://localhost:5173}")
     private String domain;
@@ -63,17 +66,35 @@ public class AuthService {
     }
 
     public void sendVerificationEmail(User user) {
+        boolean isConfirmed = dynamicMailSenderService.isSmtpConfirmed();
+
+        if (!isConfirmed) {
+            log.info("SMTP not confirmed, activating user directly: {}", user.getEmail());
+            user.setActive(true);
+            userRepository.save(user);
+            return;
+        }
+
         String token = tokenService.generateToken(new HashMap<>(), user);
-        String verifyUrl = domain + "/api/auth/verify/" +
+        String verifyUrl = "https://" + domain + "/api/auth/verify/" +
                 URLEncoder.encode(token, StandardCharsets.UTF_8);
 
         String message = "Click below to verify your email:\n" + verifyUrl;
 
         SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom(dynamicMailSenderService.getSenderAddress());
         mail.setTo(user.getEmail());
         mail.setSubject("Verify your email");
         mail.setText(message);
-        mailSender.send(mail);
+
+        try {
+            dynamicMailSenderService.getMailSender().send(mail);
+            log.info("Verification email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send verification email, activating user anyway: {}", user.getEmail(), e);
+            user.setActive(true);
+            userRepository.save(user);
+        }
     }
 
     @Transactional

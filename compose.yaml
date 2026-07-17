@@ -38,8 +38,6 @@ services:
       SPRING_AI_OLLAMA_CHAT_TEMPERATURE: 0.3
       SPRING_AI_MODEL_EMBEDDING: ollama
       SPRING_AI_OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text:latest}
-      MAILTRAP_USERNAME: ${MAILTRAP_USERNAME}
-      MAILTRAP_PASSWORD: ${MAILTRAP_PASSWORD}
     networks:
       - app-network
     healthcheck:

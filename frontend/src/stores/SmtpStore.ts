@@ -41,7 +41,7 @@ export const useSmtpStore = create<SmtpState>((set) => ({
         try {
             const data = await smtpApi.testSmtp(testEmail);
             set({smtpConfig: data});
-            useNotificationStore.getState().addNotification("Test Mail sent to" + data.testAddress, "success");
+            useNotificationStore.getState().addNotification("Test Mail sent to: " + data.testAddress, "success");
             return data;
         } catch (e) {
             set({error: "Error" + e});
