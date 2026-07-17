@@ -48,7 +48,7 @@ const SMTPModal = (): JSX.Element => {
             setSender(smtpConfig.sender || "");
             setTlsEnabled(smtpConfig.tlsEnabled || false);
 
-            if (smtpConfig.isConfirmed) {
+            if (smtpConfig.configConfirmed) {
                 setActiveStep(2);
             } else if (smtpConfig.testAddress) {
                 setActiveStep(1);
@@ -98,7 +98,7 @@ const SMTPModal = (): JSX.Element => {
     const confirmSmtpHandler = async (e: React.SyntheticEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         if (smtpConfig?.testAddress) {
-            await confirmSmtp({isConfirmed: isConfirmed});
+            await confirmSmtp({configConfirmed: isConfirmed});
             setActiveStep(2);
         }
         handleClose();

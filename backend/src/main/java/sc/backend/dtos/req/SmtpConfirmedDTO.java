@@ -8,5 +8,5 @@ import lombok.*;
 @Getter
 @Setter
 public class SmtpConfirmedDTO {
-    private boolean isConfirmed;
+    private boolean configConfirmed;
 }

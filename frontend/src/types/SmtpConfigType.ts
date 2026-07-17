@@ -8,7 +8,7 @@ export type SmtpConfigType = {
 }
 
 export type SmtpConfigConfirmedType = {
-    isConfirmed: boolean;
+    configConfirmed: boolean;
 }
 
 export type SmtpTestAddressType = {
@@ -22,6 +22,6 @@ export type SmtpReturnType = {
     username: string;
     sender: string;
     tlsEnabled: boolean;
-    isConfirmed: boolean;
+    configConfirmed: boolean;
     testAddress: string;
 }
