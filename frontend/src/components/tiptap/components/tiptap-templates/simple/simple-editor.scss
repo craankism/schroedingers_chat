@@ -47,7 +47,7 @@
 
 .editor-sheet {
   padding: 50px 60px;
-  min-height: 70vh;
+  min-height: 80vh;
   border-radius: 8px;
   max-width: var(--paper-max-width);
   margin: 0 auto;
@@ -98,14 +98,6 @@
     min-width: unset !important;
   }
 
-  .editor-page-background {
-    padding: 100px 8px 40px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    overflow-x: hidden !important;
-  }
-
   .editor-sheet {
     width: calc(100% - 8px) !important;
     max-width: 100% !important;
@@ -143,10 +135,10 @@
   }
 
   .editor-page-background {
+    padding: 100px 8px 40px !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding: 160px 0 40px !important;
     overflow-x: hidden !important;
   }
 
