@@ -25,6 +25,7 @@ import RedirectRoute from "./components/RedirectRoute.tsx";
 import MailVerification from "./components/MailVerification.tsx";
 import ForgotPassword from "./components/views/ForgotPassword.tsx";
 import ResetPassword from "./components/views/ResetPassword.tsx";
+import DocumentModal from "./components/main/modals/DocumentModal.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
