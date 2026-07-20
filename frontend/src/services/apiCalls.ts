@@ -15,9 +15,9 @@ import type {
   SmtpConfigConfirmedType,
   SmtpConfigType,
   SmtpReturnType,
-  SmtpTestAddressType
+  SmtpTestAddressType,
 } from "../types/SmtpConfigType.ts";
-import type {ProfilePictureMeta} from "../types/ProfilePictureType.ts";
+import type { ProfilePictureMeta } from "../types/ProfilePictureType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
@@ -297,6 +297,21 @@ export const authApi = {
   logout: async (refreshToken: string) => {
     await api.post(`${authUrl}/logout`, { refreshToken });
   },
+
+  verify: async (token: string): Promise<AuthResponseType> => {
+    const response = await api.get<AuthResponseType>(
+      `${authUrl}/verify/${token}`,
+    );
+    return response.data;
+  },
+
+  forgotPassword: async (email: string): Promise<void> => {
+    await api.post(`${authUrl}/forgot`, { email });
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<void> => {
+    await api.post(`${authUrl}/reset`, { token, newPassword });
+  },
 };
 
 export const smtpApi = {
@@ -310,7 +325,9 @@ export const smtpApi = {
     return response.data;
   },
 
-  confirmSmtp: async (smtpConfirmation: SmtpConfigConfirmedType): Promise<SmtpReturnType> => {
+  confirmSmtp: async (
+    smtpConfirmation: SmtpConfigConfirmedType,
+  ): Promise<SmtpReturnType> => {
     const response = await api.put(`${smtpUrl}/confirm`, smtpConfirmation);
     return response.data;
   },
@@ -318,6 +335,5 @@ export const smtpApi = {
   getSmtp: async (): Promise<SmtpReturnType> => {
     const response = await api.get(smtpUrl);
     return response.data;
-  }
-
-}
+  },
+};

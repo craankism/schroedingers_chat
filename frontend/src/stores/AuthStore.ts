@@ -30,6 +30,7 @@ type AuthState = {
   login: (login: AuthLoginType) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
+  verifyEmail: (token: string) => Promise<void>;
   addRegistrationCode: (registration: boolean) => Promise<string | null>;
   validateRegistrationCode: (
     registrationCode: string,
@@ -121,6 +122,27 @@ export const useAuthStore = create<AuthState>((set) => ({
         .getState()
         .addNotification("Session expired, please log in again.", "error");
       return null;
+    } finally {
+      useNotificationStore.getState().stopLoading();
+    }
+  },
+
+  verifyEmail: async (token: string) => {
+    useNotificationStore.getState().startLoading();
+    try {
+      const data = await authApi.verify(token);
+      localStorage.setItem("jwt", data.jwt);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      set({ token: data.jwt, currentUser: data, isAuthenticated: true });
+      useNotificationStore
+        .getState()
+        .addNotification("Email verified successfully", "success");
+    } catch (e) {
+      set({ error: "Verification failed: " + e });
+      useNotificationStore
+        .getState()
+        .addNotification("Email verification failed", "error");
+      throw e;
     } finally {
       useNotificationStore.getState().stopLoading();
     }

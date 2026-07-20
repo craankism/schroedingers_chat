@@ -30,7 +30,10 @@ export const useUserStore = create<UserState>((set) => ({
       }));
       useNotificationStore
         .getState()
-        .addNotification("User successfully created", "success");
+        .addNotification(
+          "E-Mail verification send. Check your Mails",
+          "info",
+        );
     } catch (e) {
       set({ error: "Error" + e });
       useNotificationStore
