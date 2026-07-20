@@ -12,6 +12,7 @@ import Markdown from "react-markdown";
 import { useUserStore } from "../../../stores/UserStore.ts";
 import { usePropStore } from "../../../stores/PropStore.ts";
 import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
+import voidProfilePicture from "../../../assets/iconSC.png";
 
 type MessagesDisplayProps = {
   connectionStatus: string;
@@ -134,8 +135,10 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                 <Avatar
                   alt="profile picture"
                   src={
-                    profilePictures.find((pic) => pic.userId === message.userId)
-                      ?.url
+                    message.userId === null
+                        ? voidProfilePicture
+                        : profilePictures.find((pic) => pic.userId === message.userId)
+                            ?.url
                   }
                   sx={{ width: "50px", height: "50px", mr: 2 }}
                 />
