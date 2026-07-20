@@ -31,7 +31,14 @@ const ConfirmationModal = (): JSX.Element => {
                   setConfirmation(true);
                   handleClose();
                 }}
-                sx={{ mr: 3, borderColor: "red", backgroundColor: "#ff000088" }}
+                sx={{
+                  mr: 3,
+                  backgroundColor: 'error.main',
+                  color: 'error.contrastText',
+                  '&:hover': {
+                    backgroundColor: 'error.dark',
+                  },
+                }}
               >
                 YES
               </Button>

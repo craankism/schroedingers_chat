@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {EditorContent, EditorContext, useEditor} from "@tiptap/react";
 import {useTheme} from "@mui/material/styles";
 import {Box, Divider, IconButton, ListItemText, Popover, useMediaQuery} from "@mui/material";
@@ -25,7 +25,6 @@ import {
 } from "@/components/tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
-import {ImageUploadNode} from "@/components/tiptap-node/image-upload-node/image-upload-node-extension.ts";
 import {HorizontalRule} from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension.ts";
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
@@ -37,17 +36,14 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 
 // --- Tiptap UI ---
 import {HeadingDropdownMenu} from "@/components/tiptap-ui/heading-dropdown-menu";
-import {ImageUploadButton} from "@/components/tiptap-ui/image-upload-button";
 import {ListDropdownMenu} from "@/components/tiptap-ui/list-dropdown-menu";
 import {BlockquoteButton} from "@/components/tiptap-ui/blockquote-button";
 import {CodeBlockButton} from "@/components/tiptap-ui/code-block-button";
 import {
-    ColorHighlightPopover,
     ColorHighlightPopoverContent,
     ColorHighlightPopoverButton,
 } from "@/components/tiptap-ui/color-highlight-popover";
 import {
-    LinkPopover,
     LinkContent,
     LinkButton,
 } from "@/components/tiptap-ui/link-popover";
@@ -63,9 +59,6 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 // --- Hooks ---
 import {useIsBreakpoint} from "@/hooks/use-is-breakpoint.ts";
-
-// --- Lib ---
-import {handleImageUpload, MAX_FILE_SIZE} from "@/lib/tiptap-utils.ts";
 
 // --- Styles ---
 import "./SimpleEditor.scss";
@@ -85,23 +78,102 @@ import MenuItem from "@mui/material/MenuItem";
 import {usePropStore} from "../../../stores/PropStore.ts";
 import Menu from "@mui/material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
+import {useFolderStore} from "../../../stores/FolderStore.ts";
+import {useFileStore} from "../../../stores/FileStore.ts";
+import {useNotificationStore} from "../../../stores/NotificationStore.ts";
+import type {FolderInput} from "../../../types/FolderType.ts";
+import {createMarkdownFile} from "../../../services/exportDocument.ts";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import DownloadIcon from "@mui/icons-material/Download";
+import ConfirmationModal from "../../main/modals/ConfirmationModal.tsx";
 
 const MainToolbarContent = () => {
+    const editorContext = useContext(EditorContext);
+    const editor = editorContext?.editor;
+
+    const { setConfirmation, setOpenConfirmation, confirmation } = usePropStore();
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+    const [pendingDeleteTitle, setPendingDeleteTitle] = useState<string>("");
+
     const {
         documents,
         getAllDocuments,
         setCurrentDocumentId,
         currentDocumentId,
     } = useDocumentStore();
-    const {setNewDocModalOpen, setEditDocModalOpen, setEditDocId} = usePropStore();
+    const { deleteDocumentWithNavigation } = useDocumentStore();
+
+    const { setNewDocModalOpen, setEditDocModalOpen, setEditDocId } = usePropStore();
+    const { addNotification } = useNotificationStore();
+    const { uploadFile } = useFileStore();
+    const { getAllFolders, createFolder } = useFolderStore();
     const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
-    const [moreAnchor, setMoreAnchor] = useState<HTMLElement | null>(null);
 
     const myJwt = decodeJwt();
 
     useEffect(() => {
         getAllDocuments();
     }, [getAllDocuments]);
+
+    useEffect(() => {
+        if (confirmation && pendingDeleteId !== null) {
+            deleteDocumentWithNavigation(pendingDeleteId, pendingDeleteTitle);
+            setConfirmation(false);
+            setPendingDeleteId(null);
+            setPendingDeleteTitle("");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [confirmation]);
+
+    const requestDelete = (documentId: number, title: string) => {
+        setPendingDeleteId(documentId);
+        setPendingDeleteTitle(title);
+        setConfirmation(false);
+        setOpenConfirmation(true);
+    };
+
+    const handleExport = async () => {
+        if (!editor) return;
+        setMenuAnchor(null);
+
+        try {
+            await getAllFolders();
+            let exportsFolder = useFolderStore.getState().folders.find(
+                (f) => f.name === "Exports"
+            );
+
+            if (!exportsFolder) {
+                const created = await createFolder({ name: "Exports" } as FolderInput);
+                if (created) {
+                    exportsFolder = created;
+                }
+            }
+
+            if (!exportsFolder) {
+                throw new Error("Couldn't create Folder Exports");
+            }
+
+            const currentDoc = documents.find(
+                (d) => d.documentId === currentDocumentId
+            );
+
+            const file = createMarkdownFile(
+                editor.getHTML(),
+                currentDoc?.title || "document"
+            );
+
+            await uploadFile({ file, folderId: exportsFolder.folderId });
+
+            addNotification(
+                `Export saved under: Files > Exports > ${file.name}`,
+                "success"
+            );
+        } catch (error) {
+            console.error("Export failed:", error);
+            addNotification("Export failed", "error");
+        }
+    };
 
     return (
         <>
@@ -117,8 +189,8 @@ const MainToolbarContent = () => {
                     anchorEl={menuAnchor}
                     open={!!menuAnchor}
                     onClose={() => setMenuAnchor(null)}
-                    anchorOrigin={{vertical: "bottom", horizontal: "left"}}
-                    transformOrigin={{vertical: "top", horizontal: "left"}}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                    transformOrigin={{ vertical: "top", horizontal: "left" }}
                 >
                     <MenuItem
                         onClick={() => {
@@ -128,7 +200,14 @@ const MainToolbarContent = () => {
                     >
                         New File
                     </MenuItem>
-                    <Divider/>
+                    <Divider />
+                    <MenuItem onClick={handleExport}>
+                        <ListItemIcon>
+                            <DownloadIcon fontSize="small" />
+                        </ListItemIcon>
+                        Export as .md
+                    </MenuItem>
+                    <Divider />
                     {documents.map((document) =>
                         document.documentMembershipList.includes(myJwt?.userId || 0) ? (
                             <MenuItem
@@ -136,11 +215,14 @@ const MainToolbarContent = () => {
                                 value={document.documentId}
                                 selected={document.documentId === currentDocumentId}
                                 onClick={() => {
+                                    const { startLoading } = useNotificationStore.getState();
+                                    startLoading();
                                     setCurrentDocumentId(document.documentId || 0);
                                     setMenuAnchor(null);
                                 }}
                             >
-                                <ListItemText primary={document.title}/>
+                                <ListItemText primary={document.title} />
+
                                 <IconButton
                                     size="small"
                                     onClick={(e) => {
@@ -150,8 +232,21 @@ const MainToolbarContent = () => {
                                         setMenuAnchor(null);
                                     }}
                                 >
-                                    <SettingsIcon fontSize="small"/>
+                                    <SettingsIcon fontSize="small" />
                                 </IconButton>
+
+                                {document.creatorId === myJwt?.userId && (
+                                    <IconButton
+                                        size="small"
+                                        color="error"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            requestDelete(document.documentId || 0, document.title);
+                                        }}
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                )}
                             </MenuItem>
                         ) : null,
                     )}
@@ -159,88 +254,44 @@ const MainToolbarContent = () => {
             </ToolbarGroup>
 
             <ToolbarGroup>
-                <UndoRedoButton action="undo"/>
-                <UndoRedoButton action="redo"/>
+                <HeadingDropdownMenu modal={false} levels={[1, 2, 3]} />
+                <MarkButton type="bold" />
+                <MarkButton type="italic" />
+                <MarkButton type="underline" />
+                <MarkButton type="strike" />
             </ToolbarGroup>
 
-            <ToolbarSeparator/>
+            <ToolbarSeparator />
 
             <ToolbarGroup>
-                <HeadingDropdownMenu modal={false} levels={[1, 2, 3, 4]}/>
+                <UndoRedoButton action="undo" />
+                <UndoRedoButton action="redo" />
             </ToolbarGroup>
 
-            <ToolbarSeparator/>
+            <ToolbarSeparator />
 
             <ToolbarGroup>
-                <MarkButton type="bold"/>
-                <MarkButton type="italic"/>
-                <MarkButton type="underline"/>
-                <MarkButton type="strike"/>
-                <ColorHighlightPopover/>
+                <ColorHighlightPopoverButton onClick={() => console.log("Highlighter")} />
+                <LinkButton onClick={() => console.log("Link")} />
             </ToolbarGroup>
 
-            <ToolbarSeparator/>
-
-            <ToolbarGroup>
-                <LinkPopover/>
-                <ImageUploadButton text=""/>
-            </ToolbarGroup>
-
-            <ToolbarSeparator/>
+            <ToolbarSeparator />
 
             <ToolbarGroup>
                 <ListDropdownMenu
                     modal={false}
                     types={["bulletList", "orderedList", "taskList"]}
                 />
+                <TextAlignButton align="left" />
+                <TextAlignButton align="center" />
+                <TextAlignButton align="right" />
             </ToolbarGroup>
 
-            <ToolbarSeparator/>
+            <ToolbarSeparator />
 
             <ToolbarGroup>
-                <CodeBlockButton/>
-                <BlockquoteButton/>
-            </ToolbarGroup>
-
-            <ToolbarSeparator/>
-
-            <ToolbarGroup>
-                <Button
-                    variant="ghost"
-                    onClick={(e) => setMoreAnchor(e.currentTarget)}
-                    aria-label="More formatting options"
-                >
-                    <MoreHorizIcon className="tiptap-button-icon"/>
-                </Button>
-                <Popover
-                    anchorEl={moreAnchor}
-                    open={!!moreAnchor}
-                    onClose={() => setMoreAnchor(null)}
-                    anchorOrigin={{vertical: "bottom", horizontal: "left"}}
-                    transformOrigin={{vertical: "top", horizontal: "left"}}
-                    slotProps={{
-                        paper: {
-                            sx: {p: 1},
-                        },
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 1,
-                            maxWidth: 220,
-                        }}
-                    >
-                        <MarkButton type="code"/>
-                        <MarkButton type="superscript"/>
-                        <MarkButton type="subscript"/>
-                        <TextAlignButton align="left"/>
-                        <TextAlignButton align="center"/>
-                        <TextAlignButton align="right"/>
-                        <TextAlignButton align="justify"/>
-                    </Box>
-                </Popover>
+                <BlockquoteButton />
+                <CodeBlockButton />
             </ToolbarGroup>
         </>
     );
@@ -312,7 +363,6 @@ const MobileMainToolbarContent = ({
                         <TextAlignButton align="center"/>
                         <TextAlignButton align="right"/>
                         <TextAlignButton align="justify"/>
-                        <ImageUploadButton text=""/>
                     </Box>
                 </Popover>
             </ToolbarGroup>
@@ -353,6 +403,7 @@ function SimpleEditorInner() {
     const provider = useHocuspocusProvider();
     const theme = useTheme();
     const isMobile = useIsBreakpoint();
+    const {stopLoading, startLoading} = useNotificationStore();
 
     const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
         "main",
@@ -393,13 +444,6 @@ function SimpleEditorInner() {
             Superscript,
             Subscript,
             Selection,
-            ImageUploadNode.configure({
-                accept: "image/*",
-                maxSize: MAX_FILE_SIZE,
-                limit: 3,
-                upload: handleImageUpload,
-                onError: (error) => console.error("Upload failed:", error),
-            }),
         ],
     });
 
@@ -413,6 +457,31 @@ function SimpleEditorInner() {
         const isDark = theme.palette.mode === "dark";
         document.documentElement.classList.toggle("dark", isDark);
     }, [theme.palette.mode]);
+
+    useEffect(() => {
+        // Start loading beim Switch
+        startLoading();
+
+        const handleSynced = () => {
+            stopLoading();
+        };
+
+        provider.on("connected", () => { /* optional */
+        });
+        provider.on("synced", handleSynced);
+        provider.on("status", ({status}: { status: string }) => {
+            if (status === "connected") {
+                stopLoading();
+            }
+        });
+
+        return () => {
+            provider.off("connected");
+            provider.off("synced", handleSynced);
+            provider.off("status");
+        };
+    }, [provider, startLoading, stopLoading]);
+
 
     return (
         <EditorContext.Provider value={{editor}}>
@@ -478,6 +547,7 @@ export function SimpleEditor() {
 
     return (
         <div className="simple-editor-wrapper" style={wrapperStyle}>
+            <ConfirmationModal/>
             <HocuspocusProviderWebsocketComponent
                 url={`${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/collab`}
             >

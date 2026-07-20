@@ -1,4 +1,4 @@
-import { Box, Typography, Menu, MenuItem, Divider, useTheme } from "@mui/material";
+import { Box, Typography, Menu, MenuItem, Divider, useTheme, IconButton, ListItemText } from "@mui/material";
 import IconSC from "../../assets/iconSC.png";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import type { JSX } from "@emotion/react/jsx-runtime";
@@ -8,17 +8,25 @@ import { useDocumentStore } from "../../stores/DocumentStore";
 import { decodeJwt } from "../../stores/AuthStore";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import SettingsIcon from "@mui/icons-material/Settings";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ConfirmationModal from "../main/modals/ConfirmationModal.tsx";
+import {useNotificationStore} from "../../stores/NotificationStore.ts";
 
 const MobileNav = (): JSX.Element => {
     const theme = useTheme();
     const { openSidebar, setOpenSidebar } = usePropStore();
     const { isAuthenticated } = useAuthStore();
-    const { documents, getAllDocuments, setCurrentDocumentId, currentDocumentId } = useDocumentStore();
+    const { documents, getAllDocuments, currentDocumentId } = useDocumentStore();
+    const { deleteDocumentWithNavigation } = useDocumentStore();
     const [fileAnchor, setFileAnchor] = useState<HTMLElement | null>(null);
     const location = useLocation();
-    const {setNewDocModalOpen} = usePropStore();
+    const { setNewDocModalOpen, setEditDocModalOpen, setEditDocId, setOpenConfirmation, setConfirmation, confirmation } = usePropStore();
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+    const [pendingDeleteTitle, setPendingDeleteTitle] = useState<string>("");
 
     const isInEditorView = location.pathname === "/editor" || location.pathname.startsWith("/editor");
+    const myJwt = decodeJwt();
 
     useEffect(() => {
         if (isInEditorView) {
@@ -26,13 +34,31 @@ const MobileNav = (): JSX.Element => {
         }
     }, [isInEditorView, getAllDocuments]);
 
-    const myJwt = decodeJwt();
     const userDocs = documents.filter((doc) =>
         doc.documentMembershipList.includes(myJwt?.userId || 0)
     );
 
+    useEffect(() => {
+        if (confirmation && pendingDeleteId !== null) {
+            deleteDocumentWithNavigation(pendingDeleteId, pendingDeleteTitle);
+            setConfirmation(false);
+            setPendingDeleteId(null);
+            setPendingDeleteTitle("");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [confirmation]);
+
+    const requestDelete = (documentId: number, title: string) => {
+        setPendingDeleteId(documentId);
+        setPendingDeleteTitle(title);
+        setConfirmation(false);
+        setOpenConfirmation(true);
+    };
+
     return (
         <>
+            <ConfirmationModal />
+
             <Box
                 sx={{
                     display: { xs: "flex", md: "none" },
@@ -128,11 +154,39 @@ const MobileNav = (): JSX.Element => {
                         key={document.documentId}
                         selected={document.documentId === currentDocumentId}
                         onClick={() => {
+                            const { startLoading} = useNotificationStore.getState();
+                            const {  setCurrentDocumentId} = useDocumentStore.getState();
+                                startLoading();
                             setCurrentDocumentId(document.documentId || 0);
                             setFileAnchor(null);
                         }}
                     >
-                        {document.title}
+                        <ListItemText primary={document.title} />
+
+                        <IconButton
+                            size="small"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setEditDocId(document.documentId || 0);
+                                setEditDocModalOpen(true);
+                                setFileAnchor(null);
+                            }}
+                        >
+                            <SettingsIcon fontSize="small" />
+                        </IconButton>
+
+                        {document.creatorId === myJwt?.userId && (
+                            <IconButton
+                                size="small"
+                                color="error"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    requestDelete(document.documentId || 0, document.title);
+                                }}
+                            >
+                                <DeleteIcon fontSize="small" />
+                            </IconButton>
+                        )}
                     </MenuItem>
                 ))}
             </Menu>

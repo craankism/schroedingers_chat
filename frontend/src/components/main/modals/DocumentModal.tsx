@@ -96,13 +96,13 @@ const DocumentModal = (): JSX.Element => {
             >
                 <Box sx={modalStyle}>
                     {isLoading ? (
-                        <Typography>Lade Dokument...</Typography>
+                        <Typography>Loading Document...</Typography>
                     ) : (
                         <form onSubmit={submitHandler}>
                             <Grid container spacing={2} sx={{alignItems: "center"}}>
                                 <Grid size={12}>
                                     <Typography id="modal-modal-title" variant="h6" component="h2">
-                                        {isEditMode ? "File bearbeiten" : "Neues File"}
+                                        {isEditMode ? "update File" : "new File"}
                                     </Typography>
                                 </Grid>
                                 <Grid size={12}>
@@ -120,7 +120,7 @@ const DocumentModal = (): JSX.Element => {
                                 </Grid>
                                 <Grid size={12}>
                                     <Typography id="modal-modal-title" component="h2">
-                                        {isEditMode ? "Mitglieder" : "Invite Users:"}
+                                        {isEditMode ? "Collaborators" : "Invite Users:"}
                                     </Typography>
                                 </Grid>
                                 <Grid container spacing={1} size={12}>
@@ -163,9 +163,9 @@ const DocumentModal = (): JSX.Element => {
                                     )}
                                 </Grid>
                                 <Grid size={12}>
-                                    <Button type="submit">{isEditMode ? "Speichern" : "Create"}</Button>
+                                    <Button type="submit">{isEditMode ? "Save" : "Create"}</Button>
                                     <Button sx={{ml: 1}} onClick={handleClose}>
-                                        Abbrechen
+                                        Cancel
                                     </Button>
                                 </Grid>
                             </Grid>
