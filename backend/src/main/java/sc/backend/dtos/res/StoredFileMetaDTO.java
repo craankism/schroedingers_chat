@@ -17,4 +17,5 @@ public class StoredFileMetaDTO {
     private LocalDateTime uploadDate;
     private String mimeType;
     private Integer folderId;
+    private String bucketName;
 }

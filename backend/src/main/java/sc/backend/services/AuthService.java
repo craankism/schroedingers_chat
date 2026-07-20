@@ -4,8 +4,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,18 +52,21 @@ public class AuthService {
     private String domain;
 
     @Transactional
-    public String verifyEmail(String token) {
+    public AuthDTO verifyEmail(String token) {
         String email = tokenService.extractEmail(token);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found " + email));
 
         if (user.isActive()) {
-            return "Email is already verified";
+            throw new RuntimeException("Account already active");
         }
 
         user.setActive(true);
         userRepository.save(user);
-        return "Email verification successful";
+        String jwt = tokenService.generateTokenWithClaims(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
+
+        return convertToAuthDTO(user, jwt, refreshToken);
     }
 
     public void sendVerificationEmail(User user) {
@@ -76,25 +80,76 @@ public class AuthService {
         }
 
         String token = tokenService.generateToken(new HashMap<>(), user);
-        String verifyUrl = "https://" + domain + "/api/auth/verify/" +
-                URLEncoder.encode(token, StandardCharsets.UTF_8);
-
-        String message = "Click below to verify your email:\n" + verifyUrl;
-
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setFrom(dynamicMailSenderService.getSenderAddress());
-        mail.setTo(user.getEmail());
-        mail.setSubject("Verify your email");
-        mail.setText(message);
+        String verifyLink = "https://" + domain + "/verify/" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        String htmlMessage = "<p>Click below to verify your email:</p>" +
+                "<a href=\"" + verifyLink + "\" style=\"text-decoration: none;\">" +
+                "<button style=\"border: none; background-color: green; color: white; padding: 10px 20px; " +
+                "border-radius: 10%; font-size: 2rem; cursor: pointer;\">Verify</button>" +
+                "</a>";
 
         try {
+            MimeMessage mail = dynamicMailSenderService.getMailSender().createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mail, "utf-8");
+            helper.setFrom(dynamicMailSenderService.getSenderAddress());
+            helper.setTo(user.getEmail());
+            helper.setSubject("Verify your email");
+            helper.setText(htmlMessage, true);
             dynamicMailSenderService.getMailSender().send(mail);
-            log.info("Verification email sent to: {}", user.getEmail());
         } catch (Exception e) {
-            log.error("Failed to send verification email, activating user anyway: {}", user.getEmail(), e);
             user.setActive(true);
             userRepository.save(user);
         }
+    }
+
+    @Transactional
+    public String sendResetMail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        String token = tokenService.generateToken(new HashMap<>() {
+            {
+                put("type", "password_reset");
+            }
+        }, user);
+        String resetLink = "https://" + domain + "/reset/" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        String htmlMessage = "<p>Click below to reset your password:</p>" +
+                "<a href=\"" + resetLink + "\" style=\"text-decoration: none;\">" +
+                "<button style=\"border: none; background-color: green; color: white; padding: 10px 20px; " +
+                "border-radius: 10%; font-size: 2rem; cursor: pointer;\">Reset</button>" +
+                "</a>" +
+                "<p>This link expires in 15 mins.</p>";
+
+        try {
+            MimeMessage mail = dynamicMailSenderService.getMailSender().createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mail, "utf-8");
+            helper.setFrom(dynamicMailSenderService.getSenderAddress());
+            helper.setTo(user.getEmail());
+            helper.setSubject("Reset password");
+            helper.setText(htmlMessage, true);
+            dynamicMailSenderService.getMailSender().send(mail);
+            return "Reset E-Mail send";
+        } catch (Exception e) {
+            return "Smtp not setup. Contact an admin.";
+        }
+    }
+
+    @Transactional
+    public void performPasswordReset(String token, String newPassword) {
+        String email;
+        String type;
+        try {
+            email = tokenService.extractEmail(token);
+            type = tokenService.extractClaim(token, claims -> claims.get("type", String.class));
+        } catch (Exception e) {
+            throw new TokenInvalidException("Invalid or expired reset token");
+        }
+        if (!"password_reset".equals(type)) {
+            throw new TokenInvalidException("Invalid reset token");
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     @Transactional

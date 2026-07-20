@@ -26,7 +26,8 @@ export const usePropStore = create<PropState>((set) => ({
     openSidebar: false,
     openProfile: false,
     roomId: 2,
-    voidName: "Void 🐈‍⬛",
+    //voidName: "Void 🐈‍⬛",
+    voidName: "Void",
     confirmation: false,
     openConfirmation: false,
     newDocModalOpen: false,
@@ -45,7 +46,7 @@ export const usePropStore = create<PropState>((set) => ({
     setRoomId: (roomId: number) => {
         set({
             roomId,
-            voidName: Math.random() < 0.5 ? "Void 🐈‍⬛" : "Void 💀",
+            //voidName: Math.random() < 0.5 ? "Void 🐈‍⬛" : "Void 💀",
         });
     },
 

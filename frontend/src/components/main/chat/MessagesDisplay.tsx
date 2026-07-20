@@ -1,4 +1,4 @@
-import {Box, CircularProgress, List, Typography} from "@mui/material";
+import { Avatar, Box, CircularProgress, List, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { decodeJwt } from "../../../stores/AuthStore";
@@ -10,7 +10,9 @@ import {
 import { useMessageStore } from "../../../stores/MessageStore.ts";
 import Markdown from "react-markdown";
 import { useUserStore } from "../../../stores/UserStore.ts";
-import {usePropStore} from "../../../stores/PropStore.ts";
+import { usePropStore } from "../../../stores/PropStore.ts";
+import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
+import voidProfilePicture from "../../../assets/iconSC.png";
 
 type MessagesDisplayProps = {
   connectionStatus: string;
@@ -20,16 +22,17 @@ type MessagesDisplayProps = {
 };
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
-    connectionStatus,
-    handleDeleteMessage,
-    announcement,
-    isVoidThinking,
+  connectionStatus,
+  handleDeleteMessage,
+  announcement,
+  isVoidThinking,
 }) => {
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const { messages } = useMessageStore();
   const { users } = useUserStore();
   const { voidName } = usePropStore();
+  const { profilePictures } = useProfilePictureStore();
 
   // Scroll to the last message whenever messages change.
   useEffect(() => {
@@ -72,17 +75,81 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
             //ref={id === messages.length - 1 ? lastMessageRef : null}
           >
             {decodeJwt()?.userId === message.userId ? (
-              <Box
-                sx={{ marginLeft: "auto", textAlign: "right" }}
-                onMouseEnter={() => setHoveredId(id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                <Box>
+              <>
+                <Box
+                  sx={{
+                    marginLeft: "auto",
+                    textAlign: "right",
+                    alignItems: "center",
+                    justifyContent: "right",
+                    width: "100%",
+                  }}
+                  onMouseEnter={() => setHoveredId(id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                >
                   <Typography sx={{ color: "cyan" }}>
                     {
                       users.find((user) => user.userId === message.userId)
                         ?.displayName
                     }
+                  </Typography>
+                  {message.content != null ? (
+                    <Box
+                      sx={{
+                        whiteSpace: "pre-wrap",
+                        overflowWrap: "anywhere",
+                      }}
+                    >
+                      <Markdown>{message.content}</Markdown>
+                    </Box>
+                  ) : (
+                    <Typography sx={{ opacity: "30%" }}>
+                      Message deleted
+                    </Typography>
+                  )}
+                  <Box
+                    sx={{
+                      visibility:
+                        hoveredId === id && message.content != null
+                          ? "visible"
+                          : "hidden",
+                    }}
+                  >
+                    <Clear
+                      sx={{ cursor: "pointer" }}
+                      onClick={() => handleDeleteMessage(message.messageId)}
+                    />
+                  </Box>
+                </Box>
+                <Avatar
+                  alt="profile picture"
+                  src={
+                    profilePictures.find((pic) => pic.userId === message.userId)
+                      ?.url
+                  }
+                  sx={{ width: "50px", height: "50px", ml: 2 }}
+                />
+              </>
+            ) : (
+              <>
+                <Avatar
+                  alt="profile picture"
+                  src={
+                    message.userId === null
+                        ? voidProfilePicture
+                        : profilePictures.find((pic) => pic.userId === message.userId)
+                            ?.url
+                  }
+                  sx={{ width: "50px", height: "50px", mr: 2 }}
+                />
+                <Box
+                  sx={{
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography sx={{ color: "red" }}>
+                    {users.find((user) => user.userId === message.userId)
+                      ?.displayName ?? voidName}
                   </Typography>
                   {message.content != null ? (
                     <Box
@@ -95,83 +162,47 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                       Message deleted
                     </Typography>
                   )}
-                </Box>
-                <Box
-                  sx={{
-                    visibility:
-                      hoveredId === id && message.content != null
-                        ? "visible"
-                        : "hidden",
-                  }}
-                >
-                  <Clear
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => handleDeleteMessage(message.messageId)}
-                  />
-                </Box>
-              </Box>
-            ) : (
-              <Box>
-                <Typography sx={{ color: "red" }}>
-                  {
-                    users.find((user) => user.userId === message.userId)
-                      ?.displayName
-                      ?? voidName
-                  }
-                </Typography>
-                {message.content != null ? (
+
                   <Box
-                    sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                    sx={{
+                      visibility:
+                        hoveredId === id && message.content != null
+                          ? "visible"
+                          : "hidden",
+                    }}
                   >
-                    <Markdown>{message.content}</Markdown>
+                    <Clear
+                      sx={{ cursor: "pointer" }}
+                      onClick={() => handleDeleteMessage(message.messageId)}
+                    />
                   </Box>
-                ) : (
-                  <Typography sx={{ opacity: "30%" }}>
-                    Message deleted
-                  </Typography>
-                )}
-                <Box
-                  sx={{
-                    visibility:
-                      hoveredId === id && message.content != null
-                        ? "visible"
-                        : "hidden",
-                  }}
-                >
-                  <Clear
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => handleDeleteMessage(message.messageId)}
-                  />
                 </Box>
-              </Box>
+              </>
             )}
           </Box>
         ))}
 
-          {isVoidThinking && (
-              <Box
-                  sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mt: 2,
-                      mb: 1,
-                      opacity: 0.7,
-                  }}
-              >
-                  <CircularProgress size={16} />
+        {isVoidThinking && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mt: 2,
+              mb: 1,
+              opacity: 0.7,
+            }}
+          >
+            <CircularProgress size={16} />
 
-                  <Typography
-                      variant="body2"
-                      sx={{ fontStyle: "italic" }}
-                  >
-                      Void is both thinking and not thinking...
-                  </Typography>
-              </Box>
-          )}
+            <Typography variant="body2" sx={{ fontStyle: "italic" }}>
+              Void is both thinking and not thinking...
+            </Typography>
+          </Box>
+        )}
 
-          {/*Scroll both for messages and Void thinking*/}
-          <Box ref={lastMessageRef} />
+        {/*Scroll both for messages and Void thinking*/}
+        <Box ref={lastMessageRef} />
       </List>
     </Box>
   );
