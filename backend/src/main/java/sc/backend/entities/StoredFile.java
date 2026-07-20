@@ -2,7 +2,6 @@ package sc.backend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import sc.backend.entities.Folder;
 
 import java.time.LocalDateTime;
 
@@ -45,4 +44,7 @@ public class StoredFile {
 
     @Column
     private byte[] encryptedDek;
+
+    @Column(nullable = false)
+    private String bucketName;
 }
