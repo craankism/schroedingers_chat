@@ -14,6 +14,10 @@ type PropState = {
     setConfirmation: (yes: boolean) => void;
     newDocModalOpen: boolean;
     setNewDocModalOpen: (open: boolean) => void;
+    editDocModalOpen: boolean;
+    setEditDocModalOpen: (open: boolean) => void;
+    editDocId: number | null;
+    setEditDocId: (id: number | null) => void;
     smtpModalOpen: boolean;
     setSmtpModalOpen: (open: boolean) => void;
 };
@@ -27,6 +31,8 @@ export const usePropStore = create<PropState>((set) => ({
     openConfirmation: false,
     newDocModalOpen: false,
     smtpModalOpen: false,
+    editDocModalOpen: false,
+    editDocId: null,
 
     setOpenSidebar: (open: boolean) => {
         set({openSidebar: open});
@@ -53,6 +59,14 @@ export const usePropStore = create<PropState>((set) => ({
 
     setNewDocModalOpen: (open: boolean) => {
         set({newDocModalOpen: open});
+    },
+
+    setEditDocModalOpen: (open: boolean) => {
+        set({editDocModalOpen: open});
+    },
+
+    setEditDocId: (id: number | null) => {
+        set({editDocId: id});
     },
 
     setSmtpModalOpen: (open: boolean) => {

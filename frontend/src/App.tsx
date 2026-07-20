@@ -22,6 +22,7 @@ import { decodeJwt } from "./stores/AuthStore.ts";
 import GlobalLoader from "./components/main/GlobalLoader.tsx";
 import { Box } from "@mui/material";
 import RedirectRoute from "./components/RedirectRoute.tsx";
+import DocumentModal from "./components/main/sidebar/DocumentModal.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
@@ -59,6 +60,7 @@ const App = (): JSX.Element => {
         </>
       ) : null}
       <NavTop />
+      <DocumentModal />
       <GlobalLoader />
       <NotificationBanner />
       <Routes>
