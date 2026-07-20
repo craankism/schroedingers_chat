@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.CreateDocumentDTO;
+import sc.backend.dtos.req.UpdateDocumentDTO;
 import sc.backend.dtos.res.DocumentDTO;
 import sc.backend.dtos.res.DocumentMetaDTO;
 import sc.backend.dtos.res.EditorAuthDTO;
@@ -92,6 +93,37 @@ public class DocumentService {
 
         Document document = findDocumentById(documentId);
 
+        return convertToDto(document);
+    }
+
+    @Transactional
+    public DocumentDTO updateDocument(int documentId, UpdateDocumentDTO updateDocumentDTO, String authenticatedEmail) {
+        User user = userService.findUserByEmail(authenticatedEmail);
+        Document document = findDocumentById(documentId);
+
+        checkOwner(document, user.getUserId());
+
+        document.setTitle(updateDocumentDTO.getTitle());
+        document.setUpdatedAt(LocalDateTime.now());
+
+        List<DocumentMembership> currentMemberships = documentMembershipRepository.findByDocument(document);
+        List<Integer> newMemberIds = updateDocumentDTO.getDocumentMembershipList();
+
+        for (DocumentMembership membership : currentMemberships) {
+            if (!newMemberIds.contains(membership.getUser().getUserId())) {
+                if (membership.getUser().getUserId() != document.getCreator().getUserId()) {
+                    documentMembershipRepository.delete(membership);
+                }
+            }
+        }
+
+        for (Integer userId : newMemberIds) {
+            if (currentMemberships.stream().noneMatch(m -> m.getUser().getUserId() == userId)) {
+                addMember(document, userId);
+            }
+        }
+
+        documentRepository.save(document);
         return convertToDto(document);
     }
 
