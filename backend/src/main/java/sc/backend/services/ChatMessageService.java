@@ -158,7 +158,7 @@ public class ChatMessageService {
                 String answerContent = cleanForPrompt(decryptContent(aiAnswer));
 
                 if (!answerContent.isBlank()) {
-                    transcript.append("Void 🐈‍⬛: ")
+                    transcript.append("Void: ")
                             .append(answerContent)
                             .append("\n");
                 }
@@ -199,7 +199,7 @@ public class ChatMessageService {
         String sender;
 
         if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) || message.getCreatedBy() == null) {
-            sender = "Void 🐈‍⬛";
+            sender = "Void";
         } else {
             sender = message.getCreatedBy().getDisplayName();
         }

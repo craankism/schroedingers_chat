@@ -24,7 +24,7 @@ const containsVoidMention = (
 const isMessageFromVoid = (
     message: MessageInput,
 ): boolean => {
-    return message.sender.trim() === "Void 🐈‍⬛"
+    return message.sender.trim() === "Void"
 };
 
 const VOID_TIMEOUT = 2 * 60 * 1000;
