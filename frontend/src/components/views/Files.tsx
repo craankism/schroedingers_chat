@@ -329,7 +329,7 @@ const Files = (): JSX.Element => {
         <Grid container sx={{ height: "85vh" }}>
           <Grid
             size={4}
-            sx={{ border: "1px solid" }}
+            sx={{ border: "1px solid", overflow: "scroll" }}
             onClick={() => {
               setSelectedFolder(null);
               setFolderSelect(null);
@@ -363,16 +363,17 @@ const Files = (): JSX.Element => {
                 height: "85vh",
                 borderBottom: "1px solid",
                 borderRight: "1px solid",
+                overflow: "scroll",
               }}
             >
               <Box
                 sx={{
                   display: "flex",
                   gap: 2,
-                  ml: -1,
                   border: "1px solid",
+                  borderLeft: "none",
                   borderRight: "none",
-                  height: 39.5,
+                  height: 39,
                 }}
               >
                 <IconButton component="label" sx={{ ml: 2 }}>
