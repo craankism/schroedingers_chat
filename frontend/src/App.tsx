@@ -16,13 +16,13 @@ import Login from "./components/views/Login.tsx";
 import EnterCode from "./components/views/EnterCode.tsx";
 import Register from "./components/views/Register.tsx";
 import AdminRoute from "./components/AdminRoute.tsx";
-import { SimpleEditor } from "./components/tiptap/components/tiptap-templates/simple/simple-editor";
+import { SimpleEditor } from "./components/main/editor/SimpleEditor.tsx";
 import { useEffect } from "react";
 import { decodeJwt } from "./stores/AuthStore.ts";
 import GlobalLoader from "./components/main/GlobalLoader.tsx";
 import { Box } from "@mui/material";
 import RedirectRoute from "./components/RedirectRoute.tsx";
-import DocumentModal from "./components/main/sidebar/DocumentModal.tsx";
+import DocumentModal from "./components/main/modals/DocumentModal.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();

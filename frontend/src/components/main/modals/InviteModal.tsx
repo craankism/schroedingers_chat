@@ -7,7 +7,7 @@ import type { JSX } from "@emotion/react/jsx-runtime";
 import AddLinkIcon from "@mui/icons-material/AddLink";
 import { Checkbox, FormControlLabel, Grid, TextField } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { useAuthStore } from "../../../stores/AuthStore";
+import { useAuthStore } from "../../../stores/AuthStore.ts";
 import {modalStyle} from "../../../types/constants/constants.ts";
 
 const InviteModal = (): JSX.Element => {

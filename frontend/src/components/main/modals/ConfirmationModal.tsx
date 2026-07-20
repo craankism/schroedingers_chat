@@ -1,6 +1,6 @@
 import { Box, Button, Grid, Modal, Typography } from "@mui/material";
 import React from "react";
-import { usePropStore } from "../../../stores/PropStore";
+import { usePropStore } from "../../../stores/PropStore.ts";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import {modalStyle} from "../../../types/constants/constants.ts";
 

@@ -13,16 +13,16 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { decodeJwt } from "../../../stores/AuthStore";
-import { useUserStore } from "../../../stores/UserStore";
+import { decodeJwt } from "../../../stores/AuthStore.ts";
+import { useUserStore } from "../../../stores/UserStore.ts";
 import type { JSX } from "@emotion/react/jsx-runtime";
-import { usePropStore } from "../../../stores/PropStore";
-import { useNotificationStore } from "../../../stores/NotificationStore";
-import ConfirmationModal from "./ConfirmationModal";
+import { usePropStore } from "../../../stores/PropStore.ts";
+import { useNotificationStore } from "../../../stores/NotificationStore.ts";
+import ConfirmationModal from "./ConfirmationModal.tsx";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
 import { modalStyle } from "../../../types/constants/constants.ts";
-import SMTPModal from "../sidebar/SMTPModal.tsx";
+import SMTPModal from "./SMTPModal.tsx";
 
 const ProfileModal = (): JSX.Element => {
   const { updateUser, deleteUser, users } = useUserStore();

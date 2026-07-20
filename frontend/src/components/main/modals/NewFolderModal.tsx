@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { Grid, TextField } from "@mui/material";
-import { useFolderStore } from "../../../stores/FolderStore";
+import { useFolderStore } from "../../../stores/FolderStore.ts";
 
 const style = {
   position: "absolute",

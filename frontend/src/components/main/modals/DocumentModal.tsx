@@ -4,12 +4,12 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import {Grid, ListItemButton, ListItemText, TextField} from "@mui/material";
-import {useUserStore} from "../../../stores/UserStore";
+import {useUserStore} from "../../../stores/UserStore.ts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import {decodeJwt} from "../../../stores/AuthStore";
+import {decodeJwt} from "../../../stores/AuthStore.ts";
 import type {JSX} from "@emotion/react/jsx-runtime";
-import {useDocumentStore} from "../../../stores/DocumentStore";
-import {usePropStore} from "../../../stores/PropStore";
+import {useDocumentStore} from "../../../stores/DocumentStore.ts";
+import {usePropStore} from "../../../stores/PropStore.ts";
 import {useNavigate} from "react-router-dom";
 import {modalStyle} from "../../../types/constants/constants.ts";
 

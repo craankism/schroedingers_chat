@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import SidebarHelper from "./SidebarHelper";
 import { decodeJwt, useAuthStore } from "../../../stores/AuthStore";
-import NewRoomModal from "./NewRoomModal";
+import NewRoomModal from "../modals/NewRoomModal.tsx";
 import { useRoomStore } from "../../../stores/RoomStore";
 import type { RoomType } from "../../../types/RoomType";
 import AddIcon from "@mui/icons-material/Add";

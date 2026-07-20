@@ -6,7 +6,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import IconButton from "@mui/material/IconButton";
 import { Add, Delete, Edit, MoreVert } from "@mui/icons-material";
 import { Typography } from "@mui/material";
-import NewRoomModal from "../sidebar/NewRoomModal";
+import NewRoomModal from "../modals/NewRoomModal.tsx";
 import { useRoomStore } from "../../../stores/RoomStore";
 import { decodeJwt } from "../../../stores/AuthStore";
 import { usePropStore } from "../../../stores/PropStore";

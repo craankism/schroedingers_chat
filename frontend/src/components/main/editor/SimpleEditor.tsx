@@ -25,8 +25,8 @@ import {
 } from "@/components/tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
-import {ImageUploadNode} from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
-import {HorizontalRule} from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
+import {ImageUploadNode} from "@/components/tiptap-node/image-upload-node/image-upload-node-extension.ts";
+import {HorizontalRule} from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension.ts";
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss";
@@ -56,19 +56,19 @@ import {TextAlignButton} from "@/components/tiptap-ui/text-align-button";
 import {UndoRedoButton} from "@/components/tiptap-ui/undo-redo-button";
 
 // --- Icons ---
-import {ArrowLeftIcon} from "@/components/tiptap-icons/arrow-left-icon";
-import {HighlighterIcon} from "@/components/tiptap-icons/highlighter-icon";
-import {LinkIcon} from "@/components/tiptap-icons/link-icon";
+import {ArrowLeftIcon} from "@/components/tiptap-icons/arrow-left-icon.tsx";
+import {HighlighterIcon} from "@/components/tiptap-icons/highlighter-icon.tsx";
+import {LinkIcon} from "@/components/tiptap-icons/link-icon.tsx";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 // --- Hooks ---
-import {useIsBreakpoint} from "@/hooks/use-is-breakpoint";
+import {useIsBreakpoint} from "@/hooks/use-is-breakpoint.ts";
 
 // --- Lib ---
-import {handleImageUpload, MAX_FILE_SIZE} from "@/lib/tiptap-utils";
+import {handleImageUpload, MAX_FILE_SIZE} from "@/lib/tiptap-utils.ts";
 
 // --- Styles ---
-import "@/components/tiptap-templates/simple/simple-editor.scss";
+import "./SimpleEditor.scss";
 
 // mine
 import {useHocuspocusProvider} from "@hocuspocus/provider-react";
@@ -78,11 +78,11 @@ import {
     HocuspocusProviderWebsocketComponent,
     HocuspocusRoom,
 } from "@hocuspocus/provider-react";
-import {decodeJwt} from "../../../../../stores/AuthStore";
+import {decodeJwt} from "../../../stores/AuthStore.ts";
 import {Paper} from "@mui/material";
-import {useDocumentStore} from "../../../../../stores/DocumentStore";
+import {useDocumentStore} from "../../../stores/DocumentStore.ts";
 import MenuItem from "@mui/material/MenuItem";
-import {usePropStore} from "../../../../../stores/PropStore.ts";
+import {usePropStore} from "../../../stores/PropStore.ts";
 import Menu from "@mui/material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 

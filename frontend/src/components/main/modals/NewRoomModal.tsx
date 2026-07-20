@@ -4,10 +4,10 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { Grid, ListItemButton, ListItemText, TextField } from "@mui/material";
-import { useUserStore } from "../../../stores/UserStore";
+import { useUserStore } from "../../../stores/UserStore.ts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { useRoomStore } from "../../../stores/RoomStore";
-import { decodeJwt } from "../../../stores/AuthStore";
+import { useRoomStore } from "../../../stores/RoomStore.ts";
+import { decodeJwt } from "../../../stores/AuthStore.ts";
 import { modalStyle } from "../../../types/constants/constants.ts";
 
 type NewRoomModalProps = {
