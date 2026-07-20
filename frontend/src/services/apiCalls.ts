@@ -305,8 +305,9 @@ export const authApi = {
     return response.data;
   },
 
-  forgotPassword: async (email: string): Promise<void> => {
-    await api.post(`${authUrl}/forgot`, { email });
+  forgotPassword: async (email: string): Promise<string> => {
+    const response = await api.post(`${authUrl}/forgot`, { email });
+    return response.data;
   },
 
   resetPassword: async (token: string, newPassword: string): Promise<void> => {

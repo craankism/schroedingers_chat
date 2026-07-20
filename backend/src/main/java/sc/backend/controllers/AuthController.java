@@ -13,6 +13,8 @@ import sc.backend.dtos.req.RegisterDTO;
 import sc.backend.dtos.req.ResetPasswordDTO;
 import sc.backend.dtos.res.AuthDTO;
 import sc.backend.dtos.res.CodeDTO;
+import sc.backend.exceptions.TokenInvalidException;
+import sc.backend.exceptions.UserNotFoundException;
 import sc.backend.services.AuthService;
 
 @RequiredArgsConstructor
@@ -32,15 +34,23 @@ public class AuthController {
     }
 
     @PostMapping("/forgot")
-    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
-        authService.sendResetMail(forgotPasswordDTO.getEmail());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
+        String sent = authService.sendResetMail(forgotPasswordDTO.getEmail());
+        return new ResponseEntity<>(sent, HttpStatus.OK);
     }
 
     @PostMapping("/reset")
     public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
-        authService.performPasswordReset(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
-        return ResponseEntity.noContent().build();
+        try {
+            authService.performPasswordReset(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (TokenInvalidException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/verify/{token}")

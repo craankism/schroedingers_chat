@@ -18,20 +18,15 @@ const ForgotPassword = (): JSX.Element => {
     setSubmitDisabled(true);
     setTimeout(() => setSubmitDisabled(false), 15000);
     try {
-      await authApi.forgotPassword(email);
-      useNotificationStore
-        .getState()
-        .addNotification("Reset E-Mail send", "info");
-      navigate("/login");
+      const data = await authApi.forgotPassword(email);
+      useNotificationStore.getState().addNotification(data, "info");
     } catch {
       setSubmitDisabled(false);
       useNotificationStore
         .getState()
-        .addNotification(
-          "Could not send reset email. Please try again.",
-          "error",
-        );
+        .addNotification("Error sending E-Mail", "error");
     }
+    navigate("/login");
   };
 
   return (

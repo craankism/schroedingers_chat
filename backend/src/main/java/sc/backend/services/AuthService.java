@@ -95,16 +95,14 @@ public class AuthService {
             helper.setSubject("Verify your email");
             helper.setText(htmlMessage, true);
             dynamicMailSenderService.getMailSender().send(mail);
-            log.info("Verification email sent to: {}", user.getEmail());
         } catch (Exception e) {
-            log.error("Failed to send verification email, activating user anyway: {}", user.getEmail(), e);
             user.setActive(true);
             userRepository.save(user);
         }
     }
 
     @Transactional
-    public void sendResetMail(String email) {
+    public String sendResetMail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -129,9 +127,9 @@ public class AuthService {
             helper.setSubject("Reset password");
             helper.setText(htmlMessage, true);
             dynamicMailSenderService.getMailSender().send(mail);
-            log.info("Reset email sent to: {}", user.getEmail());
+            return "Reset E-Mail send";
         } catch (Exception e) {
-            log.error("Failed to send reset email: {}", user.getEmail(), e);
+            return "Smtp not setup. Contact an admin.";
         }
     }
 

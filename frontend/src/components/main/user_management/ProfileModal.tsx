@@ -23,6 +23,7 @@ import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
 import { modalStyle } from "../../../types/constants/constants.ts";
 import SMTPModal from "../sidebar/SMTPModal.tsx";
+import Cropper, { type Area } from "react-easy-crop";
 
 const ProfileModal = (): JSX.Element => {
   const { updateUser, deleteUser, users } = useUserStore();
@@ -127,29 +128,74 @@ const ProfileModal = (): JSX.Element => {
   }, [confirmation]);
 
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [imageSrc, setImageSrc] = React.useState<string | null>(null);
+  const [crop, setCrop] = React.useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = React.useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = React.useState<Area | null>(null);
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setImageSrc(url);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
     // Reset input so selecting the same file again triggers onChange.
     e.target.value = "";
   };
 
-  const handleUpload = () => {
-    if (!selectedFile) return;
-    uploadProfilePicture({
-      file: selectedFile,
+  const onCropComplete = (_: Area, croppedPixels: Area) => {
+    setCroppedAreaPixels(croppedPixels);
+  };
+
+  const getCroppedImg = async (src: string, pixelCrop: Area): Promise<Blob> => {
+    const image = new window.Image();
+    image.src = src;
+    await new Promise<void>((resolve) => {
+      image.onload = () => resolve();
     });
+    const canvas = document.createElement("canvas");
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height,
+    );
+    return new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Canvas is empty"))),
+        "image/jpeg",
+      ),
+    );
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile || !imageSrc || !croppedAreaPixels) return;
+    const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+    const croppedFile = new File([croppedBlob], selectedFile.name, {
+      type: "image/jpeg",
+    });
+    uploadProfilePicture({ file: croppedFile });
+    URL.revokeObjectURL(imageSrc);
+    setImageSrc(null);
     setSelectedFile(null);
   };
 
-  React.useEffect(() => {
-    // eslint-disable-next-line
-    if (selectedFile !== null) handleUpload();
-    // eslint-disable-next-line
-  }, [selectedFile]);
+  const cancelCrop = () => {
+    if (imageSrc) URL.revokeObjectURL(imageSrc);
+    setImageSrc(null);
+    setSelectedFile(null);
+  };
 
   return (
     <>
@@ -165,6 +211,39 @@ const ProfileModal = (): JSX.Element => {
           overflowY: "auto",
         }}
       >
+        {imageSrc ? (
+          <Box
+            sx={{
+              position: "relative",
+              width: { xs: "90vw", sm: 600 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Box sx={{ position: "relative", height: { xs: "90vw", sm: 600 } }}>
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={true}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </Box>
+            <Stack direction="row" spacing={2} sx={{ p: 2, justifyContent: "flex-end" }}>
+              <Button onClick={cancelCrop}>Cancel</Button>
+              <Button variant="contained" onClick={handleUpload}>
+                Confirm
+              </Button>
+            </Stack>
+          </Box>
+        ) : (
         <form onSubmit={submitHandler}>
           <Box
             sx={{
@@ -382,6 +461,7 @@ const ProfileModal = (): JSX.Element => {
             </Grid>
           </Box>
         </form>
+        )}
       </Modal>
       <SMTPModal />
     </>
