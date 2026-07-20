@@ -1,6 +1,6 @@
 import { Box, Button, Grid, Modal, Typography } from "@mui/material";
 import React from "react";
-import { usePropStore } from "../../../stores/PropStore";
+import { usePropStore } from "../../../stores/PropStore.ts";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import {modalStyle} from "../../../types/constants/constants.ts";
 
@@ -31,7 +31,14 @@ const ConfirmationModal = (): JSX.Element => {
                   setConfirmation(true);
                   handleClose();
                 }}
-                sx={{ mr: 3, borderColor: "red", backgroundColor: "#ff000088" }}
+                sx={{
+                  mr: 3,
+                  backgroundColor: 'error.main',
+                  color: 'error.contrastText',
+                  '&:hover': {
+                    backgroundColor: 'error.dark',
+                  },
+                }}
               >
                 YES
               </Button>

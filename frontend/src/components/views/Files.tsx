@@ -19,7 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { widthMinusSidebar } from "../../types/constants/constants.ts";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
-import NewFolderModal from "../main/files/NewFolderModal.tsx";
+import NewFolderModal from "../main/modals/NewFolderModal.tsx";
 import { SvgIcon } from "@mui/material";
 import DocxSvg from "../../assets/fileIcons/docx_icon.svg?react";
 import PDFSvg from "../../assets/fileIcons/PDF_file_icon.svg?react";
@@ -36,7 +36,7 @@ import type { FileType } from "../../types/FileType.ts";
 import { useUserStore } from "../../stores/UserStore.ts";
 import { decodeJwt } from "../../stores/AuthStore.ts";
 import { usePropStore } from "../../stores/PropStore.ts";
-import ConfirmationModal from "../main/user_management/ConfirmationModal.tsx";
+import ConfirmationModal from "../main/modals/ConfirmationModal.tsx";
 import { DragDropProvider, useDraggable, useDroppable } from "@dnd-kit/react";
 
 const Files = (): JSX.Element => {

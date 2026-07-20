@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sc.backend.dtos.req.CreateDocumentDTO;
+import sc.backend.dtos.req.UpdateDocumentDTO;
 import sc.backend.dtos.res.DocumentDTO;
 import sc.backend.dtos.res.DocumentMetaDTO;
 import sc.backend.services.DocumentService;
@@ -37,6 +38,11 @@ public class DocumentController {
     @PostMapping("{documentId}/share/{userId}")
     public ResponseEntity<DocumentMetaDTO> shareDocument(@PathVariable int documentId, @PathVariable int userId, Principal principal) {
         return new ResponseEntity<>(documentService.shareDocument(documentId, principal.getName(), userId), HttpStatus.OK);
+    }
+
+    @PutMapping("{documentId}")
+    public ResponseEntity<DocumentDTO> updateDocument(@PathVariable int documentId, @RequestBody UpdateDocumentDTO updateDocumentDTO, Principal principal) {
+        return new ResponseEntity<>(documentService.updateDocument(documentId, updateDocumentDTO, principal.getName()), HttpStatus.OK);
     }
 
     @DeleteMapping("{documentId}")

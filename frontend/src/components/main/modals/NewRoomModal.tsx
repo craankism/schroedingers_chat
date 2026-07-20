@@ -4,47 +4,69 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { Grid, ListItemButton, ListItemText, TextField } from "@mui/material";
-import { useUserStore } from "../../../stores/UserStore";
+import { useUserStore } from "../../../stores/UserStore.ts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { decodeJwt } from "../../../stores/AuthStore";
-import type { JSX } from "@emotion/react/jsx-runtime";
-import { useDocumentStore } from "../../../stores/DocumentStore";
-import { usePropStore } from "../../../stores/PropStore";
-import { useNavigate } from "react-router-dom";
+import { useRoomStore } from "../../../stores/RoomStore.ts";
+import { decodeJwt } from "../../../stores/AuthStore.ts";
 import { modalStyle } from "../../../types/constants/constants.ts";
 
-const NewDocumentModal = (): JSX.Element => {
+type NewRoomModalProps = {
+  roomId?: number;
+  roomEdit: boolean;
+  openModal: boolean;
+  closeModal: (setOpenModal: boolean) => void;
+};
+
+const NewRoomModal: React.FC<NewRoomModalProps> = ({
+  roomId,
+  roomEdit,
+  openModal,
+  closeModal,
+}) => {
   const { users } = useUserStore();
-  const { createDocument } = useDocumentStore();
+  const { createRoom, updateRoom, rooms } = useRoomStore();
 
   const [name, setName] = React.useState<string>("");
-  const [userList, setUserList] = React.useState<number[]>([]);
+  const [userIdSet, setUserIdSet] = React.useState<number[]>([]);
+  const [editMode, setEditMode] = React.useState<boolean>(false);
   const currentUserId = decodeJwt()?.userId;
 
-  const { newDocModalOpen, setNewDocModalOpen, setOpenSidebar } =
-    usePropStore();
-  const navigate = useNavigate();
-
   const handleClose = () => {
-    setNewDocModalOpen(false);
+    closeModal(false);
   };
 
   const submitHandler = async (
     e: React.SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    createDocument({ title: name, documentMembershipList: userList });
-    setUserList([]);
-    setName("");
+    if (editMode) {
+      updateRoom({ name, userIdSet }, roomId || 0);
+    } else {
+      createRoom({ name, userIdSet });
+      setUserIdSet([]);
+      setName("");
+    }
     handleClose();
-    setOpenSidebar(false);
-    navigate("/editor");
   };
+
+  React.useEffect(() => {
+    const room = rooms.find((room) => room.roomId === roomId);
+    if (room) {
+      // eslint-disable-next-line
+      setName(room.name);
+      setUserIdSet(room.userList);
+      setEditMode(true);
+    } else {
+      setUserIdSet(currentUserId ? [currentUserId] : []);
+      setEditMode(false);
+    }
+    // eslint-disable-next-line
+  }, [openModal]);
 
   return (
     <div>
       <Modal
-        open={newDocModalOpen}
+        open={openModal}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
@@ -54,14 +76,15 @@ const NewDocumentModal = (): JSX.Element => {
             <Grid container spacing={2} sx={{ alignItems: "center" }}>
               <Grid size={12}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
-                  File:
+                  Room:
                 </Typography>
               </Grid>
               <Grid size={12}>
                 <TextField
-                  id="docName"
+                  id="roomName"
                   type="text"
                   label="Name"
+                  disabled={roomEdit}
                   required
                   fullWidth
                   value={name}
@@ -79,7 +102,7 @@ const NewDocumentModal = (): JSX.Element => {
                 {users.length > 0 ? (
                   users.map((user, index) => {
                     const isSelected =
-                      userList.includes(user.userId) ||
+                      userIdSet.includes(user.userId) ||
                       currentUserId == user.userId;
                     return (
                       <Grid size={{ xs: 6, md: 3 }} key={index}>
@@ -92,11 +115,11 @@ const NewDocumentModal = (): JSX.Element => {
                           disabled={currentUserId == user.userId}
                           onClick={() => {
                             if (isSelected) {
-                              setUserList((prev) =>
+                              setUserIdSet((prev) =>
                                 prev.filter((id) => id !== user.userId),
                               );
                             } else {
-                              setUserList((prev) => [...prev, user.userId]);
+                              setUserIdSet((prev) => [...prev, user.userId]);
                             }
                           }}
                         >
@@ -115,7 +138,7 @@ const NewDocumentModal = (): JSX.Element => {
                 )}
               </Grid>
               <Grid size={12}>
-                <Button type="submit">Create</Button>
+                <Button type="submit">Save</Button>
                 <Button sx={{ ml: 1 }} onClick={handleClose}>
                   Back
                 </Button>
@@ -128,4 +151,4 @@ const NewDocumentModal = (): JSX.Element => {
   );
 };
 
-export default NewDocumentModal;
+export default NewRoomModal;

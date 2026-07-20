@@ -13,13 +13,12 @@ import {
 import { useEffect, useState } from "react";
 import SidebarHelper from "./SidebarHelper";
 import { decodeJwt, useAuthStore } from "../../../stores/AuthStore";
-import NewRoomModal from "./NewRoomModal";
+import NewRoomModal from "../modals/NewRoomModal.tsx";
 import { useRoomStore } from "../../../stores/RoomStore";
 import type { RoomType } from "../../../types/RoomType";
 import AddIcon from "@mui/icons-material/Add";
 import { usePropStore } from "../../../stores/PropStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
-import NewDocumentModal from "./NewDocumentModal";
 import { useUserStore } from "../../../stores/UserStore";
 import { heightMinusTopNav } from "../../../types/constants/constants";
 import { useDocumentStore } from "../../../stores/DocumentStore";
@@ -38,7 +37,7 @@ const Sidebar = (): JSX.Element => {
   const { users } = useUserStore();
   const { isAuthenticated, logout, currentUser, checkAuthentication } =
     useAuthStore();
-  const { openSidebar, setOpenSidebar, setOpenProfile, newDocModalOpen } =
+  const { openSidebar, setOpenSidebar, setOpenProfile } =
     usePropStore();
   const { getAllDocuments } = useDocumentStore();
   const { getAllFilesMeta } = useFileStore();
@@ -174,7 +173,6 @@ const Sidebar = (): JSX.Element => {
               setSelect={setSelect}
             />
           </List>
-          {newDocModalOpen ? <NewDocumentModal /> : null}
           {!md ? (
             <List>
               <ListItem
