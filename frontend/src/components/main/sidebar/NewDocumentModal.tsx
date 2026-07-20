@@ -11,7 +11,7 @@ import type { JSX } from "@emotion/react/jsx-runtime";
 import { useDocumentStore } from "../../../stores/DocumentStore";
 import { usePropStore } from "../../../stores/PropStore";
 import { useNavigate } from "react-router-dom";
-import {modalStyle} from "../../../types/constants/constants.ts";
+import { modalStyle } from "../../../types/constants/constants.ts";
 
 const NewDocumentModal = (): JSX.Element => {
   const { users } = useUserStore();
@@ -85,7 +85,7 @@ const NewDocumentModal = (): JSX.Element => {
                       <Grid size={{ xs: 6, md: 3 }} key={index}>
                         <ListItemButton
                           sx={{
-                            border: "solid, 0.5px",
+                            border: "0.5px solid",
                             p: 1,
                           }}
                           selected={isSelected}
