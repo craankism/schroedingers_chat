@@ -370,7 +370,7 @@ const Files = (): JSX.Element => {
                   display: "flex",
                   gap: 2,
                   ml: -1,
-                  border: "solid, 1px",
+                  border: "1px solid",
                   borderRight: "none",
                   height: 39.5,
                 }}

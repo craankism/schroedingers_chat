@@ -8,7 +8,7 @@ import { useUserStore } from "../../../stores/UserStore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useRoomStore } from "../../../stores/RoomStore";
 import { decodeJwt } from "../../../stores/AuthStore";
-import {modalStyle} from "../../../types/constants/constants.ts";
+import { modalStyle } from "../../../types/constants/constants.ts";
 
 type NewRoomModalProps = {
   roomId?: number;
@@ -108,7 +108,7 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
                       <Grid size={{ xs: 6, md: 3 }} key={index}>
                         <ListItemButton
                           sx={{
-                            border: "solid, 0.5px",
+                            border: "0.5px solid",
                             p: 1,
                           }}
                           selected={isSelected}
