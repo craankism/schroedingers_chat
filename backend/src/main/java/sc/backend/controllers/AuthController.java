@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import sc.backend.dtos.req.ForgotPasswordDTO;
 import sc.backend.dtos.req.LoginDTO;
 import sc.backend.dtos.req.RefreshRequestDTO;
 import sc.backend.dtos.req.RegisterDTO;
+import sc.backend.dtos.req.ResetPasswordDTO;
 import sc.backend.dtos.res.AuthDTO;
 import sc.backend.dtos.res.CodeDTO;
 import sc.backend.services.AuthService;
@@ -19,11 +22,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final WebSocketController webSocketController;
-    
-    @GetMapping("/verify/{token}")
-    public ResponseEntity<String> handleVerification(@PathVariable String token) {
-        return new ResponseEntity<>(authService.verifyEmail(token), HttpStatus.OK);
-    }
 
     private void broadcastAuthUpdate(int userId, boolean online) {
         webSocketController.broadcastUpdate("AUTH_UPDATE", userId, online);
@@ -31,6 +29,23 @@ public class AuthController {
 
     private void broadcastUserUpdate(int userId) {
         webSocketController.broadcastUpdate("USER_UPDATE", userId);
+    }
+
+    @PostMapping("/forgot")
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
+        authService.sendResetMail(forgotPasswordDTO.getEmail());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
+        authService.performPasswordReset(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/verify/{token}")
+    public ResponseEntity<AuthDTO> handleVerification(@PathVariable String token) {
+        return new ResponseEntity<>(authService.verifyEmail(token), HttpStatus.OK);
     }
 
     @PostMapping("/register/{code}")

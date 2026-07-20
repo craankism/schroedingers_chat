@@ -87,7 +87,7 @@ const Login = (): JSX.Element => {
               <Typography>Create Account</Typography>
             </Link>
             <Link
-              onClick={() => navigate("/placeholder")}
+              onClick={() => navigate("/forgotpassword")}
               underline="none"
               sx={{ cursor: "pointer" }}
             >

@@ -22,6 +22,9 @@ import { decodeJwt } from "./stores/AuthStore.ts";
 import GlobalLoader from "./components/main/GlobalLoader.tsx";
 import { Box } from "@mui/material";
 import RedirectRoute from "./components/RedirectRoute.tsx";
+import MailVerification from "./components/MailVerification.tsx";
+import ForgotPassword from "./components/views/ForgotPassword.tsx";
+import ResetPassword from "./components/views/ResetPassword.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
@@ -74,6 +77,9 @@ const App = (): JSX.Element => {
           </Route>
         </Route>
         <Route element={<RedirectRoute />}>
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
+          <Route path="/reset/:token" element={<ResetPassword />} />
+          <Route path="/verify/:token" element={<MailVerification />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<EnterCode />} />
           <Route path="/register/:inviteKey" element={<Register />} />
