@@ -47,7 +47,7 @@ public class ProfilePictureService {
     private String bucketName;
 
     public List<InputStream> downloadAllPictures() {
-        List<StoredFile> storedFiles = storedFileRepository.findAll();
+        List<StoredFile> storedFiles = storedFileRepository.findAllByBucketName(bucketName);
         List<InputStream> blobList = new ArrayList<>();
         for (StoredFile file : storedFiles) {
             InputStream encryptedStream;
@@ -55,7 +55,7 @@ public class ProfilePictureService {
             try {
                 encryptedStream = minioClient.getObject(
                         GetObjectArgs.builder()
-                                .bucket(bucketName)
+                                .bucket(file.getBucketName())
                                 .object(file.getStoredFilename())
                                 .build());
             } catch (Exception e) {
@@ -121,6 +121,7 @@ public class ProfilePictureService {
                         .orElseThrow(() -> new UserNotFoundException("User not found")))
                 .iv(iv)
                 .encryptedDek(null)
+                .bucketName(bucketName)
                 .build();
 
         try {
@@ -140,14 +141,13 @@ public class ProfilePictureService {
     }
 
     public InputStream downloadPicture(Integer fileId) {
-        StoredFile file = storedFileRepository.findById(fileId)
-                .orElseThrow(() -> new FileNotFoundException("File not found: " + fileId));
+        StoredFile file = findProfilePicture(fileId);
 
         InputStream encryptedStream;
         try {
             encryptedStream = minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(bucketName)
+                            .bucket(file.getBucketName())
                             .object(file.getStoredFilename())
                             .build());
         } catch (Exception e) {
@@ -167,22 +167,20 @@ public class ProfilePictureService {
     }
 
     public StoredFileMetaDTO getFileMetadata(Integer fileId) {
-        return convertStoredFileToDto(storedFileRepository.findById(fileId)
-                .orElseThrow(() -> new FileNotFoundException("File not Found" + fileId)));
+        return convertStoredFileToDto(findProfilePicture(fileId));
     }
 
     public List<StoredFileMetaDTO> getAllFilesMetaData() {
         List<StoredFileMetaDTO> fileDtoList = new ArrayList<>();
 
-        for (StoredFile file : storedFileRepository.findAll()) {
+        for (StoredFile file : storedFileRepository.findAllByBucketName(bucketName)) {
             fileDtoList.add(convertStoredFileToDto(file));
         }
         return fileDtoList;
     }
 
     public StoredFileMetaDTO moveFile(Integer fileId, Integer folderId) {
-        StoredFile file = storedFileRepository.findById(fileId)
-                .orElseThrow(() -> new FileNotFoundException("File not found: " + fileId));
+        StoredFile file = findProfilePicture(fileId);
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("Folder not found: " + folderId));
         file.setFolder(folder);
@@ -190,8 +188,7 @@ public class ProfilePictureService {
     }
 
     public void deleteFile(Integer fileId, String userName) {
-        StoredFile file = storedFileRepository.findById(fileId)
-                .orElseThrow(() -> new FileNotFoundException("File not found: " + fileId));
+        StoredFile file = findProfilePicture(fileId);
 
         User caller = userRepository.findByEmail(userName)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -203,7 +200,7 @@ public class ProfilePictureService {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
-                            .bucket(bucketName)
+                            .bucket(file.getBucketName())
                             .object(file.getStoredFilename())
                             .build());
         } catch (Exception e) {
@@ -211,6 +208,11 @@ public class ProfilePictureService {
         }
 
         storedFileRepository.delete(file);
+    }
+
+    private StoredFile findProfilePicture(Integer fileId) {
+        return storedFileRepository.findByFileIdAndBucketName(fileId, bucketName)
+                .orElseThrow(() -> new FileNotFoundException("Profile picture not found: " + fileId));
     }
 
     private StoredFileMetaDTO convertStoredFileToDto(StoredFile storedFile) {
@@ -221,11 +223,12 @@ public class ProfilePictureService {
                 .size(storedFile.getSize())
                 .uploadDate(storedFile.getUploadDate())
                 .mimeType(storedFile.getMimeType())
+                .bucketName(storedFile.getBucketName())
                 .build();
     }
 
     public StoredFileMetaDTO getFileMetadataByFilename(String filename) {
-        StoredFile file = storedFileRepository.findFirstByFilenameIgnoreCase(filename)
+        StoredFile file = storedFileRepository.findFirstByFilenameIgnoreCaseAndBucketName(filename, bucketName)
                 .orElseThrow(() -> new FileNotFoundException("File " + filename + " not found"));
 
         return convertStoredFileToDto(file);
