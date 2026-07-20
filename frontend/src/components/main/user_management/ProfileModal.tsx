@@ -21,7 +21,7 @@ import { useNotificationStore } from "../../../stores/NotificationStore";
 import ConfirmationModal from "./ConfirmationModal";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
-import {modalStyle} from "../../../types/constants/constants.ts";
+import { modalStyle } from "../../../types/constants/constants.ts";
 import SMTPModal from "../sidebar/SMTPModal.tsx";
 
 const ProfileModal = (): JSX.Element => {
@@ -152,224 +152,239 @@ const ProfileModal = (): JSX.Element => {
   }, [selectedFile]);
 
   return (
-      <>
-    <Modal
-      open={openProfile}
-      onClose={handleClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        overflowY: "auto",
-      }}
-    >
-      <form onSubmit={submitHandler}>
-        <Box sx={modalStyle}>
-          <Grid container spacing={2} sx={{ alignItems: "stretch" }}>
-            <Grid
-              size={{ xs: 12, md: 4 }}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <Box
+    <>
+      <Modal
+        open={openProfile}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflowY: "auto",
+        }}
+      >
+        <form onSubmit={submitHandler}>
+          <Box
+            sx={{
+              ...modalStyle,
+              maxHeight: "calc(100vh - 32px)",
+              overflowY: "auto",
+            }}
+          >
+            <Grid container spacing={2} sx={{ alignItems: "stretch" }}>
+              <Grid
+                size={{ xs: 12, md: 4 }}
                 sx={{
-                  flexGrow: { xs: 0, md: 1 },
-                  minHeight: { xs: 120, md: "auto" },
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  width: "100%",
                 }}
               >
                 <Box
                   sx={{
-                    position: "relative",
-                    width: { xs: "40%", md: "100%" },
-                    aspectRatio: "1",
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    display: "block",
-                    "&:hover .pp-overlay-top": { opacity: 1 },
-                    "&:hover .pp-overlay-bottom": { opacity: 1 },
+                    flexGrow: { xs: 0, md: 1 },
+                    minHeight: { xs: 120, md: "auto" },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
                   }}
                 >
-                  <input
-                    id="pp-file-input"
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleSelect}
-                  />
-                  <Avatar
-                    alt="profile picture"
-                    src={currentPicture?.url ?? ""}
-                    sx={{ width: "100%", height: "100%" }}
-                  />
-                  {/* Top half — upload */}
                   <Box
-                    component="label"
-                    htmlFor="pp-file-input"
-                    className="pp-overlay-top"
                     sx={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: "50%",
-                      bgcolor: "rgba(0,0,0,0.45)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: 0,
-                      transition: "opacity 0.2s",
-                      cursor: "pointer",
+                      position: "relative",
+                      width: { xs: "40%", md: "100%" },
+                      aspectRatio: "1",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      display: "block",
+                      "&:hover .pp-overlay-top": { opacity: 1 },
+                      "&:hover .pp-overlay-bottom": { opacity: 1 },
                     }}
                   >
-                    <EditIcon sx={{ color: "white", fontSize: 28 }} />
-                  </Box>
-                  {/* Bottom half — delete */}
-                  <Box
-                    className="pp-overlay-bottom"
-                    onClick={() =>
-                      currentPicture &&
-                      deleteProfilePicture(currentPicture.fileId)
-                    }
-                    sx={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: "50%",
-                      bgcolor: "rgba(180,0,0,0.55)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: 0,
-                      transition: "opacity 0.2s",
-                      cursor: currentPicture ? "pointer" : "default",
-                    }}
-                  >
-                    <DeleteIcon sx={{ color: "white", fontSize: 28 }} />
+                    <input
+                      id="pp-file-input"
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleSelect}
+                    />
+                    <Avatar
+                      alt="profile picture"
+                      src={currentPicture?.url ?? ""}
+                      sx={{ width: "100%", height: "100%" }}
+                    />
+                    {/* Top half — upload */}
+                    <Box
+                      component="label"
+                      htmlFor="pp-file-input"
+                      className="pp-overlay-top"
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "50%",
+                        bgcolor: "rgba(0,0,0,0.45)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0,
+                        transition: "opacity 0.2s",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <EditIcon sx={{ color: "white", fontSize: 28 }} />
+                    </Box>
+                    {/* Bottom half — delete */}
+                    <Box
+                      className="pp-overlay-bottom"
+                      onClick={() =>
+                        currentPicture &&
+                        deleteProfilePicture(currentPicture.fileId)
+                      }
+                      sx={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: "50%",
+                        bgcolor: "rgba(180,0,0,0.55)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0,
+                        transition: "opacity 0.2s",
+                        cursor: currentPicture ? "pointer" : "default",
+                      }}
+                    >
+                      <DeleteIcon sx={{ color: "white", fontSize: 28 }} />
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
 
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 2,
-                  justifyContent: "center",
-                  pb: 1,
-                }}
-              >
-                {(userId === 1) && (
-                    <Button onClick={() =>  {
-                      setSmtpModalOpen(!smtpModalOpen);
-                    }}>SMTP Config</Button>
-                )}
-                <ThemeSwitcher />
-              </Box>
-            </Grid>
-            <Grid size={{ xs: 12, md: 8 }}>
-              <Stack spacing={2}>
-                <Typography id="modal-modal-title" variant="h6" component="h2">
-                  Profile:
-                </Typography>
-                <TextField
-                  type="text"
-                  label="Username"
-                  variant="outlined"
-                  fullWidth
-                  required
-                  value={displayName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setDisplayName(e.target.value)
-                  }
-                />
-                <TextField
-                  type="password"
-                  label="Old Password"
-                  variant="outlined"
-                  fullWidth
-                  required={
-                    displayName !== initialDisplayName || newPassword.length > 0
-                  }
-                  value={oldPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setOldPassword(e.target.value)
-                  }
-                />
-                <TextField
-                  type="password"
-                  label="New Password"
-                  variant="outlined"
-                  fullWidth
-                  value={newPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setNewPassword(e.target.value)
-                  }
-                />
-                <TextField
-                  type="password"
-                  label="Repeat New Password"
-                  variant="outlined"
-                  fullWidth
-                  required={newPassword != ""}
-                  value={repeatNewPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setRepeatNewPassword(e.target.value)
-                  }
-                />
-                <TextField
-                  type="email"
-                  label="E-Mail"
-                  variant="outlined"
-                  disabled
-                  fullWidth
-                  value={email}
-                />
-                <FormControlLabel
-                  disabled
-                  control={<Checkbox checked={isTrainer} />}
-                  label="Trainer"
-                />
-                <FormControlLabel
-                  disabled
-                  control={<Checkbox checked={isAdmin} />}
-                  label="Admin"
-                />
-                <Button
-                  onClick={() => setOpenConfirmation(true)}
+                <Box
                   sx={{
-                    borderColor: "error.main",
-                    backgroundColor: "error.main",
-                    color: "error.contrastText",
-                    "&:hover": {
-                      backgroundColor: "error.dark",
-                      borderColor: "error.dark",
-                    },
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    justifyContent: "center",
+                    pb: 1,
                   }}
                 >
-                  Delete Account
-                </Button>
-                <Button onClick={() => setOpenProfile(false)}>Back</Button>
-                <Button type="submit">Save</Button>
-                <ConfirmationModal />
-              </Stack>
+                  {userId === 1 && (
+                    <Button
+                      onClick={() => {
+                        setSmtpModalOpen(!smtpModalOpen);
+                      }}
+                    >
+                      SMTP Config
+                    </Button>
+                  )}
+                  <ThemeSwitcher />
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, md: 8 }}>
+                <Stack spacing={2}>
+                  <Typography
+                    id="modal-modal-title"
+                    variant="h6"
+                    component="h2"
+                  >
+                    Profile:
+                  </Typography>
+                  <TextField
+                    type="text"
+                    label="Username"
+                    variant="outlined"
+                    fullWidth
+                    required
+                    value={displayName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setDisplayName(e.target.value)
+                    }
+                  />
+                  <TextField
+                    type="password"
+                    label="Old Password"
+                    variant="outlined"
+                    fullWidth
+                    required={
+                      displayName !== initialDisplayName ||
+                      newPassword.length > 0
+                    }
+                    value={oldPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setOldPassword(e.target.value)
+                    }
+                  />
+                  <TextField
+                    type="password"
+                    label="New Password"
+                    variant="outlined"
+                    fullWidth
+                    value={newPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setNewPassword(e.target.value)
+                    }
+                  />
+                  <TextField
+                    type="password"
+                    label="Repeat New Password"
+                    variant="outlined"
+                    fullWidth
+                    required={newPassword != ""}
+                    value={repeatNewPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setRepeatNewPassword(e.target.value)
+                    }
+                  />
+                  <TextField
+                    type="email"
+                    label="E-Mail"
+                    variant="outlined"
+                    disabled
+                    fullWidth
+                    value={email}
+                  />
+                  <FormControlLabel
+                    disabled
+                    control={<Checkbox checked={isTrainer} />}
+                    label="Trainer"
+                  />
+                  <FormControlLabel
+                    disabled
+                    control={<Checkbox checked={isAdmin} />}
+                    label="Admin"
+                  />
+                  <Button
+                    onClick={() => setOpenConfirmation(true)}
+                    sx={{
+                      borderColor: "error.main",
+                      backgroundColor: "error.main",
+                      color: "error.contrastText",
+                      "&:hover": {
+                        backgroundColor: "error.dark",
+                        borderColor: "error.dark",
+                      },
+                    }}
+                  >
+                    Delete Account
+                  </Button>
+                  <Button onClick={() => setOpenProfile(false)}>Back</Button>
+                  <Button type="submit">Save</Button>
+                  <ConfirmationModal />
+                </Stack>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
-      </form>
-    </Modal>
-  <SMTPModal />
-      </>
+          </Box>
+        </form>
+      </Modal>
+      <SMTPModal />
+    </>
   );
 };
 
