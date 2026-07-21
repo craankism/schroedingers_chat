@@ -28,6 +28,8 @@ const VOID_TIMEOUT = 2 * 60 * 1000;
 const Chat: React.FC<ChatProps> = (roomId) => {
   const clientRef = useRef<Client | null>(null);
   const voidTimeoutRefs = useRef<Map<number, number>>(new Map());
+  const isTabVisible = useRef<boolean>(!document.hidden);
+  const unreadCountRef = useRef<number>(0);
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
@@ -104,6 +106,43 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     setPendingVoidPromptIds(new Set());
   }, []);
 
+  useEffect(() => {
+    const BASE_TITLE = "Schroedingers Chat";
+
+    const resetUnread = () => {
+      unreadCountRef.current = 0;
+      document.title = BASE_TITLE;
+    };
+
+    const handleVisibilityChange = () => {
+      isTabVisible.current = !document.hidden;
+      if (isTabVisible.current) {
+        resetUnread();
+      }
+    };
+
+    const handleFocus = () => {
+      isTabVisible.current = true;
+      resetUnread();
+    };
+
+    const handleBlur = () => {
+      isTabVisible.current = false;
+    };
+
+    document.title = BASE_TITLE;
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
+
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const host = window.location.host;
@@ -141,6 +180,11 @@ const Chat: React.FC<ChatProps> = (roomId) => {
 
             if (receivedMessage.userId !== decodeJwt()?.userId) {
               new Audio(ICQSound).play();
+
+              if (!isTabVisible.current) {
+                unreadCountRef.current += 1;
+                document.title = `(${unreadCountRef.current}) Schroedingers Chat`;
+              }
             }
           },
         );
@@ -165,6 +209,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
 
     return () => {
       clearVoidThinking();
+      document.title = "Schroedingers Chat";
       void client.deactivate();
     };
     // eslint-disable-next-line
