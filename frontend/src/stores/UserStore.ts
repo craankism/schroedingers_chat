@@ -28,12 +28,18 @@ export const useUserStore = create<UserState>((set) => ({
       set((state: UserState) => ({
         users: [...state.users, data],
       }));
-      useNotificationStore
-        .getState()
-        .addNotification(
-          "E-Mail verification send. Check your Mails",
-          "info",
-        );
+      if (data.isActive === true) {
+        useNotificationStore
+          .getState()
+          .addNotification("User created successfully", "success");
+      } else {
+        useNotificationStore
+          .getState()
+          .addNotification(
+            "E-Mail verification send. Check your Mails",
+            "info",
+          );
+      }
     } catch (e) {
       set({ error: "Error" + e });
       useNotificationStore

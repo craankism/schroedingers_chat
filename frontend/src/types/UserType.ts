@@ -5,6 +5,7 @@ export type UserType = {
   isAdmin: boolean;
   isTrainer: boolean;
   jwt: string;
+  isActive?: boolean;
 };
 
 export type UserInput = {
