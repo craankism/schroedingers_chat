@@ -3,6 +3,7 @@ import { create } from "zustand/react";
 import { ppApi } from "../services/apiCalls.ts";
 import { useNotificationStore } from "./NotificationStore.ts";
 import type { ProfilePictureType } from "../types/ProfilePictureType.ts";
+import { decodeJwt } from "./AuthStore.ts";
 
 type FileState = {
   profilePictures: ProfilePictureType[];
@@ -13,13 +14,22 @@ type FileState = {
   deleteProfilePicture: (fileId: number) => Promise<void>;
 };
 
-export const useProfilePictureStore = create<FileState>((set) => ({
+export const useProfilePictureStore = create<FileState>((set, get) => ({
   profilePictures: [],
   error: null,
 
   uploadProfilePicture: async (fileData: FileInput) => {
     useNotificationStore.getState().startLoading();
     try {
+      const currentUserId = decodeJwt()?.userId;
+      if (currentUserId !== undefined) {
+        const existing = get().profilePictures.find(
+          (p) => p.userId === currentUserId,
+        );
+        if (existing) {
+          await ppApi.delete(existing.fileId);
+        }
+      }
       const meta = await ppApi.upload(fileData);
       const blob = await ppApi.download(meta.fileId);
       const url = window.URL.createObjectURL(blob);
