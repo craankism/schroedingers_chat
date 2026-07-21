@@ -18,7 +18,7 @@ const Announcement = (): JSX.Element => {
   const user = users.find((user) => user.userId === decodeJwt()?.userId);
   const isTrainer = user?.isTrainer === true;
   const isAdmin = user?.isAdmin === true;
-  const { setMessages, markMessageDeleted, getMessages } = useMessageStore();
+  const { setMessages, markMessageDeleted, getFiftyMessages } = useMessageStore();
 
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -37,7 +37,7 @@ const Announcement = (): JSX.Element => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
-        getMessages(1);
+        getFiftyMessages(1, 0);
         client.subscribe("/topic/1/messages", (incomingMessage) => {
           setMessages(JSON.parse(incomingMessage.body));
         });
@@ -104,6 +104,7 @@ const Announcement = (): JSX.Element => {
         handleDeleteMessage={handleDeleteMessage}
         announcement={true}
         isVoidThinking={false}
+        roomId={1}
       />
       {isTrainer || isAdmin ? (
         <Message
