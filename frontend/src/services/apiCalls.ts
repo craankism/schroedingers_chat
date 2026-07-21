@@ -233,8 +233,11 @@ export const messageApi = {
     return response.data;
   },
 
-  getMessages: async (roomId: number): Promise<MessageInput[]> => {
-    const response = await api.get(`${websocket}/${roomId}`);
+  getFiftyMessages: async (
+    roomId: number,
+    index: number,
+  ): Promise<MessageInput[]> => {
+    const response = await api.get(`${websocket}/${roomId}/${index}`);
     return response.data;
   },
 
