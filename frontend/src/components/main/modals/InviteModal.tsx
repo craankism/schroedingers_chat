@@ -64,18 +64,26 @@ const InviteModal = (): JSX.Element => {
               </Grid>
 
               {link !== "" ? (
-                <>
-                  <TextField value={link} />{" "}
-                  <ContentCopyIcon
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => {
-                      navigator.clipboard.writeText(link);
-                      handleClose();
-                      setIsTrainer(false);
-                      setLink("");
-                    }}
-                  />
-                </>
+                  <Grid size={12} sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
+                    <TextField
+                        value={link}
+                        sx={{
+                          "& input": {
+                            width: `${link.length}ch`,
+                            cursor: "default",
+                          },
+                        }}
+                    />
+                    <ContentCopyIcon
+                        sx={{ cursor: "pointer", flexShrink: 0 }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(link);
+                          handleClose();
+                          setIsTrainer(false);
+                          setLink("");
+                        }}
+                    />
+                  </Grid>
               ) : null}
             </Grid>
           </Box>
