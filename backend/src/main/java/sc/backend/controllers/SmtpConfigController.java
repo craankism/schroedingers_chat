@@ -1,5 +1,7 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,8 @@ import sc.backend.dtos.req.SmtpTestDTO;
 import sc.backend.dtos.res.SmtpDTO;
 import sc.backend.services.SmtpConfigService;
 
+@Tag(name = "SMTP", description = "Mail server configuration")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/smtp")

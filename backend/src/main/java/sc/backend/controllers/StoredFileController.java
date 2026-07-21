@@ -1,5 +1,7 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamResource;
@@ -13,6 +15,8 @@ import java.io.InputStream;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Files", description = "File upload, download and management (prod only)")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/file")
 @Profile("prod")

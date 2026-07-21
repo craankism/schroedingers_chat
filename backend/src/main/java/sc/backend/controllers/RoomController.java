@@ -1,5 +1,7 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,8 @@ import sc.backend.services.RoomService;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Rooms", description = "Chat room management")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/room")
@@ -42,7 +46,8 @@ public class RoomController {
     }
 
     @PutMapping("{roomId}")
-    public ResponseEntity<RoomDTO> editRoom(@PathVariable int roomId, @RequestBody EditRoomDTO addUserToRoomDTO, Principal principal) {
+    public ResponseEntity<RoomDTO> editRoom(@PathVariable int roomId, @RequestBody EditRoomDTO addUserToRoomDTO,
+            Principal principal) {
         RoomDTO room = roomService.editRoom(roomId, addUserToRoomDTO, principal.getName());
         broadcastRoomUpdate(roomId);
         return new ResponseEntity<>(room, HttpStatus.OK);

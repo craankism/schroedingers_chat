@@ -1,5 +1,7 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,8 @@ import sc.backend.services.ChatMessageService;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Messages", description = "Chat message history")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
