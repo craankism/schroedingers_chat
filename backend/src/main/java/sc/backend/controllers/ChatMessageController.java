@@ -18,8 +18,10 @@ public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
 
-    @GetMapping("{roomId}")
-    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable int roomId, Principal principal) {
-        return new ResponseEntity<>(chatMessageService.getAllMessages(roomId, principal.getName()), HttpStatus.OK);
+    @GetMapping("{roomId}/{index}")
+    public ResponseEntity<List<MessageDTO>> getFiftyMessages(@PathVariable int roomId, @PathVariable int index,
+            Principal principal) {
+        return new ResponseEntity<>(chatMessageService.getFiftyMessages(roomId, index, principal.getName()),
+                HttpStatus.OK);
     }
 }

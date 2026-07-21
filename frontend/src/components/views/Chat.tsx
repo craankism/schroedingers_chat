@@ -15,16 +15,12 @@ type ChatProps = {
   roomId: number;
 };
 
-const containsVoidMention = (
-    content: string
-): boolean => {
-    return /@void/i.test(content ?? "");
+const containsVoidMention = (content: string): boolean => {
+  return /@void/i.test(content ?? "");
 };
 
-const isMessageFromVoid = (
-    message: MessageInput,
-): boolean => {
-    return message.sender.trim() === "Void"
+const isMessageFromVoid = (message: MessageInput): boolean => {
+  return message.sender.trim() === "Void";
 };
 
 const VOID_TIMEOUT = 2 * 60 * 1000;
@@ -36,77 +32,77 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Connecting");
   const [message, setMessage] = useState<string>("");
-  const [pendingVoidPromptIds, setPendingVoidPromptIds] = useState<Set<number>>(new Set());
+  const [pendingVoidPromptIds, setPendingVoidPromptIds] = useState<Set<number>>(
+    new Set(),
+  );
   const isVoidThinking = pendingVoidPromptIds.size > 0;
-  const { setMessages, markMessageDeleted, getMessages } = useMessageStore();
+  const { setMessages, markMessageDeleted, getFiftyMessages } =
+    useMessageStore();
 
-    const startVoidThinking = useCallback((promptMessageId: number) => {
-        setPendingVoidPromptIds((currentIds) => {
-            if (currentIds.has(promptMessageId)) {
-                return currentIds;
-            }
+  const startVoidThinking = useCallback((promptMessageId: number) => {
+    setPendingVoidPromptIds((currentIds) => {
+      if (currentIds.has(promptMessageId)) {
+        return currentIds;
+      }
 
-            const nextIds = new Set(currentIds);
-            nextIds.add(promptMessageId);
+      const nextIds = new Set(currentIds);
+      nextIds.add(promptMessageId);
 
-            return nextIds;
-        });
+      return nextIds;
+    });
 
-        const existingTimeout =
-            voidTimeoutRefs.current.get(promptMessageId);
+    const existingTimeout = voidTimeoutRefs.current.get(promptMessageId);
 
-        if (existingTimeout !== undefined) {
-            window.clearTimeout(existingTimeout);
-        }
+    if (existingTimeout !== undefined) {
+      window.clearTimeout(existingTimeout);
+    }
 
-        const timeoutId = window.setTimeout(() => {
-            voidTimeoutRefs.current.delete(promptMessageId);
+    const timeoutId = window.setTimeout(() => {
+      voidTimeoutRefs.current.delete(promptMessageId);
 
-            setPendingVoidPromptIds((currentIds) => {
-                const nextIds = new Set(currentIds);
-                nextIds.delete(promptMessageId);
+      setPendingVoidPromptIds((currentIds) => {
+        const nextIds = new Set(currentIds);
+        nextIds.delete(promptMessageId);
 
-                return nextIds;
-            });
+        return nextIds;
+      });
 
-            console.error(`Void did not respond to prompt ${promptMessageId} in time`);
-        }, VOID_TIMEOUT);
+      console.error(
+        `Void did not respond to prompt ${promptMessageId} in time`,
+      );
+    }, VOID_TIMEOUT);
 
-        voidTimeoutRefs.current.set(promptMessageId, timeoutId);
-    }, []);
+    voidTimeoutRefs.current.set(promptMessageId, timeoutId);
+  }, []);
 
-    const stopVoidThinking = useCallback(
-        (promptMessageId: number) => {
-            const timeoutId =
-                voidTimeoutRefs.current.get(promptMessageId);
+  const stopVoidThinking = useCallback((promptMessageId: number) => {
+    const timeoutId = voidTimeoutRefs.current.get(promptMessageId);
 
-            if (timeoutId !== undefined) {
-                window.clearTimeout(timeoutId);
-                voidTimeoutRefs.current.delete(promptMessageId);
-            }
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+      voidTimeoutRefs.current.delete(promptMessageId);
+    }
 
-            setPendingVoidPromptIds((currentIds) => {
-                if (!currentIds.has(promptMessageId)) {
-                    return currentIds;
-                }
+    setPendingVoidPromptIds((currentIds) => {
+      if (!currentIds.has(promptMessageId)) {
+        return currentIds;
+      }
 
-                const nextIds = new Set(currentIds);
-                nextIds.delete(promptMessageId);
+      const nextIds = new Set(currentIds);
+      nextIds.delete(promptMessageId);
 
-                return nextIds;
-            });
-        },
-        [],
-    );
+      return nextIds;
+    });
+  }, []);
 
-    const clearVoidThinking = useCallback(() => {
-        voidTimeoutRefs.current.forEach((timeoutId) => {
-            window.clearTimeout(timeoutId);
-        });
+  const clearVoidThinking = useCallback(() => {
+    voidTimeoutRefs.current.forEach((timeoutId) => {
+      window.clearTimeout(timeoutId);
+    });
 
-        voidTimeoutRefs.current.clear();
-        setPendingVoidPromptIds(new Set());
-    }, []);
+    voidTimeoutRefs.current.clear();
+    setPendingVoidPromptIds(new Set());
+  }, []);
 
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -116,8 +112,8 @@ const Chat: React.FC<ChatProps> = (roomId) => {
 
   useEffect(() => {
     const handleConnectionClose = () => {
-        setConnectionStatus("Closed");
-        clearVoidThinking();
+      setConnectionStatus("Closed");
+      clearVoidThinking();
     };
 
     const client = new Client({
@@ -128,24 +124,24 @@ const Chat: React.FC<ChatProps> = (roomId) => {
       },
       onConnect: () => {
         setConnectionStatus("Open");
-        getMessages(roomId.roomId);
+        getFiftyMessages(roomId.roomId, 0);
         client.subscribe(
           "/topic/" + roomId.roomId + "/messages",
           (incomingMessage) => {
-              const receivedMessage = JSON.parse(incomingMessage.body);
-              setMessages(receivedMessage);
+            const receivedMessage = JSON.parse(incomingMessage.body);
+            setMessages(receivedMessage);
 
-              if (isMessageFromVoid(receivedMessage)) {
-                  if (receivedMessage.promptMessageId != null) {
-                      stopVoidThinking(receivedMessage.promptMessageId);
-                  }
-              } else if (containsVoidMention(receivedMessage.content)) {
-                  startVoidThinking(receivedMessage.messageId);
+            if (isMessageFromVoid(receivedMessage)) {
+              if (receivedMessage.promptMessageId != null) {
+                stopVoidThinking(receivedMessage.promptMessageId);
               }
+            } else if (containsVoidMention(receivedMessage.content)) {
+              startVoidThinking(receivedMessage.messageId);
+            }
 
-              if (receivedMessage.userId !== decodeJwt()?.userId) {
-                  new Audio(ICQSound).play();
-              }
+            if (receivedMessage.userId !== decodeJwt()?.userId) {
+              new Audio(ICQSound).play();
+            }
           },
         );
 
@@ -168,8 +164,8 @@ const Chat: React.FC<ChatProps> = (roomId) => {
     client.activate();
 
     return () => {
-        clearVoidThinking();
-        void client.deactivate();
+      clearVoidThinking();
+      void client.deactivate();
     };
     // eslint-disable-next-line
   }, [roomId.roomId]);
@@ -188,34 +184,34 @@ const Chat: React.FC<ChatProps> = (roomId) => {
   );
 
   const handleClickSendMessage = useCallback(() => {
-      const content = message.trim();
+    const content = message.trim();
 
-      if (!content || !clientRef.current?.connected) {
-          return;
+    if (!content || !clientRef.current?.connected) {
+      return;
+    }
+
+    const currentTheme = useThemeStore.getState().currentTheme;
+    const isAiPrompt = containsVoidMention(content);
+
+    const outgoingMessage: MessageType = {
+      content,
+      aiMode: currentTheme.toUpperCase() as MessageType["aiMode"],
+      fileId: isAiPrompt ? (selectedFile?.fileId ?? null) : null,
+    };
+
+    try {
+      clientRef.current.publish({
+        destination: "/app/chat/" + roomId.roomId,
+        body: JSON.stringify(outgoingMessage),
+      });
+      setMessage("");
+
+      if (isAiPrompt) {
+        setSelectedFile(null);
       }
-
-      const currentTheme = useThemeStore.getState().currentTheme;
-      const isAiPrompt = containsVoidMention(content);
-
-      const outgoingMessage: MessageType = {
-          content,
-          aiMode: currentTheme.toUpperCase() as MessageType["aiMode"],
-          fileId: isAiPrompt ? selectedFile?.fileId ?? null : null,
-      };
-
-      try {
-          clientRef.current.publish({
-              destination: "/app/chat/" + roomId.roomId,
-              body: JSON.stringify(outgoingMessage)
-          });
-          setMessage("");
-
-          if (isAiPrompt) {
-              setSelectedFile(null);
-          }
-      } catch (error) {
-          console.error("Error sending message:", error);
-      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   }, [message, roomId, selectedFile]);
 
   const isConnected = connectionStatus === "Open";
@@ -236,6 +232,7 @@ const Chat: React.FC<ChatProps> = (roomId) => {
         handleDeleteMessage={handleDeleteMessage}
         announcement={false}
         isVoidThinking={isVoidThinking}
+        roomId={roomId.roomId}
       />
       <MemberSidebar roomId={roomId.roomId} />
       <Message

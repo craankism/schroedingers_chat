@@ -2,7 +2,7 @@ import { Avatar, Box, CircularProgress, List, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { decodeJwt } from "../../../stores/AuthStore";
-import { Clear } from "@mui/icons-material";
+import { ArrowUpward, Clear } from "@mui/icons-material";
 import {
   heightMinusTopNav,
   widthMinusSidebar,
@@ -19,6 +19,7 @@ type MessagesDisplayProps = {
   handleDeleteMessage: (messageId: number) => void;
   announcement: boolean;
   isVoidThinking: boolean;
+  roomId: number;
 };
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
@@ -26,18 +27,40 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   handleDeleteMessage,
   announcement,
   isVoidThinking,
+  roomId,
 }) => {
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const lastMessageIdRef = useRef<number | undefined>(undefined);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const { messages } = useMessageStore();
+  const [index, setIndex] = useState<number>(1);
+  const { messages, hasMore, getFiftyMessages } = useMessageStore();
+
+  useEffect(() => {
+    // eslint-disable-next-line
+    setIndex(1);
+    lastMessageIdRef.current = undefined;
+  }, [roomId]);
+
   const { users } = useUserStore();
   const { voidName } = usePropStore();
   const { profilePictures } = useProfilePictureStore();
 
-  // Scroll to the last message whenever messages change.
+  // Scroll only when a genuinely new message is appended or Void is thinking.
+  useEffect(() => {
+    const lastId = messages.at(-1)?.messageId;
+    if (lastId !== undefined && lastId !== lastMessageIdRef.current) {
+      const prev = lastMessageIdRef.current;
+      lastMessageIdRef.current = lastId;
+      if (prev === undefined || lastId > prev) {
+        lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [messages]);
+
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isVoidThinking]);
+  }, [isVoidThinking]);
 
   let md = 30;
   if (announcement) {
@@ -46,6 +69,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -61,6 +85,32 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
       <Typography sx={{ mb: 2, mt: 2 }}>
         The WebSocket is currently {connectionStatus}
       </Typography>
+      {hasMore && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            alignSelf: "flex-end",
+            cursor: "pointer",
+            mr: 0.5,
+          }}
+          onClick={() => {
+            const container = containerRef.current;
+            const prevScrollHeight = container?.scrollHeight ?? 0;
+            getFiftyMessages(roomId, index).then(() => {
+              if (container) {
+                container.scrollTop +=
+                  container.scrollHeight - prevScrollHeight;
+              }
+            });
+            setIndex(index + 1);
+          }}
+        >
+          <Typography>Load more</Typography>
+          <ArrowUpward sx={{ fontSize: 40 }} />
+        </Box>
+      )}
+
       <List
         sx={{
           display: "flex",
@@ -136,9 +186,10 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                   alt="profile picture"
                   src={
                     message.userId === null
-                        ? voidProfilePicture
-                        : profilePictures.find((pic) => pic.userId === message.userId)
-                            ?.url
+                      ? voidProfilePicture
+                      : profilePictures.find(
+                          (pic) => pic.userId === message.userId,
+                        )?.url
                   }
                   sx={{ width: "50px", height: "50px", mr: 2 }}
                 />

@@ -9,7 +9,8 @@ import sc.backend.entities.Room;
 import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Integer> {
-    List<ChatMessage> findAllByRoom(Room room);
+    @Query("SELECT m FROM ChatMessage m WHERE m.room = :room ORDER BY m.messageId DESC LIMIT 50 OFFSET :offset")
+    List<ChatMessage> findAllByRoom(@Param("room") Room room, @Param("offset") int offset);
 
     @Query("""
             SELECT m

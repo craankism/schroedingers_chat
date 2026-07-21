@@ -5,9 +5,13 @@ import { useNotificationStore } from "./NotificationStore.ts";
 
 type MessageState = {
   messages: MessageInput[];
+  hasMore: boolean;
   error: string | null;
   // postMessage: (messageData: MessageInput) => void;
-  getMessages: (messageId: number) => Promise<MessageInput[]>;
+  getFiftyMessages: (
+    messageId: number,
+    index: number,
+  ) => Promise<MessageInput[]>;
   // getAllMessages: () => void;
   setMessages: (message: MessageInput) => void;
   markMessageDeleted: (messageId: number) => void;
@@ -16,6 +20,7 @@ type MessageState = {
 
 export const useMessageStore = create<MessageState>((set) => ({
   messages: [],
+  hasMore: true,
   error: null,
 
   // not needed?
@@ -39,11 +44,15 @@ export const useMessageStore = create<MessageState>((set) => ({
   //   }
   // },
 
-  getMessages: async (messageId: number) => {
+  getFiftyMessages: async (messageId: number, index: number) => {
     useNotificationStore.getState().startLoading();
     try {
-      const data = await messageApi.getMessages(messageId);
-      set({ messages: data });
+      const data = await messageApi.getFiftyMessages(messageId, index);
+      const sorted = [...data].reverse();
+      set((state: MessageState) => ({
+        messages: index === 0 ? sorted : [...sorted, ...state.messages],
+        hasMore: data.length === 50,
+      }));
       return data;
     } catch (e) {
       set({ error: "Error" + e });

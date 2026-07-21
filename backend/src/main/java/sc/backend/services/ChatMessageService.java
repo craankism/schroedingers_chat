@@ -80,7 +80,7 @@ public class ChatMessageService {
         return convertToDTO(chatMessage);
     }
 
-    public List<MessageDTO> getAllMessages(int roomId, String authenticatedEmail) {
+    public List<MessageDTO> getFiftyMessages(int roomId, int index, String authenticatedEmail) {
         User user = userService.findUserByEmail(authenticatedEmail);
         Room room = roomService.findRoomById(roomId);
 
@@ -88,7 +88,7 @@ public class ChatMessageService {
 
         List<MessageDTO> messageDTOList = new ArrayList<>();
 
-        for (ChatMessage chatMessage : chatMessageRepository.findAllByRoom(room)) {
+        for (ChatMessage chatMessage : chatMessageRepository.findAllByRoom(room, index * 50)) {
             messageDTOList.add(convertToDTO(chatMessage));
         }
 
