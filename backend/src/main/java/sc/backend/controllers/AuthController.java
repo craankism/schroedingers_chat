@@ -1,5 +1,6 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import sc.backend.exceptions.TokenInvalidException;
 import sc.backend.exceptions.UserNotFoundException;
 import sc.backend.services.AuthService;
 
+@Tag(name = "Authentication", description = "Registration, login, token refresh and password management")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/auth")

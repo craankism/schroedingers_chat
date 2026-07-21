@@ -66,6 +66,8 @@ public class SecurityConfig {
                         .requestMatchers(paths.matcher("/api/file/**")).authenticated()
                         .requestMatchers(paths.matcher("/actuator/health")).permitAll()
                         .requestMatchers(paths.matcher("/error")).permitAll()
+                        .requestMatchers(paths.matcher("/swagger-ui/**"), paths.matcher("/swagger-ui.html")).permitAll()
+                        .requestMatchers(paths.matcher("/v3/api-docs/**"), paths.matcher("/v3/api-docs")).permitAll()
                         .anyRequest().authenticated()
                         //TODO: change permissions
                 )
