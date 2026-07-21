@@ -52,13 +52,13 @@ public class SuperAdminInitializer implements CommandLineRunner {
             roomRepository.save(announcements);
 
             Room userRoom = Room.builder()
-                    .name("Schroedingers Student Box")
+                    .name("Schroedingers Auditorium")
                     .build();
             admin.addCreatedRoom(userRoom);
             roomRepository.save(userRoom);
 
             Room trainerRoom = Room.builder()
-                    .name("Schroedingers Trainer Box")
+                    .name("Schroedingers Mentorium")
                     .build();
             admin.addCreatedRoom(trainerRoom);
             roomRepository.save(trainerRoom);
