@@ -103,6 +103,12 @@ public class AuthService {
 
     @Transactional
     public String sendResetMail(String email) {
+        boolean isConfirmed = dynamicMailSenderService.isSmtpConfirmed();
+        if (!isConfirmed) {
+
+            return "This service is not set up. Contact an admin for help.";
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -129,7 +135,7 @@ public class AuthService {
             dynamicMailSenderService.getMailSender().send(mail);
             return "Reset E-Mail send";
         } catch (Exception e) {
-            return "Smtp not setup. Contact an admin.";
+            return "Error while sending Mail";
         }
     }
 
