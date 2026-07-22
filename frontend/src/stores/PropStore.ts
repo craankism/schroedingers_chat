@@ -6,7 +6,6 @@ type PropState = {
   openProfile: boolean;
   setOpenProfile: (open: boolean) => void;
   roomId: number;
-  voidName: string;
   setRoomId: (roomId: number) => void;
   openConfirmation: boolean;
   setOpenConfirmation: (open: boolean) => void;
@@ -26,8 +25,6 @@ export const usePropStore = create<PropState>((set) => ({
   openSidebar: false,
   openProfile: false,
   roomId: parseInt(localStorage.getItem("selectedRoomId") ?? "2", 10),
-  //voidName: "Void 🐈‍⬛",
-  voidName: "Void",
   confirmation: false,
   openConfirmation: false,
   newDocModalOpen: false,
@@ -47,7 +44,6 @@ export const usePropStore = create<PropState>((set) => ({
     localStorage.setItem("selectedRoomId", String(roomId));
     set({
       roomId,
-      //voidName: Math.random() < 0.5 ? "Void 🐈‍⬛" : "Void 💀",
     });
   },
 

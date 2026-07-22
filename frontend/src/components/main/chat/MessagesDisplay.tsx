@@ -10,7 +10,6 @@ import {
 import { useMessageStore } from "../../../stores/MessageStore.ts";
 import Markdown from "react-markdown";
 import { useUserStore } from "../../../stores/UserStore.ts";
-import { usePropStore } from "../../../stores/PropStore.ts";
 import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
 import voidProfilePicture from "../../../assets/iconSC.png";
 import { useRoomStore } from "../../../stores/RoomStore.ts";
@@ -44,7 +43,6 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   }, [roomId]);
 
   const { users } = useUserStore();
-  const { voidName } = usePropStore();
   const { profilePictures } = useProfilePictureStore();
   const { rooms } = useRoomStore();
 
@@ -207,11 +205,11 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                   <Avatar
                     alt="profile picture"
                     src={
-                      message.userId === null
+                      message.userId === null && message.sender === "Void"
                         ? voidProfilePicture
-                        : profilePictures.find(
+                        : (profilePictures.find(
                             (pic) => pic.userId === message.userId,
-                          )?.url
+                          )?.url ?? "")
                     }
                     sx={{ width: "50px", height: "50px", mr: 2 }}
                   />
@@ -222,7 +220,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                   >
                     <Typography sx={{ color: "red" }}>
                       {users.find((user) => user.userId === message.userId)
-                        ?.displayName ?? voidName}
+                        ?.displayName ?? message.sender}
                     </Typography>
                     {message.content != null ? (
                       <Box
