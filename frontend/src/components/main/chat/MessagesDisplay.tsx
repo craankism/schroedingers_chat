@@ -98,6 +98,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         sx={{
           display: "flex",
           flexDirection: "column",
+          ml: widthMinusSidebar,
           pl: 2,
           pr: 2,
           mr: { xs: 0, md: md },
