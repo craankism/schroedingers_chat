@@ -290,7 +290,7 @@ const Files = (): JSX.Element => {
       disabled: !isOwner && !isAdmin,
     });
     return (
-      <ListItem ref={ref}>
+      <ListItem key={f.fileId} ref={ref}>
         <ListItemButton
           selected={fileSelectList?.fileId === f.fileId}
           onClick={(e) => {
@@ -421,7 +421,7 @@ const Files = (): JSX.Element => {
                 {files
                   .filter((f) => f.folderId === folderSelect)
                   .map((f) => (
-                    <DraggableFile key={f.fileId} f={f} />
+                    <DraggableFile f={f} />
                   ))}
               </List>
             </Box>
