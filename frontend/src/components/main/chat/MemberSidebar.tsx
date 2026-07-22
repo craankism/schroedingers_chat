@@ -65,8 +65,8 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
           <EditChat roomId={roomId} />
         </ListItem>
         <Divider />
-        {userDisplay.map((user, index) => (
-          <ListItem key={index}>
+        {userDisplay.map((user) => (
+          <ListItem key={user.userId}>
             {onlineList[user.userId] ? (
               <>
                 <Avatar
