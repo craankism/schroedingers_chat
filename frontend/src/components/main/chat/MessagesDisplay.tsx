@@ -2,7 +2,7 @@ import { Avatar, Box, CircularProgress, List, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { decodeJwt } from "../../../stores/AuthStore";
-import { ArrowUpward, Clear } from "@mui/icons-material";
+import { ArrowUpward, Circle, Clear } from "@mui/icons-material";
 import {
   heightMinusTopNav,
   widthMinusSidebar,
@@ -13,6 +13,7 @@ import { useUserStore } from "../../../stores/UserStore.ts";
 import { usePropStore } from "../../../stores/PropStore.ts";
 import { useProfilePictureStore } from "../../../stores/ProfilePictureStore.ts";
 import voidProfilePicture from "../../../assets/iconSC.png";
+import { useRoomStore } from "../../../stores/RoomStore.ts";
 
 type MessagesDisplayProps = {
   connectionStatus: string;
@@ -45,6 +46,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   const { users } = useUserStore();
   const { voidName } = usePropStore();
   const { profilePictures } = useProfilePictureStore();
+  const { rooms } = useRoomStore();
 
   // Scroll only when a genuinely new message is appended or Void is thinking.
   useEffect(() => {
@@ -68,194 +70,217 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   }
 
   return (
-    <Box
-      ref={containerRef}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        pl: 2,
-        pr: 2,
-        ml: widthMinusSidebar,
-        mr: { xs: 0, md: md },
-        mt: heightMinusTopNav,
-        overflow: "auto",
-        height: "92vh",
-      }}
-    >
-      <Typography sx={{ mb: 2, mt: 2 }}>
-        The WebSocket is currently {connectionStatus}
-      </Typography>
-      {hasMore && (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            alignSelf: "flex-end",
-            cursor: "pointer",
-            mr: 0.5,
-          }}
-          onClick={() => {
-            const container = containerRef.current;
-            const prevScrollHeight = container?.scrollHeight ?? 0;
-            getFiftyMessages(roomId, index).then(() => {
-              if (container) {
-                container.scrollTop +=
-                  container.scrollHeight - prevScrollHeight;
-              }
-            });
-            setIndex(index + 1);
-          }}
-        >
-          <Typography>Load more</Typography>
-          <ArrowUpward sx={{ fontSize: 40 }} />
-        </Box>
-      )}
-
-      <List
+    <>
+      <Box
+        sx={{
+          ml: widthMinusSidebar,
+          mt: heightMinusTopNav,
+          mr: { xs: 0, md: md },
+          borderBottom: "1px solid",
+          height: "6vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.paper",
+        }}
+      >
+        {connectionStatus === "Open" ? (
+          <Circle sx={{ color: "green" }} />
+        ) : (
+          <Circle sx={{ color: "red" }} />
+        )}
+        <Typography sx={{ ml: 2 }}>
+          {rooms.find((room) => room.roomId === roomId)?.name}
+        </Typography>
+      </Box>
+      <Box
+        ref={containerRef}
         sx={{
           display: "flex",
           flexDirection: "column",
+          pl: 2,
+          pr: 2,
+          mr: { xs: 0, md: md },
+          overflow: "auto",
+          height: "92vh",
         }}
       >
-        {messages.map((message, id) => (
-          <Box
-            key={id}
-            sx={{ display: "flex" }}
-            //ref is used at the bottom now
-            //ref={id === messages.length - 1 ? lastMessageRef : null}
-          >
-            {decodeJwt()?.userId === message.userId ? (
-              <>
-                <Box
-                  sx={{
-                    marginLeft: "auto",
-                    textAlign: "right",
-                    alignItems: "center",
-                    justifyContent: "right",
-                    width: "100%",
-                  }}
-                  onMouseEnter={() => setHoveredId(id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  <Typography sx={{ color: "cyan" }}>
-                    {
-                      users.find((user) => user.userId === message.userId)
-                        ?.displayName
-                    }
-                  </Typography>
-                  {message.content != null ? (
-                    <Box
-                      sx={{
-                        whiteSpace: "pre-wrap",
-                        overflowWrap: "anywhere",
-                      }}
-                    >
-                      <Markdown>{message.content}</Markdown>
-                    </Box>
-                  ) : (
-                    <Typography sx={{ opacity: "30%" }}>
-                      Message deleted
-                    </Typography>
-                  )}
-                  <Box
-                    sx={{
-                      visibility:
-                        hoveredId === id && message.content != null
-                          ? "visible"
-                          : "hidden",
-                    }}
-                  >
-                    <Clear
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => handleDeleteMessage(message.messageId)}
-                    />
-                  </Box>
-                </Box>
-                <Avatar
-                  alt="profile picture"
-                  src={
-                    profilePictures.find((pic) => pic.userId === message.userId)
-                      ?.url
-                  }
-                  sx={{ width: "50px", height: "50px", ml: 2 }}
-                />
-              </>
-            ) : (
-              <>
-                <Avatar
-                  alt="profile picture"
-                  src={
-                    message.userId === null
-                      ? voidProfilePicture
-                      : profilePictures.find(
-                          (pic) => pic.userId === message.userId,
-                        )?.url
-                  }
-                  sx={{ width: "50px", height: "50px", mr: 2 }}
-                />
-                <Box
-                  sx={{
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography sx={{ color: "red" }}>
-                    {users.find((user) => user.userId === message.userId)
-                      ?.displayName ?? voidName}
-                  </Typography>
-                  {message.content != null ? (
-                    <Box
-                      sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
-                    >
-                      <Markdown>{message.content}</Markdown>
-                    </Box>
-                  ) : (
-                    <Typography sx={{ opacity: "30%" }}>
-                      Message deleted
-                    </Typography>
-                  )}
-
-                  <Box
-                    sx={{
-                      visibility:
-                        hoveredId === id && message.content != null
-                          ? "visible"
-                          : "hidden",
-                    }}
-                  >
-                    <Clear
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => handleDeleteMessage(message.messageId)}
-                    />
-                  </Box>
-                </Box>
-              </>
-            )}
-          </Box>
-        ))}
-
-        {isVoidThinking && (
+        {hasMore && (
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1,
-              mt: 2,
-              mb: 1,
-              opacity: 0.7,
+              alignSelf: "flex-end",
+              cursor: "pointer",
+              mr: 0.5,
+            }}
+            onClick={() => {
+              const container = containerRef.current;
+              const prevScrollHeight = container?.scrollHeight ?? 0;
+              getFiftyMessages(roomId, index).then(() => {
+                if (container) {
+                  container.scrollTop +=
+                    container.scrollHeight - prevScrollHeight;
+                }
+              });
+              setIndex(index + 1);
             }}
           >
-            <CircularProgress size={16} />
-
-            <Typography variant="body2" sx={{ fontStyle: "italic" }}>
-              Void is both thinking and not thinking...
-            </Typography>
+            <Typography>Load more</Typography>
+            <ArrowUpward sx={{ fontSize: 40 }} />
           </Box>
         )}
 
-        {/*Scroll both for messages and Void thinking*/}
-        <Box ref={lastMessageRef} />
-      </List>
-    </Box>
+        <List
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {messages.map((message, id) => (
+            <Box
+              key={id}
+              sx={{ display: "flex" }}
+              //ref is used at the bottom now
+              //ref={id === messages.length - 1 ? lastMessageRef : null}
+            >
+              {decodeJwt()?.userId === message.userId ? (
+                <>
+                  <Box
+                    sx={{
+                      marginLeft: "auto",
+                      textAlign: "right",
+                      alignItems: "center",
+                      justifyContent: "right",
+                      width: "100%",
+                    }}
+                    onMouseEnter={() => setHoveredId(id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    <Typography sx={{ color: "cyan" }}>
+                      {
+                        users.find((user) => user.userId === message.userId)
+                          ?.displayName
+                      }
+                    </Typography>
+                    {message.content != null ? (
+                      <Box
+                        sx={{
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        <Markdown>{message.content}</Markdown>
+                      </Box>
+                    ) : (
+                      <Typography sx={{ opacity: "30%" }}>
+                        Message deleted
+                      </Typography>
+                    )}
+                    <Box
+                      sx={{
+                        visibility:
+                          hoveredId === id && message.content != null
+                            ? "visible"
+                            : "hidden",
+                      }}
+                    >
+                      <Clear
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleDeleteMessage(message.messageId)}
+                      />
+                    </Box>
+                  </Box>
+                  <Avatar
+                    alt="profile picture"
+                    src={
+                      profilePictures.find(
+                        (pic) => pic.userId === message.userId,
+                      )?.url
+                    }
+                    sx={{ width: "50px", height: "50px", ml: 2 }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Avatar
+                    alt="profile picture"
+                    src={
+                      message.userId === null
+                        ? voidProfilePicture
+                        : profilePictures.find(
+                            (pic) => pic.userId === message.userId,
+                          )?.url
+                    }
+                    sx={{ width: "50px", height: "50px", mr: 2 }}
+                  />
+                  <Box
+                    sx={{
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography sx={{ color: "red" }}>
+                      {users.find((user) => user.userId === message.userId)
+                        ?.displayName ?? voidName}
+                    </Typography>
+                    {message.content != null ? (
+                      <Box
+                        sx={{
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        <Markdown>{message.content}</Markdown>
+                      </Box>
+                    ) : (
+                      <Typography sx={{ opacity: "30%" }}>
+                        Message deleted
+                      </Typography>
+                    )}
+
+                    <Box
+                      sx={{
+                        visibility:
+                          hoveredId === id && message.content != null
+                            ? "visible"
+                            : "hidden",
+                      }}
+                    >
+                      <Clear
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleDeleteMessage(message.messageId)}
+                      />
+                    </Box>
+                  </Box>
+                </>
+              )}
+            </Box>
+          ))}
+
+          {isVoidThinking && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                mt: 2,
+                mb: 1,
+                opacity: 0.7,
+              }}
+            >
+              <CircularProgress size={16} />
+
+              <Typography variant="body2" sx={{ fontStyle: "italic" }}>
+                Void is both thinking and not thinking...
+              </Typography>
+            </Box>
+          )}
+
+          {/*Scroll both for messages and Void thinking*/}
+          <Box ref={lastMessageRef} />
+        </List>
+      </Box>
+    </>
   );
 };
 

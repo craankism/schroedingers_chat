@@ -36,7 +36,7 @@ const Message: React.FC<MessageProps> = ({
   setSelectedFile,
 }) => {
   const [messageTooLong, setMessageTooLong] = useState<boolean>(false);
-  const [showAiHint, setShowAiHint] = useState<boolean>(true);
+  const [showAiHint, setShowAiHint] = useState<boolean>(false);
   const { files, getAllFilesMeta } = useFileStore();
   let md = 30;
   if (announcement) {

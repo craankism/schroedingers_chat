@@ -32,7 +32,6 @@ const itemNames = [...adminItems, ...navItems];
 
 const Sidebar = (): JSX.Element => {
   const [activeView, setActiveView] = useState<string>("");
-  const [select, setSelect] = useState<string>("");
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { users } = useUserStore();
   const { isAuthenticated, logout, currentUser, checkAuthentication } =
@@ -125,8 +124,6 @@ const Sidebar = (): JSX.Element => {
                   itemNames={itemNames}
                   activeView={activeView}
                   setActiveView={setActiveView}
-                  select={select}
-                  setSelect={setSelect}
                 />
               </List>
               <Divider />
@@ -141,8 +138,6 @@ const Sidebar = (): JSX.Element => {
               itemNames={itemNames}
               activeView={activeView}
               setActiveView={setActiveView}
-              select={select}
-              setSelect={setSelect}
             />
           </List>
           <Divider />
@@ -162,6 +157,7 @@ const Sidebar = (): JSX.Element => {
               openModal={openModal}
               closeModal={setOpenModal}
               roomEdit={false}
+              setActiveView={setActiveView}
             />
             <SidebarHelper
               items={roomItems}
@@ -169,8 +165,6 @@ const Sidebar = (): JSX.Element => {
               rooms={userRooms}
               activeView={activeView}
               setActiveView={setActiveView}
-              select={select}
-              setSelect={setSelect}
             />
           </List>
           {!md ? (
