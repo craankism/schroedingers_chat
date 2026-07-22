@@ -17,7 +17,7 @@ type NewRoomModalProps = {
   roomEdit: boolean;
   openModal: boolean;
   closeModal: (setOpenModal: boolean) => void;
-  setActiveView: (view: string) => void;
+  setActiveView?: (view: string) => void;
 };
 
 const NewRoomModal: React.FC<NewRoomModalProps> = ({
@@ -51,7 +51,7 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
       const newRoom = await createRoom({ name, userIdSet });
       setRoomId(newRoom.roomId);
       navigate("/chat");
-      setActiveView("Chats");
+      if (setActiveView) setActiveView("Chats");
       setUserIdSet([]);
       setName("");
     }
