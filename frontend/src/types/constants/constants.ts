@@ -1,7 +1,7 @@
 export const endpointUrl = "/api";
 
 export const heightMinusTopNav = {
-  xs: 8,
+  xs: "64px",
   md: "64px",
 };
 
