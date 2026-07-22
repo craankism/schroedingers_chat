@@ -43,10 +43,10 @@ export const useRoomStore = create<RoomState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       const data = await roomApi.getById(roomId);
-      set((state: RoomState) => ({
-        rooms: state.rooms.map((room) =>
-          room.roomId === roomId ? { ...room, ...data } : room,
-        ),
+      set((state) => ({
+        rooms: state.rooms.some((u) => u.roomId === data.roomId)
+          ? state.rooms.map((u) => (u.roomId === data.roomId ? data : u))
+          : [...state.rooms, data],
       }));
       return data;
     } catch (e) {

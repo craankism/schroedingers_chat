@@ -65,10 +65,10 @@ export const useFileStore = create<FileState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       const data = await fileApi.getByIdMeta(fileId);
-      set((state: FileState) => ({
-        files: state.files.map((file) =>
-          file.fileId === fileId ? { ...file, ...data } : file,
-        ),
+      set((state) => ({
+        files: state.files.some((u) => u.fileId === data.fileId)
+          ? state.files.map((u) => (u.fileId === data.fileId ? data : u))
+          : [...state.files, data],
       }));
     } catch (e) {
       set({ error: "Error" + e });
