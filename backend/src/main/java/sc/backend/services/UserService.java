@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sc.backend.dtos.req.EditUserDTO;
 import sc.backend.dtos.res.UserDTO;
-import sc.backend.entities.ChatMessage;
-import sc.backend.entities.Registration;
-import sc.backend.entities.Room;
-import sc.backend.entities.User;
+import sc.backend.entities.*;
 import sc.backend.exceptions.PermissionException;
 import sc.backend.exceptions.UserNotFoundException;
 import sc.backend.repositories.UserRepository;
@@ -96,6 +93,10 @@ public class UserService {
 
         for (Registration registration : new HashSet<>(user.getRegistrationSet())) {
             user.removeRegistration(registration);
+        }
+
+        for (StoredFile storedFile: new ArrayList<>(user.getStoredFileList())) {
+            user.removeFileListEntry(storedFile);
         }
 
         userRepository.delete(user);
