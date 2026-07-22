@@ -198,8 +198,10 @@ public class ChatMessageService {
     private MessageDTO convertToDTO(ChatMessage message) {
         String sender;
 
-        if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) || message.getCreatedBy() == null) {
+        if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) && message.getCreatedBy() == null) {
             sender = "Void";
+        } else if("USER".equalsIgnoreCase(String.valueOf(message.getSenderType())) && message.getCreatedBy() == null) {
+            sender = "Deleted User";
         } else {
             sender = message.getCreatedBy().getDisplayName();
         }
