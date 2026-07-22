@@ -54,10 +54,10 @@ export const useUserStore = create<UserState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       const data = await userApi.getById(userId);
-      set((state: UserState) => ({
-        users: state.users.map((user) =>
-          user.userId === userId ? { ...user, ...data } : user,
-        ),
+      set((state) => ({
+        users: state.users.some((u) => u.userId === data.userId)
+          ? state.users.map((u) => (u.userId === data.userId ? data : u))
+          : [...state.users, data],
       }));
       return data;
     } catch (e) {
