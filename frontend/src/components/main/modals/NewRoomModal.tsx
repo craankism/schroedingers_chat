@@ -109,12 +109,12 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
               </Grid>
               <Grid container spacing={1} size={12}>
                 {users.length > 0 ? (
-                  users.map((user, index) => {
+                  users.map((user) => {
                     const isSelected =
                       userIdSet.includes(user.userId) ||
                       currentUserId == user.userId;
                     return (
-                      <Grid size={{ xs: 6, md: 3 }} key={index}>
+                      <Grid size={{ xs: 6, md: 3 }} key={user.userId}>
                         <ListItemButton
                           sx={{
                             border: "0.5px solid",
