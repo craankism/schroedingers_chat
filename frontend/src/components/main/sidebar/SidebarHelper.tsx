@@ -41,7 +41,10 @@ const SidebarHelper: React.FC<{
   return (
     <>
       {items.map((item, index) => (
-        <ListItem key={item} disablePadding>
+        <ListItem
+          key={item + rooms?.find((room) => roomId === room.roomId)?.roomId}
+          disablePadding
+        >
           <ListItemButton
             selected={selectionFilter(item)}
             onClick={() => {
