@@ -46,7 +46,10 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({
       parentFolderId:
         storedFolder && storedFolder !== "null" ? Number(storedFolder) : null,
     });
-    if (folder) setFolderSelect(folder.folderId);
+    if (folder) {
+      setFolderSelect(folder.folderId);
+      localStorage.setItem("selectedFolder", String(folder.folderId));
+    }
     setName("");
     handleClose();
   };

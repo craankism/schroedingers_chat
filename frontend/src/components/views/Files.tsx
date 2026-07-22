@@ -64,7 +64,6 @@ const Files = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (folders.length === 0) return;
     const lastFolder = lastSelectedFolder();
     if (
       lastFolder !== null &&
