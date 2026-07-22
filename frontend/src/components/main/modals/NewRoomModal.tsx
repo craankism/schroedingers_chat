@@ -9,12 +9,15 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useRoomStore } from "../../../stores/RoomStore.ts";
 import { decodeJwt } from "../../../stores/AuthStore.ts";
 import { modalStyle } from "../../../types/constants/constants.ts";
+import { usePropStore } from "../../../stores/PropStore.ts";
+import { useNavigate } from "react-router-dom";
 
 type NewRoomModalProps = {
   roomId?: number;
   roomEdit: boolean;
   openModal: boolean;
   closeModal: (setOpenModal: boolean) => void;
+  setActiveView: (view: string) => void;
 };
 
 const NewRoomModal: React.FC<NewRoomModalProps> = ({
@@ -22,14 +25,17 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
   roomEdit,
   openModal,
   closeModal,
+  setActiveView,
 }) => {
   const { users } = useUserStore();
   const { createRoom, updateRoom, rooms } = useRoomStore();
+  const { setRoomId } = usePropStore();
 
   const [name, setName] = React.useState<string>("");
   const [userIdSet, setUserIdSet] = React.useState<number[]>([]);
   const [editMode, setEditMode] = React.useState<boolean>(false);
   const currentUserId = decodeJwt()?.userId;
+  const navigate = useNavigate();
 
   const handleClose = () => {
     closeModal(false);
@@ -42,7 +48,10 @@ const NewRoomModal: React.FC<NewRoomModalProps> = ({
     if (editMode) {
       updateRoom({ name, userIdSet }, roomId || 0);
     } else {
-      createRoom({ name, userIdSet });
+      const newRoom = await createRoom({ name, userIdSet });
+      setRoomId(newRoom.roomId);
+      navigate("/chat");
+      setActiveView("Chats");
       setUserIdSet([]);
       setName("");
     }
