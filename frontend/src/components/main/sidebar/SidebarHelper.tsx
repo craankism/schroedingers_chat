@@ -21,6 +21,9 @@ const SidebarHelper: React.FC<{
     useDocumentStore();
 
   const selectionFilter = (item: string) => {
+    if (location.pathname === "/" && item === "Announcement") {
+      return true;
+    }
     if (itemNames.includes(item)) {
       // Named view items: prefer URL path match, fall back to activeView state
       return (
