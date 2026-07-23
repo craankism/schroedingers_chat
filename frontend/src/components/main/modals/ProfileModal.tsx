@@ -338,16 +338,16 @@ const ProfileModal = (): JSX.Element => {
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
+                          setShowOverlay(true);
+                          if (showOverlay) {
+                            document.getElementById("pp-file-input")?.click();
+                          }
                         }}
                       >
                         <EditIcon
                           sx={{ color: "white", fontSize: 28 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             setShowOverlay(true);
-                            if (showOverlay) {
-                              document.getElementById("pp-file-input")?.click();
-                            }
                           }}
                         />
                       </Box>
@@ -356,6 +356,10 @@ const ProfileModal = (): JSX.Element => {
                         className="pp-overlay-bottom"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setShowOverlay(true);
+                          if (showOverlay && currentPicture) {
+                            setOpenConfirmation(true);
+                          }
                         }}
                         sx={{
                           position: "absolute",
@@ -374,12 +378,8 @@ const ProfileModal = (): JSX.Element => {
                       >
                         <DeleteIcon
                           sx={{ color: "white", fontSize: 28 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             setShowOverlay(true);
-                            if (showOverlay && currentPicture) {
-                              setOpenConfirmation(true);
-                            }
                           }}
                         />
                       </Box>
