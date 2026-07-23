@@ -19,6 +19,7 @@ const ConfirmationModal = (): JSX.Element => {
         onClose={handleClose}
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
+        onClick={(e) => e.stopPropagation()}
       >
         <Box sx={{ ...modalStyle, width: 230, height: 150 }}>
           <Grid container spacing={2} sx={{ alignItems: "center" }}>
