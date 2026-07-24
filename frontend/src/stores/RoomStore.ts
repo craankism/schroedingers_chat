@@ -6,7 +6,7 @@ import { useNotificationStore } from "./NotificationStore.ts";
 type RoomState = {
   rooms: RoomType[];
   error: string | null;
-  createRoom: (roomData: RoomInput) => void;
+  createRoom: (roomData: RoomInput) => Promise<RoomType>;
   getRoom: (roomId: number) => Promise<RoomType | undefined>;
   getAllRooms: () => void;
   updateRoom: (room: RoomInput, roomId: number) => void;
@@ -27,11 +27,13 @@ export const useRoomStore = create<RoomState>((set) => ({
       useNotificationStore
         .getState()
         .addNotification("Room successfully created", "success");
+      return data;
     } catch (e) {
       set({ error: "Error" + e });
       useNotificationStore
         .getState()
         .addNotification("Error creating the room", "error");
+      throw e;
     } finally {
       useNotificationStore.getState().stopLoading();
     }
@@ -41,10 +43,10 @@ export const useRoomStore = create<RoomState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       const data = await roomApi.getById(roomId);
-      set((state: RoomState) => ({
-        rooms: state.rooms.map((room) =>
-          room.roomId === roomId ? { ...room, ...data } : room,
-        ),
+      set((state) => ({
+        rooms: state.rooms.some((u) => u.roomId === data.roomId)
+          ? state.rooms.map((u) => (u.roomId === data.roomId ? data : u))
+          : [...state.rooms, data],
       }));
       return data;
     } catch (e) {

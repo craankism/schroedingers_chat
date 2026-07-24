@@ -1,14 +1,8 @@
-import {
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { ListItem, ListItemButton, ListItemText } from "@mui/material";
 import React from "react";
 import type { RoomType } from "../../../types/RoomType";
 import { usePropStore } from "../../../stores/PropStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDocumentStore } from "../../../stores/DocumentStore";
 import { decodeJwt } from "../../../stores/AuthStore";
 
@@ -18,38 +12,42 @@ const SidebarHelper: React.FC<{
   rooms?: RoomType[];
   activeView: string;
   setActiveView: (view: string) => void;
-  select: string;
-  setSelect: (selection: string) => void;
-}> = ({
-  items,
-  itemNames,
-  activeView,
-  setActiveView,
-  select,
-  setSelect,
-  rooms,
-}) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { setOpenSidebar, setRoomId, setNewDocModalOpen } = usePropStore();
+}> = ({ items, itemNames, activeView, setActiveView, rooms }) => {
+  const { setOpenSidebar, setRoomId, setNewDocModalOpen, roomId } =
+    usePropStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const { documents, currentDocumentId, setCurrentDocumentId } =
     useDocumentStore();
 
   const selectionFilter = (item: string) => {
-    if (activeView === item) return true;
-    else if (select === item) return true;
-    else return false;
+    if (location.pathname === "/" && item === "Announcement") {
+      return true;
+    }
+    if (itemNames.includes(item)) {
+      // Named view items: prefer URL path match, fall back to activeView state
+      return (
+        location.pathname === "/" + item.toLowerCase() || activeView === item
+      );
+    } else {
+      // Room items: match by roomId so new rooms and page reloads are handled correctly
+      return (
+        rooms?.find((r) => r.name === item)?.roomId === roomId &&
+        location.pathname === "/chat"
+      );
+    }
   };
 
   return (
     <>
       {items.map((item, index) => (
-        <ListItem key={item} disablePadding>
+        <ListItem
+          key={item + rooms?.find((room) => roomId === room.roomId)?.roomId}
+          disablePadding
+        >
           <ListItemButton
             selected={selectionFilter(item)}
             onClick={() => {
-              setSelect(item);
               if (rooms) setRoomId(rooms.at(index)?.roomId || 0);
               if (itemNames.includes(item)) {
                 setActiveView(item);
@@ -75,13 +73,14 @@ const SidebarHelper: React.FC<{
 
                     setCurrentDocumentId(selectedDocumentId);
                     navigate("/" + item.toLowerCase());
+                    setOpenSidebar(false);
                   }
                 } else {
-                  if (isMobile) setOpenSidebar(false);
+                  setOpenSidebar(false);
                   navigate("/" + item.toLowerCase());
                 }
               } else {
-                if (isMobile) setOpenSidebar(false);
+                setOpenSidebar(false);
                 navigate("/chat");
                 setActiveView("Chats");
               }

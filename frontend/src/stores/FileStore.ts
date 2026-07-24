@@ -11,6 +11,7 @@ type FileState = {
   getFileMeta: (fileId: number) => void;
   getAllFilesMeta: () => void;
   deleteFile: (fileId: number) => void;
+  moveFile: (fileId: number, folderId: number) => void;
 };
 
 export const useFileStore = create<FileState>((set) => ({
@@ -64,10 +65,10 @@ export const useFileStore = create<FileState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       const data = await fileApi.getByIdMeta(fileId);
-      set((state: FileState) => ({
-        files: state.files.map((file) =>
-          file.fileId === fileId ? { ...file, ...data } : file,
-        ),
+      set((state) => ({
+        files: state.files.some((u) => u.fileId === data.fileId)
+          ? state.files.map((u) => (u.fileId === data.fileId ? data : u))
+          : [...state.files, data],
       }));
     } catch (e) {
       set({ error: "Error" + e });
@@ -109,6 +110,28 @@ export const useFileStore = create<FileState>((set) => ({
       useNotificationStore
         .getState()
         .addNotification("Error deleting file", "error");
+    } finally {
+      useNotificationStore.getState().stopLoading();
+    }
+  },
+
+  moveFile: async (fileId: number, folderId: number) => {
+    useNotificationStore.getState().startLoading();
+    try {
+      const data = await fileApi.move(fileId, folderId);
+      set((state: FileState) => ({
+        files: state.files.map((file) =>
+          file.fileId === fileId ? { ...file, ...data } : file,
+        ),
+      }));
+      useNotificationStore
+        .getState()
+        .addNotification("File moved successfully", "success");
+    } catch (e) {
+      set({ error: "Error" + e });
+      useNotificationStore
+        .getState()
+        .addNotification("Error moving file", "error");
     } finally {
       useNotificationStore.getState().stopLoading();
     }

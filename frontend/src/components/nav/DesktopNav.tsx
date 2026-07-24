@@ -1,13 +1,19 @@
 import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
 import IconSC from "../../assets/iconSC.png";
-import ProfileModal from "../main/user_management/ProfileModal";
-import { useAuthStore } from "../../stores/AuthStore";
+import ProfileModal from "../main/modals/ProfileModal.tsx";
+import { decodeJwt, useAuthStore } from "../../stores/AuthStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { usePropStore } from "../../stores/PropStore";
+import { useProfilePictureStore } from "../../stores/ProfilePictureStore";
 
 const DesktopNav = (): JSX.Element => {
   const { isAuthenticated, logout } = useAuthStore();
   const { openProfile, setOpenProfile } = usePropStore();
+  const { profilePictures } = useProfilePictureStore();
+  const currentPicture = profilePictures.find(
+    (p) => p.userId === decodeJwt()?.userId,
+  );
+
   return (
     <>
       <Box
@@ -58,7 +64,7 @@ const DesktopNav = (): JSX.Element => {
                 },
               }}
             >
-              <Avatar alt="Profile" src="" />
+              <Avatar alt="Profile" src={currentPicture?.url ?? ""} />
             </IconButton>
           ) : null}
           <Button

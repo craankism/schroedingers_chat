@@ -7,9 +7,10 @@ import sc.backend.dtos.req.RegisterUserKeyDTO;
 import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.entities.Registration;
+import sc.backend.entities.Room;
 import sc.backend.entities.User;
 import sc.backend.repositories.RegistrationRepository;
-import sc.backend.repositories.UserRepository;
+import sc.backend.repositories.RoomRepository;
 
 import java.time.LocalDateTime;
 
@@ -18,16 +19,15 @@ import java.time.LocalDateTime;
 @Service
 public class AdminService {
 
-    private final UserRepository userRepository;
     private final RegistrationRepository registrationRepository;
-    // MH: added Service for Random Code
     private final RegistryCodeService registryCodeService;
     private final UserService userService;
+    private final RoomService roomService;
+    private final RoomRepository roomRepository;
 
     public RegistrationDTO registerUserKey(RegisterUserKeyDTO registerUserKeyDTO, String creatorEmail) {
-        User creator = userService.getUserByEmail(userRepository.findByEmail(creatorEmail));
+        User creator = userService.findUserByEmail(creatorEmail);
 
-        // MH: changed Code to use new Service
         String registryKey = registryCodeService.generateRegistryCode();
 
         Registration registration = Registration.builder()
@@ -61,6 +61,18 @@ public class AdminService {
         User user = userService.findUserById(userId);
 
         user.setTrainer(!user.isTrainer());
+
+        Room userRoom = roomService.findRoomById(2);
+        Room trainerRoom = roomService.findRoomById(3);
+        if (user.isTrainer()) {
+            userRoom.removeUser(user);
+            trainerRoom.addUser(user);
+        } else {
+            trainerRoom.removeUser(user);
+            userRoom.addUser(user);
+        }
+        roomRepository.save(userRoom);
+        roomRepository.save(trainerRoom);
 
         return userService.convertToDTO(user);
     }

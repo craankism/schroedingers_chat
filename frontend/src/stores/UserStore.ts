@@ -28,9 +28,18 @@ export const useUserStore = create<UserState>((set) => ({
       set((state: UserState) => ({
         users: [...state.users, data],
       }));
-      useNotificationStore
-        .getState()
-        .addNotification("User successfully created", "success");
+      if (data.isActive === true) {
+        useNotificationStore
+          .getState()
+          .addNotification("User created successfully", "success");
+      } else {
+        useNotificationStore
+          .getState()
+          .addNotification(
+            "E-Mail verification send. Check your Mails",
+            "info",
+          );
+      }
     } catch (e) {
       set({ error: "Error" + e });
       useNotificationStore
@@ -45,10 +54,10 @@ export const useUserStore = create<UserState>((set) => ({
     useNotificationStore.getState().startLoading();
     try {
       const data = await userApi.getById(userId);
-      set((state: UserState) => ({
-        users: state.users.map((user) =>
-          user.userId === userId ? { ...user, ...data } : user,
-        ),
+      set((state) => ({
+        users: state.users.some((u) => u.userId === data.userId)
+          ? state.users.map((u) => (u.userId === data.userId ? data : u))
+          : [...state.users, data],
       }));
       return data;
     } catch (e) {

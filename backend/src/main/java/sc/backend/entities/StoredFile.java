@@ -35,9 +35,16 @@ public class StoredFile {
     @JoinColumn(name = "userId")
     private User uploadedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "folder_id")
+    private Folder folder;
+
     @Column(nullable = false)
     private byte[] iv;
 
     @Column
     private byte[] encryptedDek;
+
+    @Column(nullable = false)
+    private String bucketName;
 }

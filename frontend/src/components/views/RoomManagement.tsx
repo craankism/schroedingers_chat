@@ -69,7 +69,7 @@ const RoomManagement = (): JSX.Element => {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3, ml: widthMinusSidebar }}>
       <Toolbar />
-      <Typography variant="h5">User Management</Typography>
+      <Typography variant="h5">Room Management</Typography>
       <Box sx={{ height: 630, maxWidth: { xs: "90vw", md: "100vw" }, mt: 1 }}>
         <DataGrid
           rows={rooms}

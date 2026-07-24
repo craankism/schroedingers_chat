@@ -1,7 +1,7 @@
 import type { JSX } from "@emotion/react/jsx-runtime";
 import {
+  Box,
   Button,
-  Container,
   Grid,
   Link,
   TextField,
@@ -28,10 +28,11 @@ const Login = (): JSX.Element => {
 
   return (
     <form onSubmit={submitHandler}>
-      <Container
+      <Box
         sx={{
           display: "flex",
-          minHeight: { xs: "calc(100vh - 68.5px)", md: "calc(100vh - 64px)" },
+          width: "100vw",
+          height: "100vh",
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -39,7 +40,7 @@ const Login = (): JSX.Element => {
         <Grid
           container
           sx={{
-            maxWidth: { xs: "90%", md: "30%" },
+            maxWidth: { xs: "90%", md: "20%" },
             gap: 2,
           }}
         >
@@ -86,7 +87,7 @@ const Login = (): JSX.Element => {
               <Typography>Create Account</Typography>
             </Link>
             <Link
-              onClick={() => navigate("/placeholder")}
+              onClick={() => navigate("/forgotpassword")}
               underline="none"
               sx={{ cursor: "pointer" }}
             >
@@ -94,7 +95,7 @@ const Login = (): JSX.Element => {
             </Link>
           </Grid>
         </Grid>
-      </Container>
+      </Box>
     </form>
   );
 };

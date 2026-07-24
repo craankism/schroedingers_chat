@@ -1,5 +1,7 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,8 @@ import sc.backend.dtos.res.RegistrationDTO;
 import sc.backend.dtos.res.UserDTO;
 import sc.backend.services.AdminService;
 
+@Tag(name = "Administration", description = "Admin-only user management and invitation endpoints")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/admin")
@@ -31,14 +35,17 @@ public class AdminController {
 
     @PutMapping("/user/setAdmin/{userId}")
     public ResponseEntity<UserDTO> setAdmin(@PathVariable int userId) {
+        UserDTO userDTO = adminService.setAdmin(userId);
         broadcastUserUpdate(userId);
-        return new ResponseEntity<>(adminService.setAdmin(userId), HttpStatus.OK);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PutMapping("/user/setTrainer/{userId}")
     public ResponseEntity<UserDTO> setTrainer(@PathVariable int userId) {
+        UserDTO userDTO = adminService.setTrainer(userId);
         broadcastUserUpdate(userId);
-        return new ResponseEntity<>(adminService.setTrainer(userId), HttpStatus.OK);
+        webSocketController.broadcastUpdate("ROOM_UPDATE", 0);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PutMapping("/user/setActive/{userId}")

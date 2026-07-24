@@ -3,6 +3,7 @@ package sc.backend.components;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -31,21 +32,26 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
         String authHeader = accessor.getFirstNativeHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return null;
+            throw new MessageDeliveryException("Missing or invalid Authorization header");
         }
 
         String jwt = authHeader.substring(7);
-        String email = tokenService.extractEmail(jwt);
+        try {
+            String email = tokenService.extractEmail(jwt);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            if (!tokenService.isTokenValid(jwt, userDetails)) {
+                throw new MessageDeliveryException("Invalid or expired token");
+            }
 
-        if (!tokenService.isTokenValid(jwt, userDetails)) {
-            return null;
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            accessor.setUser(authentication);
+        } catch (MessageDeliveryException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MessageDeliveryException("Authentication failed: " + e.getMessage());
         }
-
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        accessor.setUser(authentication);
 
         return message;
     }

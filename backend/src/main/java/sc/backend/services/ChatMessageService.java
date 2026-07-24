@@ -2,18 +2,16 @@ package sc.backend.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import sc.backend.components.CryptoUtil;
 import sc.backend.dtos.req.SendMessageDTO;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.entities.ChatMessage;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
+import sc.backend.exceptions.PermissionException;
 import sc.backend.repositories.ChatMessageRepository;
-import sc.backend.repositories.UserRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -26,15 +24,16 @@ import java.util.stream.Collectors;
 public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
-    private final UserRepository userRepository;
     private final RoomService roomService;
     private final UserService userService;
     private final CryptoUtil cryptoUtil;
 
     @Transactional
     public MessageDTO createMessage(int roomId, SendMessageDTO request, String authenticatedEmail) {
-        User creator = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User sender = userService.findUserByEmail(authenticatedEmail);
         Room room = roomService.findRoomById(roomId);
+
+        checkRoomMembership(room, sender);
 
         String plaintext = request.getContent();
 
@@ -50,7 +49,7 @@ public class ChatMessageService {
                 .aiPromptMessageId(null)
                 .build();
 
-        creator.addChatMessage(chatMessage);
+        sender.addChatMessage(chatMessage);
         room.addChatMessage(chatMessage);
         chatMessageRepository.save(chatMessage);
 
@@ -81,11 +80,15 @@ public class ChatMessageService {
         return convertToDTO(chatMessage);
     }
 
-    public List<MessageDTO> getAllMessages(int roomId) {
+    public List<MessageDTO> getFiftyMessages(int roomId, int index, String authenticatedEmail) {
+        User user = userService.findUserByEmail(authenticatedEmail);
         Room room = roomService.findRoomById(roomId);
+
+        checkRoomMembership(room, user);
+
         List<MessageDTO> messageDTOList = new ArrayList<>();
 
-        for (ChatMessage chatMessage : chatMessageRepository.findAllByRoom(room)) {
+        for (ChatMessage chatMessage : chatMessageRepository.findAllByRoom(room, index * 50)) {
             messageDTOList.add(convertToDTO(chatMessage));
         }
 
@@ -94,30 +97,20 @@ public class ChatMessageService {
 
     @Transactional
     public void deleteMessage(int messageId, String authenticatedEmail) {
-        User authenticatedUser = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User authenticatedUser = userService.findUserByEmail(authenticatedEmail);
 
         ChatMessage chatMessage = chatMessageRepository.findById(messageId)
                 .orElseThrow(() -> new EntityNotFoundException("Message with id " + messageId + " not found"));
 
         User user = chatMessage.getCreatedBy();
-        // Room room = chatMessage.getRoom();
 
         if (user == null) {
             if (!authenticatedUser.isAdmin()) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete AI messages");
+                throw new PermissionException("Only admins can delete AI messages");
             }
         } else if (authenticatedUser.getUserId() != user.getUserId() && !authenticatedUser.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this message");
+            throw new PermissionException("You are not allowed to delete this message");
         }
-
-        // Messages don't get deleted atm, just content changes
-        // if (user != null) {
-        // user.removeChatMessage(chatMessage);
-        // }
-
-        // if (room != null) {
-        // room.removeChatMessage(chatMessage);
-        // }
 
         // Don't delete Message, just set content to null
         chatMessage.setContent(null);
@@ -165,7 +158,7 @@ public class ChatMessageService {
                 String answerContent = cleanForPrompt(decryptContent(aiAnswer));
 
                 if (!answerContent.isBlank()) {
-                    transcript.append("Void 😺: ")
+                    transcript.append("Void: ")
                             .append(answerContent)
                             .append("\n");
                 }
@@ -196,21 +189,30 @@ public class ChatMessageService {
         chatMessageRepository.save(message);
     }
 
+    private void checkRoomMembership(Room room, User user) {
+        if (room.getUserSet().stream().noneMatch(u -> u.getUserId() == user.getUserId())) {
+            throw new PermissionException("You are not a Member of this Room");
+        }
+    }
+
     private MessageDTO convertToDTO(ChatMessage message) {
         String sender;
 
-        if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) || message.getCreatedBy() == null) {
-            sender = "Void 😺";
+        if ("AI".equalsIgnoreCase(String.valueOf(message.getSenderType())) && message.getCreatedBy() == null) {
+            sender = "Void";
+        } else if("USER".equalsIgnoreCase(String.valueOf(message.getSenderType())) && message.getCreatedBy() == null) {
+            sender = "Deleted User";
         } else {
             sender = message.getCreatedBy().getDisplayName();
         }
 
         return MessageDTO.builder()
                 .messageId(message.getMessageId())
-                .userId(message.getCreatedBy().getUserId())
+                .userId(message.getCreatedBy() != null ? message.getCreatedBy().getUserId() : null)
                 .content(decryptContent(message))
                 .sender(sender)
                 .creationDate(message.getCreationDate())
+                .promptMessageId(message.getAiPromptMessageId())
                 .build();
     }
 

@@ -23,7 +23,8 @@ public class SuperAdminInitializer implements CommandLineRunner {
     @Value("${superadmin.password}")
     private String adminPassword;
 
-    public SuperAdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder, RoomRepository roomRepository) {
+    public SuperAdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                                 RoomRepository roomRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roomRepository = roomRepository;
@@ -32,17 +33,15 @@ public class SuperAdminInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        String[] users = {"pascal", "matthias", "sascha", "kevin", "rene", "philipp", "julia", "haru"};
-
         if (!userRepository.existsByEmail(adminEmail)) {
             User admin = User.builder()
-                .email(adminEmail)
-                .password(passwordEncoder.encode(adminPassword))
-                .displayName("Super Admin")
-                .isAdmin(true)
-                .isTrainer(false)
-                .isActive(true)
-                .build();
+                    .email(adminEmail)
+                    .password(passwordEncoder.encode(adminPassword))
+                    .displayName("Super Admin")
+                    .isAdmin(true)
+                    .isTrainer(false)
+                    .isActive(true)
+                    .build();
             userRepository.save(admin);
 
             Room announcements = Room.builder()
@@ -52,30 +51,21 @@ public class SuperAdminInitializer implements CommandLineRunner {
             announcements.addUser(admin);
             roomRepository.save(announcements);
 
-            Room room = Room.builder()
-                    .name("Schroedingers Box")
+            Room userRoom = Room.builder()
+                    .name("Schroedingers Auditorium")
                     .build();
-            admin.addCreatedRoom(room);
-            room.addUser(admin);
-            roomRepository.save(room);
+            admin.addCreatedRoom(userRoom);
+            roomRepository.save(userRoom);
 
-            for (int i = 0; i < users.length; i++) {
-                User user = User.builder()
-                        .email(users[i] + "@gmail.com")
-                        .password(passwordEncoder.encode("123"))
-                        .displayName(users[i])
-                        .isAdmin(false)
-                        .isTrainer(false)
-                        .isActive(true)
-                        .build();
-                userRepository.save(user);
-                announcements.addUser(user);
-                room.addUser(user);
-            }
+            Room trainerRoom = Room.builder()
+                    .name("Schroedingers Mentorium")
+                    .build();
+            admin.addCreatedRoom(trainerRoom);
+            roomRepository.save(trainerRoom);
 
-            System.out.println("SuperAdmin erstellt: " + adminEmail);
+            System.out.println("SuperAdmin created: " + adminEmail);
         } else {
-            System.out.println("SuperAdmin existiert bereits: " + adminEmail);
+            System.out.println("SuperAdmin exists already: " + adminEmail);
         }
     }
 }

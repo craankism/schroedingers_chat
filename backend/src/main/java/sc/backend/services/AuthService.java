@@ -1,9 +1,12 @@
 package sc.backend.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,8 +20,7 @@ import sc.backend.entities.RefreshToken;
 import sc.backend.entities.Registration;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
-import sc.backend.exceptions.EmptyOptionalException;
-import sc.backend.exceptions.KeyInvalidException;
+import sc.backend.exceptions.*;
 import sc.backend.repositories.RegistrationRepository;
 import sc.backend.repositories.RoomRepository;
 import sc.backend.repositories.UserRepository;
@@ -29,9 +31,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -41,35 +46,116 @@ public class AuthService {
     private final RegistrationRepository registrationRepository;
     private final RoomRepository roomRepository;
     private final UserService userService;
-    private final JavaMailSender mailSender;
+    private final DynamicMailSenderService dynamicMailSenderService;
+
+    @Value("${DOMAIN:http://localhost:5173}")
+    private String domain;
 
     @Transactional
-    public String verifyEmail(String token) {
+    public AuthDTO verifyEmail(String token) {
         String email = tokenService.extractEmail(token);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found " + email));
 
         if (user.isActive()) {
-            return "Email is already verified";
+            throw new RuntimeException("Account already active");
         }
 
         user.setActive(true);
         userRepository.save(user);
-        return "Email verification successful";
+        String jwt = tokenService.generateTokenWithClaims(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
+
+        return convertToAuthDTO(user, jwt, refreshToken);
     }
 
     public void sendVerificationEmail(User user) {
+        boolean isConfirmed = dynamicMailSenderService.isSmtpConfirmed();
+
+        if (!isConfirmed) {
+            log.info("SMTP not confirmed, activating user directly: {}", user.getEmail());
+            user.setActive(true);
+            userRepository.save(user);
+            return;
+        }
+
         String token = tokenService.generateToken(new HashMap<>(), user);
-        String verifyUrl = "http://localhost:5173/api/auth/verify/" +
-                URLEncoder.encode(token, StandardCharsets.UTF_8);
+        String verifyLink = "https://" + domain + "/verify/" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        String htmlMessage = "<p>Click below to verify your email:</p>" +
+                "<a href=\"" + verifyLink + "\" style=\"text-decoration: none;\">" +
+                "<button style=\"border: none; background-color: green; color: white; padding: 10px 20px; " +
+                "border-radius: 10%; font-size: 2rem; cursor: pointer;\">Verify</button>" +
+                "</a>";
 
-        String message = "Click below to verify your email:\n" + verifyUrl;
+        try {
+            MimeMessage mail = dynamicMailSenderService.getMailSender().createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mail, "utf-8");
+            helper.setFrom(dynamicMailSenderService.getSenderAddress());
+            helper.setTo(user.getEmail());
+            helper.setSubject("Verify your email");
+            helper.setText(htmlMessage, true);
+            dynamicMailSenderService.getMailSender().send(mail);
+        } catch (Exception e) {
+            user.setActive(true);
+            userRepository.save(user);
+        }
+    }
 
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setTo(user.getEmail());
-        mail.setSubject("Verify your email");
-        mail.setText(message);
-        mailSender.send(mail);
+    @Transactional
+    public String sendResetMail(String email) {
+        boolean isConfirmed = dynamicMailSenderService.isSmtpConfirmed();
+        if (!isConfirmed) {
+
+            return "This service is not set up. Contact an admin for help.";
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        String token = tokenService.generateToken(new HashMap<>() {
+            {
+                put("type", "password_reset");
+            }
+        }, user);
+        String resetLink = "https://" + domain + "/reset/" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        String htmlMessage = "<p>Click below to reset your password:</p>" +
+                "<a href=\"" + resetLink + "\" style=\"text-decoration: none;\">" +
+                "<button style=\"border: none; background-color: green; color: white; padding: 10px 20px; " +
+                "border-radius: 10%; font-size: 2rem; cursor: pointer;\">Reset</button>" +
+                "</a>" +
+                "<p>This link expires in 15 mins.</p>";
+
+        try {
+            MimeMessage mail = dynamicMailSenderService.getMailSender().createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mail, "utf-8");
+            helper.setFrom(dynamicMailSenderService.getSenderAddress());
+            helper.setTo(user.getEmail());
+            helper.setSubject("Reset password");
+            helper.setText(htmlMessage, true);
+            dynamicMailSenderService.getMailSender().send(mail);
+            return "Reset E-Mail send";
+        } catch (Exception e) {
+            return "Error while sending Mail";
+        }
+    }
+
+    @Transactional
+    public void performPasswordReset(String token, String newPassword) {
+        String email;
+        String type;
+        try {
+            email = tokenService.extractEmail(token);
+            type = tokenService.extractClaim(token, claims -> claims.get("type", String.class));
+        } catch (Exception e) {
+            throw new TokenInvalidException("Invalid or expired reset token");
+        }
+        if (!"password_reset".equals(type)) {
+            throw new TokenInvalidException("Invalid reset token");
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     @Transactional
@@ -79,7 +165,7 @@ public class AuthService {
 
         if (registration.getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
             registrationRepository.delete(registration);
-            throw new KeyInvalidException("Registration has expired!");
+            throw new RegistrationExpiredException("Registration has expired!");
         }
 
         User user = User.builder()
@@ -90,16 +176,22 @@ public class AuthService {
                 .isTrainer(registration.isTrainer())
                 .isActive(false)
                 .build();
-        sendVerificationEmail(user);
+
         userRepository.save(user);
+        sendVerificationEmail(user);
 
         Room announcements = roomRepository.findById(1)
-                .orElseThrow(() -> new EmptyOptionalException("Room not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("Announcement Room not found!"));
 
-        Room room = roomRepository.findById(2).orElseThrow(() -> new EmptyOptionalException("Room not found!"));
-
+        Room userRoom = roomRepository.findById(2)
+                .orElseThrow(() -> new EntityNotFoundException("Default chat Room not found!"));
+        Room trainerRoom = roomRepository.findById(3)
+                .orElseThrow(() -> new EntityNotFoundException("Default chat Room not found!"));
+        if (user.isTrainer())
+            trainerRoom.addUser(user);
+        else
+            userRoom.addUser(user);
         announcements.addUser(user);
-        room.addUser(user);
         registrationRepository.delete(registration);
 
         String jwt = tokenService.generateTokenWithClaims(user);
@@ -111,18 +203,28 @@ public class AuthService {
     public CodeDTO checkValidity(String code) {
         Optional<Registration> registration = registrationRepository.findByRegistrationCode(code);
 
-        boolean valid = registration.isPresent();
+        if (registration.isEmpty()) {
+            return CodeDTO.builder()
+                    .isValid(false)
+                    .build();
+        }
+
+        if (registration.get().getCreatedAt().plusDays(7).isBefore(LocalDateTime.now())) {
+            return CodeDTO.builder()
+                    .isValid(false)
+                    .build();
+        }
 
         return CodeDTO.builder()
-                .isValid(valid)
+                .isValid(true)
                 .build();
     }
 
     @Transactional
     public AuthDTO login(LoginDTO loginDTO) {
-        User user = userService.getUserByEmail(userRepository.findByEmail(loginDTO.getEmail()));
-        if (user.isActive() == false) {
-            throw new RuntimeException("Account is not active");
+        User user = userService.findUserByEmail(loginDTO.getEmail());
+        if (!user.isActive()) {
+            throw new AccountInactiveException("Account is not active");
         }
         String email = user.getEmail();
 

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sc.backend.entities.RefreshToken;
 import sc.backend.entities.User;
+import sc.backend.exceptions.AccountInactiveException;
 import sc.backend.exceptions.TokenInvalidException;
 import sc.backend.repositories.RefreshTokenRepository;
 
@@ -46,11 +47,10 @@ public class TokenService {
     @Value("${jwt.refresh-token.expiration-days:7}")
     private int refreshTokenExpirationDays;
 
-
     public String generateTokenWithClaims(User user) {
         Map<String, Object> claims = new HashMap<>();
 
-        //TODO: what should be in the token?
+        // TODO: what should be in the token?
         claims.put("userId", user.getUserId());
         claims.put("email", user.getEmail());
         claims.put("displayName", user.getDisplayName());
@@ -129,13 +129,13 @@ public class TokenService {
         String hash = hashToken(rawToken);
         RefreshToken token = refreshTokenRepository.findByTokenHash(hash).orElse(null);
 
-        if(token == null || token.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (token == null || token.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new TokenInvalidException("Refresh Token invalid or expired.");
         }
 
-        if(!token.getUser().isActive()) {
+        if (!token.getUser().isActive()) {
             refreshTokenRepository.delete(token);
-            throw new TokenInvalidException("User is deactivated");
+            throw new AccountInactiveException("User is deactivated");
         }
 
         return token;

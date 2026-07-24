@@ -2,6 +2,7 @@ package sc.backend.components;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import sc.backend.exceptions.CryptoException;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -22,15 +23,18 @@ public class CryptoUtil {
     private final SecureRandom secureRandom = new SecureRandom();
 
     public CryptoUtil(@Value("${encryption.master-key}") String masterKey) {
+        if (masterKey == null || masterKey.length() < 32) {
+            throw new IllegalStateException("Encryption master key must be at least 32 characters");
+        }
         this.key = deriveKey(masterKey);
     }
 
     private byte[] deriveKey(String masterKey) {
         try {
-            MessageDigest sha265 = MessageDigest.getInstance("SHA-256");
-            return sha265.digest(masterKey.getBytes(StandardCharsets.UTF_8));
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            return sha256.digest(masterKey.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            throw new RuntimeException("Key derivation failed", e);
+            throw new IllegalStateException("Key derivation failed", e);
         }
     }
 
@@ -50,7 +54,7 @@ public class CryptoUtil {
             byte[] ciphertext = cipher.doFinal(plaintext);
             return new EncryptionResult(ciphertext, iv);
         } catch (Exception e) {
-            throw new RuntimeException("Encryption failed", e);
+            throw new CryptoException("Encryption failed", e);
         }
     }
 
@@ -62,7 +66,7 @@ public class CryptoUtil {
                     new GCMParameterSpec(TAG_LENGTH_BITS, iv));
             return cipher.doFinal(ciphertext);
         } catch (Exception e) {
-            throw new RuntimeException("Decryption failed", e);
+            throw new CryptoException("Decryption failed", e);
         }
     }
 

@@ -1,5 +1,7 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,8 @@ import sc.backend.services.UserService;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Users", description = "User profile management")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("api/user")
@@ -26,6 +30,11 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
+    }
+
+    @GetMapping("check")
+    public ResponseEntity<UserDTO> getCurrentUser(Principal principal) {
+        return new ResponseEntity<>(userService.getCurrentUser(principal.getName()), HttpStatus.OK);
     }
 
     @GetMapping("{userId}")

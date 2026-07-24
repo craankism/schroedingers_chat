@@ -104,6 +104,11 @@ public class User implements UserDetails {
         registration.setCreatedBy(null);
     }
 
+    public void removeFileListEntry(StoredFile storedFile) {
+        storedFileList.remove(storedFile);
+        storedFile.setUploadedBy(null);
+    }
+
     @Override
     public String getUsername() {
         return email;

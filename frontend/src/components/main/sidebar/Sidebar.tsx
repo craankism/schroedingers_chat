@@ -13,31 +13,43 @@ import {
 import { useEffect, useState } from "react";
 import SidebarHelper from "./SidebarHelper";
 import { decodeJwt, useAuthStore } from "../../../stores/AuthStore";
-import NewRoomModal from "./NewRoomModal";
+import NewRoomModal from "../modals/NewRoomModal.tsx";
 import { useRoomStore } from "../../../stores/RoomStore";
 import type { RoomType } from "../../../types/RoomType";
 import AddIcon from "@mui/icons-material/Add";
 import { usePropStore } from "../../../stores/PropStore";
 import type { JSX } from "@emotion/react/jsx-runtime";
-import NewDocumentModal from "./NewDocumentModal";
 import { useUserStore } from "../../../stores/UserStore";
 import { heightMinusTopNav } from "../../../types/constants/constants";
+import { useDocumentStore } from "../../../stores/DocumentStore";
+import { useFileStore } from "../../../stores/FileStore";
+import { useFolderStore } from "../../../stores/FolderStore";
+import { useProfilePictureStore } from "../../../stores/ProfilePictureStore";
 
-const adminItems = ["Usermanagement", "Filemanagement", "Roommanagement"];
+const adminItems = ["Usermanagement", "Roommanagement"];
 const navItems = ["Announcement", "Files", "Editor"];
 const itemNames = [...adminItems, ...navItems];
 
 const Sidebar = (): JSX.Element => {
   const [activeView, setActiveView] = useState<string>("");
-  const [select, setSelect] = useState<string>("");
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { users } = useUserStore();
+  const { isAuthenticated, logout, currentUser, checkAuthentication } =
+    useAuthStore();
+  const { openSidebar, setOpenSidebar, setOpenProfile } =
+    usePropStore();
+  const { getAllDocuments } = useDocumentStore();
+  const { getAllFilesMeta } = useFileStore();
+  const { getAllRooms } = useRoomStore();
+  const { getAllUsers } = useUserStore();
+  const { getAllFolders } = useFolderStore();
   const userId = decodeJwt()?.userId || 0;
   const isAdmin = users.find((user) => user.userId === userId)?.isAdmin;
   const { rooms } = useRoomStore();
-  const { isAuthenticated, logout, currentUser } = useAuthStore();
-  const { openSidebar, setOpenSidebar, setOpenProfile, newDocModalOpen } =
-    usePropStore();
+  const { getAllProfilePictures, profilePictures } = useProfilePictureStore();
+  const currentPicture = profilePictures.find(
+    (p) => p.userId === decodeJwt()?.userId,
+  );
 
   const roomItems: string[] = [];
   const userRooms: RoomType[] = [];
@@ -63,6 +75,17 @@ const Sidebar = (): JSX.Element => {
   const md = useMediaQuery(theme.breakpoints.up("md"));
 
   useEffect(() => {
+    const check = async () => {
+      const authenticated = await checkAuthentication();
+      if (!authenticated) return;
+      getAllFolders();
+      getAllDocuments();
+      getAllFilesMeta();
+      getAllRooms();
+      getAllUsers();
+      getAllProfilePictures();
+    };
+    check();
     if (md) {
       // eslint-disable-next-line
       setVariant("permanent");
@@ -92,37 +115,49 @@ const Sidebar = (): JSX.Element => {
         <Box sx={{ overflow: "auto" }}>
           {isAdmin && (
             <>
-              <SidebarHelper
-                items={adminItems}
-                itemNames={itemNames}
-                activeView={activeView}
-                setActiveView={setActiveView}
-                select={select}
-                setSelect={setSelect}
-              />
+              <List>
+                <ListItem sx={{ justifyContent: "center", p: 0 }}>
+                  <Typography variant="h6">Admin:</Typography>
+                </ListItem>
+                <SidebarHelper
+                  items={adminItems}
+                  itemNames={itemNames}
+                  activeView={activeView}
+                  setActiveView={setActiveView}
+                />
+              </List>
               <Divider />
             </>
           )}
           <List>
+            <ListItem sx={{ justifyContent: "center", p: 0 }}>
+              <Typography variant="h6">General:</Typography>
+            </ListItem>
             <SidebarHelper
               items={navItems}
               itemNames={itemNames}
               activeView={activeView}
               setActiveView={setActiveView}
-              select={select}
-              setSelect={setSelect}
             />
-            <Divider />
-            <AddIcon
-              sx={{ cursor: "pointer", ml: { xs: "90vw", md: 25 }, mt: 1 }}
-              onClick={() => {
-                openModalFunc();
-              }}
-            />
+          </List>
+          <Divider />
+          <List>
+            <ListItem
+              sx={{ justifyContent: "center", p: 0, position: "relative" }}
+            >
+              <Typography variant="h6">Chats:</Typography>
+              <AddIcon
+                sx={{ cursor: "pointer", position: "absolute", right: 8 }}
+                onClick={() => {
+                  openModalFunc();
+                }}
+              />
+            </ListItem>
             <NewRoomModal
               openModal={openModal}
               closeModal={setOpenModal}
               roomEdit={false}
+              setActiveView={setActiveView}
             />
             <SidebarHelper
               items={roomItems}
@@ -130,59 +165,40 @@ const Sidebar = (): JSX.Element => {
               rooms={userRooms}
               activeView={activeView}
               setActiveView={setActiveView}
-              select={select}
-              setSelect={setSelect}
             />
-            {newDocModalOpen ? <NewDocumentModal /> : null}
-            {!md ? (
-              <div>
-                <Divider
-                  sx={{
-                    position: "fixed",
-                    bottom: 48,
-                    width: "100vw",
-                  }}
-                />
-                <ListItem
-                  disablePadding
-                  sx={{
-                    position: "fixed",
-                    bottom: 55,
-                    zIndex: 12,
-                    width: "100vw",
-                  }}
-                >
-                  <ListItemButton
-                    onClick={() => setOpenProfile(true)}
-                    sx={{ justifyContent: "center" }}
-                  >
-                    <Avatar sx={{ mr: 2 }} />
-                    {currentUser?.displayName}
-                  </ListItemButton>
-                </ListItem>
-                <ListItem
-                  disablePadding
-                  sx={{
-                    position: "fixed",
-                    bottom: 4,
-                    zIndex: 12,
-                    width: "100vw",
-                  }}
-                >
-                  <ListItemButton
-                    onClick={() => {
-                      logout();
-                    }}
-                    sx={{ justifyContent: "center" }}
-                  >
-                    <Typography>
-                      {isAuthenticated ? "Logout" : "Login"}
-                    </Typography>
-                  </ListItemButton>
-                </ListItem>
-              </div>
-            ) : null}
           </List>
+          {!md ? (
+            <List>
+              <ListItem
+                disablePadding
+                sx={{
+                  width: "100vw",
+                  borderTop: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                <ListItemButton
+                  onClick={() => setOpenProfile(true)}
+                  sx={{ justifyContent: "center" }}
+                >
+                  <Avatar sx={{ mr: 2 }} src={currentPicture?.url ?? ""} />
+                  {currentUser?.displayName}
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    logout();
+                  }}
+                  sx={{ justifyContent: "center" }}
+                >
+                  <Typography>
+                    {isAuthenticated ? "Logout" : "Login"}
+                  </Typography>
+                </ListItemButton>
+              </ListItem>
+            </List>
+          ) : null}
         </Box>
       </Drawer>
     </Box>

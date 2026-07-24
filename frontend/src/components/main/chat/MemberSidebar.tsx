@@ -3,6 +3,7 @@ import { useUserStore } from "../../../stores/UserStore";
 import { useState } from "react";
 import { useRoomStore } from "../../../stores/RoomStore";
 import {
+  Avatar,
   Box,
   Divider,
   Drawer,
@@ -16,7 +17,8 @@ import { heightMinusTopNav } from "../../../types/constants/constants";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditChat from "./EditChat";
-import { Lens } from "@mui/icons-material";
+import { usePropStore } from "../../../stores/PropStore";
+import { useProfilePictureStore } from "../../../stores/ProfilePictureStore";
 
 type MemberSidebarProps = {
   roomId: number;
@@ -28,11 +30,14 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [open, setOpen] = useState<boolean>(false);
+  const { openSidebar } = usePropStore();
+  const { profilePictures } = useProfilePictureStore();
 
   const currentRoom = rooms.find((r) => r.roomId === roomId);
   const userDisplay = currentRoom
     ? users
         .filter((user) => currentRoom.userList.includes(user.userId))
+        .sort((a, b) => a.displayName.localeCompare(b.displayName))
         .sort(
           (a, b) =>
             (onlineList[b.userId] ? 1 : 0) - (onlineList[a.userId] ? 1 : 0),
@@ -52,6 +57,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
             boxSizing: "border-box",
             pt: heightMinusTopNav,
           },
+          overflow: "scroll",
         }}
       >
         <ListItem sx={{ height: 64 }}>
@@ -59,13 +65,39 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
           <EditChat roomId={roomId} />
         </ListItem>
         <Divider />
-        {userDisplay.map((user, index) => (
-          <ListItem key={index}>
-            <ListItemText primary={user.displayName} />
+        {userDisplay.map((user) => (
+          <ListItem key={user.userId}>
             {onlineList[user.userId] ? (
-              <Lens sx={{ color: "green", mr: 1.7 }} />
+              <>
+                <Avatar
+                  alt="profile picture"
+                  src={
+                    profilePictures.find((pic) => pic.userId === user.userId)
+                      ?.url
+                  }
+                  sx={{ mr: 1, border: "2px solid green" }}
+                />
+                <ListItemText primary={user.displayName} />
+              </>
             ) : (
-              <Lens sx={{ color: "grey", mr: 1.7 }} />
+              <>
+                <Avatar
+                  alt="profile picture"
+                  src={
+                    profilePictures.find((pic) => pic.userId === user.userId)
+                      ?.url
+                  }
+                  sx={{
+                    mr: 1,
+                    border: "2px solid grey",
+                    filter: "grayscale(70%)",
+                  }}
+                />
+                <ListItemText
+                  primary={user.displayName}
+                  sx={{ opacity: "40%" }}
+                />
+              </>
             )}
           </ListItem>
         ))}
@@ -74,7 +106,7 @@ const MemberSidebar: React.FC<MemberSidebarProps> = ({ roomId }) => {
         onClick={() => setOpen(!open)}
         size="small"
         sx={{
-          display: { xs: "flex", md: "none" },
+          display: { xs: openSidebar ? "none" : "block", md: "none" },
           position: "fixed",
           right: open ? "calc(100vw - 10vw)" : "0",
           top: "55%",

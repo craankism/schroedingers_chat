@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import sc.backend.dtos.res.StoredFileMetaDTO;
+import sc.backend.exceptions.TextExtractionException;
 
 import java.io.InputStream;
 import java.util.List;
@@ -46,11 +47,8 @@ public class FileTextExtractionService {
 
                 return cleanExtractedText(extractedText.toString());
             }
-        } catch (Exception exception) {
-            throw new RuntimeException(
-                    "Could not extract text from file with id " + fileId,
-                    exception
-            );
+        } catch (Exception e) {
+            throw new TextExtractionException("Could not extract text from file with id " + fileId, e);
         }
     }
 

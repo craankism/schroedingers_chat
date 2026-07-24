@@ -38,23 +38,12 @@ db_user=${db_user:-postgresql}
 read -p "DB Name [schroedingers_chat]: " db_name
 db_name=${db_name:-schroedingers_chat}
 
-# JWT SECRET (Sensitive - NO DEFAULT!)
-echo "[REQUIRED] Enter JWT Secret:"
-while true; do
-    read -r jwt_secret
-    if [ -z "$jwt_secret" ]; then
-        echo "ERROR: JWT Secret must not be empty!"
-        continue
-    fi
-    if [ ${#jwt_secret} -lt 32 ]; then
-        echo "WARNING: JWT Secret should be at least 32 characters long."
-        read -p "Continue anyway? (y/N) " confirm
-        [[ "$confirm" =~ ^[Yy]$ ]] && break || continue
-    fi
-    break
-done
+# Passwords (Standard - Minimum 8 characters, validation + confirmation)
+echo "========================================="
+echo "  Password Configuration (min. 8 characters)"
+echo "========================================="
 
-# Database Password (Sensitive - NO DEFAULT!)
+# DB Password
 echo "[REQUIRED] Enter DB Password:"
 while true; do
     read -rsp "DB Password (at least 8 characters): " db_password
@@ -67,24 +56,30 @@ while true; do
         echo "ERROR: DB Password must be at least 8 characters long!"
         continue
     fi
+    read -rsp "Confirm DB Password: " db_confirm
+    echo ""
+    if [ "$db_password" != "$db_confirm" ]; then
+        echo "ERROR: Passwords do not match!"
+        continue
+    fi
     break
 done
 
-# Super Admin Password (Sensitive - NO DEFAULT!)
+# Admin Password
+echo ""
 echo "[REQUIRED] Enter Super Admin Password:"
 while true; do
-    read -rsp "Super Admin Password: " admin_password
+    read -rsp "Admin Password (at least 8 characters): " admin_password
     echo ""
     if [ -z "$admin_password" ]; then
-        echo "ERROR: Super Admin Password must not be empty!"
+        echo "ERROR: Admin Password must not be empty!"
         continue
     fi
     if [ ${#admin_password} -lt 8 ]; then
-        echo "ERROR: Password must be at least 8 characters long!"
+        echo "ERROR: Admin Password must be at least 8 characters long!"
         continue
     fi
-    # Confirmation
-    read -rsp "Confirm: " admin_confirm
+    read -rsp "Confirm Admin Password: " admin_confirm
     echo ""
     if [ "$admin_password" != "$admin_confirm" ]; then
         echo "ERROR: Passwords do not match!"
@@ -96,20 +91,27 @@ done
 read -p "Super Admin E-Mail [super@admin.at]: " admin_email
 admin_email=${admin_email:-super@admin.at}
 
-# MinIO credentials (Sensitive - NO DEFAULT!)
+# MinIO Password
+echo ""
+echo "[REQUIRED] Enter MinIO Credentials:"
 read -p "MinIO Root User [minioadmin]: " minio_user
 minio_user=${minio_user:-minioadmin}
 
-echo "[REQUIRED] Enter MinIO Root Password:"
 while true; do
-    read -rsp "MinIO Password (at least 6 characters): " minio_password
+    read -rsp "MinIO Password (at least 8 characters): " minio_password
     echo ""
     if [ -z "$minio_password" ]; then
         echo "ERROR: MinIO Password must not be empty!"
         continue
     fi
-    if [ ${#minio_password} -lt 6 ]; then
-        echo "ERROR: MinIO Password must be at least 6 characters long!"
+    if [ ${#minio_password} -lt 8 ]; then
+        echo "ERROR: MinIO Password must be at least 8 characters long!"
+        continue
+    fi
+    read -rsp "Confirm MinIO Password: " minio_confirm
+    echo ""
+    if [ "$minio_password" != "$minio_confirm" ]; then
+        echo "ERROR: Passwords do not match!"
         continue
     fi
     break
@@ -118,14 +120,29 @@ done
 read -p "MinIO Bucket [schroedinger-files]: " minio_bucket
 minio_bucket=${minio_bucket:-schroedinger-files}
 
-# Mailtrap credentials (Optional - for email delivery)
+# Secrets (Critical - Minimum 32 characters, no complexity validation)
 echo ""
-echo "[OPTIONAL] Mailtrap credentials for email delivery (leave empty if not needed):"
-read -p "Mailtrap Username: " mailtrap_username
-read -sp "Mailtrap Password: " mailtrap_password
-echo ""
+echo "========================================="
+echo "  Critical Secrets (min. 32 characters)"
+echo "========================================="
 
-# Encryption Master Key (Sensitive - NO DEFAULT!)
+# JWT Secret
+echo "[REQUIRED] Enter JWT Secret:"
+while true; do
+    read -r jwt_secret
+    if [ -z "$jwt_secret" ]; then
+        echo "ERROR: JWT Secret must not be empty!"
+        continue
+    fi
+    if [ ${#jwt_secret} -lt 32 ]; then
+        echo "ERROR: JWT Secret must be at least 32 characters long!"
+        continue
+    fi
+    break
+done
+
+# Encryption Master Key
+echo ""
 echo "[REQUIRED] Enter Encryption Master Key:"
 while true; do
     read -rsp "Master Key (at least 32 characters): " enc_master_key
@@ -141,16 +158,85 @@ while true; do
     break
 done
 
-# GPU Configuration
+# Hardware Detection and Model Selection
 echo ""
 echo "========================================="
-echo "  GPU Configuration"
+echo "  Hardware Detection and Model Selection"
 echo "========================================="
-read -p "Is an NVIDIA GPU available? (y/N) " has_gpu
 
-if [[ "$has_gpu" =~ ^[Yy]$ ]]; then
-    SELECTED_MODEL="qwen2.5-coder:7b"
-    echo "GPU Mode: 7B model with GPU acceleration"
+# Detect CPU cores
+cpu_cores=$(nproc 2>/dev/null || grep -c processor /proc/cpuinfo 2>/dev/null || echo "1")
+
+# Detect RAM in GB
+ram_gb=$(free -g 2>/dev/null | awk '/^total/ {print $2}' || grep MemTotal /proc/meminfo | awk '{printf "%.0f", $2/1024}')
+if [ -z "$ram_gb" ]; then
+    ram_gb=8
+fi
+
+echo "Detected Hardware: $cpu_cores CPU Cores, $ram_gb GB RAM"
+
+# Check for NVIDIA GPU
+has_gpu="n"
+if command -v nvidia-smi &>/dev/null; then
+    if nvidia-smi &>/dev/null; then
+        has_gpu="y"
+        echo "NVIDIA GPU detected: GPU acceleration available"
+    fi
+fi
+
+# Determine recommendations
+echo ""
+echo "AI Model Recommendations:"
+echo "------------------------"
+
+if [ "$has_gpu" = "y" ]; then
+    echo "* 7B or 14B recommended (GPU acceleration available)"
+elif [ "$ram_gb" -ge 16 ] && [ "$cpu_cores" -ge 8 ]; then
+    echo "* 7B recommended (sufficient CPU/RAM resources detected)"
+elif [ "$ram_gb" -ge 8 ] && [ "$cpu_cores" -ge 4 ]; then
+    echo "* 3B recommended (adequate for this configuration)"
+else
+    echo "* 3B recommended (low-resource environment)"
+fi
+
+echo ""
+echo "Select AI Model:"
+echo "----------------"
+echo "1) qwen2.5-coder:3b  - Fast, lower RAM usage, good for CPU"
+echo "2) qwen2.5-coder:7b  - Balanced, requires ~8-12 GB RAM"
+echo "3) qwen2.5-coder:14b - High quality, requires ~16+ GB RAM or GPU"
+echo ""
+
+while true; do
+    read -p "Enter selection [1-3]: " model_choice
+    case $model_choice in
+        1)
+            SELECTED_MODEL="qwen2.5-coder:3b"
+            break
+            ;;
+        2)
+            SELECTED_MODEL="qwen2.5-coder:7b"
+            break
+            ;;
+        3)
+            SELECTED_MODEL="qwen2.5-coder:14b"
+
+            # Warn if selecting 14B on insufficient hardware
+            if [ "$has_gpu" != "y" ] && [ "$ram_gb" -lt 16 ]; then
+                echo "WARNING: 14B model requires significant RAM ($ram_gb GB detected)."
+                read -p "This may cause slow performance or memory issues. Continue anyway? (y/N) " confirm
+                [[ ! "$confirm" =~ ^[Yy]$ ]] && continue
+            fi
+            break
+            ;;
+        *)
+            echo "Invalid selection. Please enter 1, 2, or 3."
+            ;;
+    esac
+done
+
+# Create GPU compose file if GPU is available
+if [ "$has_gpu" = "y" ]; then
     cat > "compose.gpu.yaml" << 'EOF'
 services:
   ollama:
@@ -162,10 +248,9 @@ services:
               count: all
               capabilities: [gpu]
 EOF
+    echo ""
     echo "compose.gpu.yaml (GPU driver) has been created."
 else
-    SELECTED_MODEL="qwen2.5-coder:3b"
-    echo "CPU Mode: 3B model without GPU"
     rm -f "compose.gpu.yaml"
 fi
 
@@ -184,7 +269,7 @@ DB_USER=$db_user
 DB_PASSWORD=$db_password
 DB_NAME=$db_name
 
-# JWT Auth (CHANGE THIS IN PRODUCTION!)
+# JWT Auth (CRITICAL: Must be at least 32 characters!)
 JWT_SECRET=$jwt_secret
 
 # Super Admin
@@ -196,12 +281,8 @@ MINIO_ROOT_USER=$minio_user
 MINIO_ROOT_PASSWORD=$minio_password
 MINIO_BUCKET=$minio_bucket
 
-# AES Encryption Key
+# AES Encryption Key (CRITICAL: Must be at least 32 characters!)
 ENCRYPTION_MASTER_KEY=$enc_master_key
-
-# Mailtrap Email Service (Optional)
-MAILTRAP_USERNAME=$mailtrap_username
-MAILTRAP_PASSWORD=$mailtrap_password
 
 # AI Model Configuration
 OLLAMA_MODEL=$SELECTED_MODEL
@@ -211,5 +292,9 @@ EOF
 
 echo ""
 echo ".env file has been created successfully."
+echo "Selected AI Model: $SELECTED_MODEL"
 echo ""
 echo "Start with: docker compose up -d --build"
+if [ "$has_gpu" = "y" ]; then
+    echo "Or with GPU support: docker compose -f compose.yml -f compose.gpu.yaml up -d --build"
+fi

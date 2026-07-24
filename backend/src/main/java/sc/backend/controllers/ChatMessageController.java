@@ -1,5 +1,7 @@
 package sc.backend.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -8,8 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import sc.backend.dtos.res.MessageDTO;
 import sc.backend.services.ChatMessageService;
 
+import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Messages", description = "Chat message history")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
@@ -17,8 +22,10 @@ public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
 
-    @GetMapping("{roomId}")
-    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable int roomId) {
-        return new ResponseEntity<>(chatMessageService.getAllMessages(roomId), HttpStatus.OK);
+    @GetMapping("{roomId}/{index}")
+    public ResponseEntity<List<MessageDTO>> getFiftyMessages(@PathVariable int roomId, @PathVariable int index,
+            Principal principal) {
+        return new ResponseEntity<>(chatMessageService.getFiftyMessages(roomId, index, principal.getName()),
+                HttpStatus.OK);
     }
 }

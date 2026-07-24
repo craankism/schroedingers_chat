@@ -28,6 +28,9 @@ public class JavaMailSenderConfig {
     @Value("${spring.mail.properties.mail.smtp.starttls.enable:true}")
     private boolean starttlsEnabled;
 
+    @Value("${spring.mail.properties.mail.debug:false}")
+    private boolean mailDebug;
+
     @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
@@ -39,7 +42,7 @@ public class JavaMailSenderConfig {
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", String.valueOf(smtpAuth));
         props.put("mail.smtp.starttls.enable", String.valueOf(starttlsEnabled));
-        props.put("mail.debug", "true");
+        props.put("mail.debug", mailDebug);
 
         return mailSender;
     }

@@ -9,7 +9,7 @@ import type {
   GridRenderCellParams,
   GridRowModel,
 } from "@mui/x-data-grid";
-import ConfirmationModal from "./ConfirmationModal";
+import ConfirmationModal from "../modals/ConfirmationModal.tsx";
 import { usePropStore } from "../../../stores/PropStore";
 
 const UserTable = (): JSX.Element => {

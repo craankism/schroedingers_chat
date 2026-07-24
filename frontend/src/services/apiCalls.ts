@@ -10,16 +10,64 @@ import type {
 } from "../types/AuthType.ts";
 import api from "./axiosConfig.ts";
 import type { DocumentType } from "../types/DocumentType.ts";
+import type { FolderInput, FolderType } from "../types/FolderType.ts";
+import type {
+  SmtpConfigConfirmedType,
+  SmtpConfigType,
+  SmtpReturnType,
+  SmtpTestAddressType,
+} from "../types/SmtpConfigType.ts";
+import type { ProfilePictureMeta } from "../types/ProfilePictureType.ts";
 
 const fileUrl = "/file";
 const userUrl = "/user";
 const roomUrl = "/room";
 const messageUrl = "/messages";
 const documentUrl = "/documents";
+const folderUrl = "/folder";
+const ppUrl = "/file/pp";
 
 const authUrl = "/auth";
 const adminUrl = "/admin";
 const websocket = "/messages";
+
+const smtpUrl = "/smtp";
+
+export const ppApi = {
+  getAll: async (): Promise<ProfilePictureMeta[]> => {
+    const response = await api.get<ProfilePictureMeta[]>(ppUrl);
+    return response.data;
+  },
+
+  getMeta: async (fileId: number): Promise<ProfilePictureMeta> => {
+    const response = await api.get<ProfilePictureMeta>(`${ppUrl}/${fileId}`);
+    return response.data;
+  },
+
+  upload: async (fileInput: FileInput): Promise<ProfilePictureMeta> => {
+    const formData = new FormData();
+    formData.append("file", fileInput.file);
+    const response = await api.post<ProfilePictureMeta>(
+      `${ppUrl}/upload`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  download: async (fileId: number): Promise<Blob> => {
+    const response = await api.get(`${ppUrl}/download/${fileId}`, {
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  delete: async (fileId: number): Promise<void> => {
+    await api.delete(`${ppUrl}/${fileId}`);
+  },
+};
 
 export const fileApi = {
   getAllMeta: async (): Promise<FileType[]> => {
@@ -35,8 +83,12 @@ export const fileApi = {
   upload: async (fileInput: FileInput): Promise<FileType> => {
     const formData = new FormData();
     formData.append("file", fileInput.file);
+    const url =
+      fileInput.folderId != null
+        ? `${fileUrl}/upload?folderId=${fileInput.folderId}`
+        : `${fileUrl}/upload`;
 
-    const response = await api.post<FileType>(fileUrl + "/upload", formData, {
+    const response = await api.post<FileType>(url, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -51,6 +103,34 @@ export const fileApi = {
 
   delete: async (fileId: number): Promise<void> => {
     await api.delete(`${fileUrl}/${fileId}`);
+  },
+
+  move: async (fileId: number, folderId: number): Promise<FileType> => {
+    const response = await api.patch<FileType>(
+      `${fileUrl}/${fileId}/move?folderId=${folderId}`,
+    );
+    return response.data;
+  },
+};
+
+export const folderApi = {
+  getAll: async (): Promise<FolderType[]> => {
+    const response = await api.get<FolderType[]>(folderUrl);
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<FolderType> => {
+    const response = await api.get<FolderType>(`${folderUrl}/${id}`);
+    return response.data;
+  },
+
+  create: async (folderInput: FolderInput): Promise<FolderType> => {
+    const response = await api.post<FolderType>(folderUrl, folderInput);
+    return response.data;
+  },
+
+  delete: async (folderId: number): Promise<void> => {
+    await api.delete(`${folderUrl}/${folderId}`);
   },
 };
 
@@ -153,8 +233,11 @@ export const messageApi = {
     return response.data;
   },
 
-  getMessages: async (roomId: number): Promise<MessageInput[]> => {
-    const response = await api.get(`${websocket}/${roomId}`);
+  getFiftyMessages: async (
+    roomId: number,
+    index: number,
+  ): Promise<MessageInput[]> => {
+    const response = await api.get(`${websocket}/${roomId}/${index}`);
     return response.data;
   },
 
@@ -169,6 +252,15 @@ export const messageApi = {
 };
 
 export const authApi = {
+  checkAuthentication: async (): Promise<boolean> => {
+    try {
+      await api.get(`${userUrl}/check`);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
   createRegistrationCode: async (
     registration: boolean,
   ): Promise<registrationReturn> => {
@@ -207,5 +299,45 @@ export const authApi = {
 
   logout: async (refreshToken: string) => {
     await api.post(`${authUrl}/logout`, { refreshToken });
+  },
+
+  verify: async (token: string): Promise<AuthResponseType> => {
+    const response = await api.get<AuthResponseType>(
+      `${authUrl}/verify/${token}`,
+    );
+    return response.data;
+  },
+
+  forgotPassword: async (email: string): Promise<string> => {
+    const response = await api.post(`${authUrl}/forgot`, { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<void> => {
+    await api.post(`${authUrl}/reset`, { token, newPassword });
+  },
+};
+
+export const smtpApi = {
+  submitSmtp: async (smtpConfig: SmtpConfigType): Promise<SmtpReturnType> => {
+    const response = await api.post(smtpUrl, smtpConfig);
+    return response.data;
+  },
+
+  testSmtp: async (testEmail: SmtpTestAddressType): Promise<SmtpReturnType> => {
+    const response = await api.put(`${smtpUrl}/test`, testEmail);
+    return response.data;
+  },
+
+  confirmSmtp: async (
+    smtpConfirmation: SmtpConfigConfirmedType,
+  ): Promise<SmtpReturnType> => {
+    const response = await api.put(`${smtpUrl}/confirm`, smtpConfirmation);
+    return response.data;
+  },
+
+  getSmtp: async (): Promise<SmtpReturnType> => {
+    const response = await api.get(smtpUrl);
+    return response.data;
   },
 };

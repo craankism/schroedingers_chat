@@ -5,6 +5,8 @@ import { useUserStore } from "../../stores/UserStore";
 import { useFileStore } from "../../stores/FileStore";
 import { authApi } from "../../services/apiCalls";
 import { decodeJwt } from "../../stores/AuthStore";
+import { useFolderStore } from "../../stores/FolderStore";
+import { useProfilePictureStore } from "../../stores/ProfilePictureStore";
 
 const LiveUpdates: React.FC = () => {
   const clientRef = useRef<Client | null>(null);
@@ -14,6 +16,8 @@ const LiveUpdates: React.FC = () => {
   const { getRoom, getAllRooms } = useRoomStore();
   const { getFileMeta, getAllFilesMeta } = useFileStore();
   const { getUser, setOnlineList, getAllUsers } = useUserStore();
+  const { getAllFolders, getFolderById } = useFolderStore();
+  const { getProfilePicture, getAllProfilePictures } = useProfilePictureStore();
 
   const getWsUrl = () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -45,8 +49,14 @@ const LiveUpdates: React.FC = () => {
             } else if (event.type === "FILE_UPDATE") {
               if (event.id === 0) getAllFilesMeta();
               else getFileMeta(event.id);
+            } else if (event.type === "FOLDER_UPDATE") {
+              if (event.id === 0) getAllFolders();
+              else getFolderById(event.id);
             } else if (event.type === "AUTH_UPDATE") {
               setOnlineList(event.online);
+            } else if (event.type === "PP_UPDATE") {
+              if (event.id === 0) getAllProfilePictures();
+              else getProfilePicture(event.id);
             }
           } catch {
             console.error("Failed to parse update event", incomingMessage.body);

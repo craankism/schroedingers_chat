@@ -8,7 +8,6 @@ import { useAuthStore } from "./stores/AuthStore.ts";
 import { usePropStore } from "./stores/PropStore.ts";
 import Chat from "./components/views/Chat.tsx";
 import UserManagement from "./components/views/UserManagement.tsx";
-import FileManagement from "./components/views/FileManagement.tsx";
 import RoomManagement from "./components/views/RoomManagement.tsx";
 import Files from "./components/views/Files.tsx";
 import Announcement from "./components/views/Announcement.tsx";
@@ -17,32 +16,20 @@ import Login from "./components/views/Login.tsx";
 import EnterCode from "./components/views/EnterCode.tsx";
 import Register from "./components/views/Register.tsx";
 import AdminRoute from "./components/AdminRoute.tsx";
-import { SimpleEditor } from "./components/tiptap/components/tiptap-templates/simple/simple-editor";
+import { SimpleEditor } from "./components/main/editor/SimpleEditor.tsx";
 import { useEffect } from "react";
-import { useDocumentStore } from "./stores/DocumentStore.ts";
-import { useFileStore } from "./stores/FileStore.ts";
-import { useRoomStore } from "./stores/RoomStore.ts";
-import { useUserStore } from "./stores/UserStore.ts";
 import { decodeJwt } from "./stores/AuthStore.ts";
 import GlobalLoader from "./components/main/GlobalLoader.tsx";
+import { Box } from "@mui/material";
+import RedirectRoute from "./components/RedirectRoute.tsx";
+import MailVerification from "./components/MailVerification.tsx";
+import ForgotPassword from "./components/views/ForgotPassword.tsx";
+import ResetPassword from "./components/views/ResetPassword.tsx";
+import DocumentModal from "./components/main/modals/DocumentModal.tsx";
 
 const App = (): JSX.Element => {
   const { isAuthenticated } = useAuthStore();
   const { roomId } = usePropStore();
-  const { getAllDocuments } = useDocumentStore();
-  const { getAllFilesMeta } = useFileStore();
-  const { getAllRooms } = useRoomStore();
-  const { getAllUsers } = useUserStore();
-
-  useEffect(() => {
-    if (isAuthenticated === true) {
-      getAllDocuments();
-      getAllFilesMeta();
-      getAllRooms();
-      getAllUsers();
-    }
-    // eslint-disable-next-line
-  }, [isAuthenticated]);
 
   // show offline status when browser or tab is closed
   useEffect(() => {
@@ -68,34 +55,39 @@ const App = (): JSX.Element => {
   }, [isAuthenticated]);
 
   return (
-    <>
-      {isAuthenticated ? (
+    <Box sx={{ display: "flex", width: "100%", height: "100vh" }}>
+      {isAuthenticated === true ? (
         <>
           <LiveUpdates />
           <Sidebar />
         </>
       ) : null}
       <NavTop />
+      <DocumentModal />
       <GlobalLoader />
       <NotificationBanner />
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route path="/" />
+          <Route path="/" element={<Announcement />} />
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/chat" element={<Chat roomId={roomId} />} />
           <Route path="/files" element={<Files />} />
           <Route path="/editor" element={<SimpleEditor />} />
           <Route element={<AdminRoute />}>
             <Route path="/usermanagement" element={<UserManagement />} />
-            <Route path="/filemanagement" element={<FileManagement />} />
             <Route path="/roommanagement" element={<RoomManagement />} />
           </Route>
         </Route>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<EnterCode />} />
-        <Route path="/register/:inviteKey" element={<Register />} />
+        <Route element={<RedirectRoute />}>
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
+          <Route path="/reset/:token" element={<ResetPassword />} />
+          <Route path="/verify/:token" element={<MailVerification />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<EnterCode />} />
+          <Route path="/register/:inviteKey" element={<Register />} />
+        </Route>
       </Routes>
-    </>
+    </Box>
   );
 };
 

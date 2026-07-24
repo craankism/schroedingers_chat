@@ -17,6 +17,7 @@ public class AuthDTO {
     private boolean isAdmin;
     @JsonProperty("isTrainer")
     private boolean isTrainer;
+    @JsonProperty("isActive")
     private boolean isActive;
     private String jwt;
     private String refreshToken;

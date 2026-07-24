@@ -33,19 +33,33 @@ public class MinioConfig {
 
     @Bean
     public Boolean createBucketIfNeeded(MinioClient minioClient,
-                                        @Value("${minio.bucket.name}") String bucketName) {
+            @Value("${minio.bucket.name}") String bucketName) {
         try {
             boolean exists = minioClient.bucketExists(
-                    BucketExistsArgs.builder().bucket(bucketName).build()
-            );
+                    BucketExistsArgs.builder().bucket(bucketName).build());
             if (!exists) {
                 minioClient.makeBucket(
-                        MakeBucketArgs.builder().bucket(bucketName).build()
-                );
+                        MakeBucketArgs.builder().bucket(bucketName).build());
             }
             return true;
         } catch (Exception e) {
-            throw new RuntimeException("Konnte MinIO Bucket nicht erstellen: " + bucketName, e);
+            throw new IllegalStateException("Konnte MinIO Bucket nicht erstellen: " + bucketName, e);
+        }
+    }
+
+    @Bean
+    public Boolean createPPBucket(MinioClient minioClient,
+            @Value("${minio.bucket.name.pp}") String bucketName) {
+        try {
+            boolean exists = minioClient.bucketExists(
+                    BucketExistsArgs.builder().bucket(bucketName).build());
+            if (!exists) {
+                minioClient.makeBucket(
+                        MakeBucketArgs.builder().bucket(bucketName).build());
+            }
+            return true;
+        } catch (Exception e) {
+            throw new IllegalStateException("Konnte MinIO Bucket nicht erstellen: " + bucketName, e);
         }
     }
 }

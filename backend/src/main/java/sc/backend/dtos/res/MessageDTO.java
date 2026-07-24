@@ -12,8 +12,9 @@ import java.time.LocalDateTime;
 public class MessageDTO {
 
     private int messageId;
-    private int userId;
+    private Integer userId;
     private String content;
     private String sender;
     private LocalDateTime creationDate;
+    private Integer promptMessageId;
 }

@@ -3,17 +3,15 @@ package sc.backend.services;
 import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import sc.backend.dtos.req.EditRoomDTO;
 import sc.backend.dtos.req.CreateRoomDTO;
 import sc.backend.dtos.res.RoomDTO;
 import sc.backend.entities.Room;
 import sc.backend.entities.User;
+import sc.backend.exceptions.PermissionException;
 import sc.backend.repositories.RoomRepository;
-import sc.backend.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,12 +24,11 @@ import java.util.Set;
 public class RoomService {
 
     private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
     private final UserService userService;
 
     @Transactional
     public RoomDTO createRoom(CreateRoomDTO createRoomDTO, String authenticatedEmail) {
-        User creator = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User creator = userService.findUserByEmail(authenticatedEmail);
 
         Room room = Room.builder()
                 .name(createRoomDTO.getName())
@@ -67,8 +64,16 @@ public class RoomService {
     }
 
     @Transactional
-    public RoomDTO editRoom(int roomId, EditRoomDTO editRoomDTO) {
+    public RoomDTO editRoom(int roomId, EditRoomDTO editRoomDTO, String authenticatedEmail) {
         Room room = findRoomById(roomId);
+
+        User authenticatedUser = userService.findUserByEmail(authenticatedEmail);
+
+        User creator = room.getCreatedBy();
+
+        if (authenticatedUser.getUserId() != creator.getUserId() && !authenticatedUser.isAdmin()) {
+            throw new PermissionException("You are not allowed to edit this room");
+        }
 
         if (!room.getName().equals(editRoomDTO.getName())) {
             room.setName(editRoomDTO.getName());
@@ -94,12 +99,12 @@ public class RoomService {
     @Transactional
     public void deleteRoom(int roomId, String authenticatedEmail) {
         Room room = findRoomById(roomId);
-        User authenticatedUser = userService.getUserByEmail(userRepository.findByEmail(authenticatedEmail));
+        User authenticatedUser = userService.findUserByEmail(authenticatedEmail);
 
         User creator = room.getCreatedBy();
 
         if (authenticatedUser.getUserId() != creator.getUserId() && !authenticatedUser.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this room");
+            throw new PermissionException("You are not allowed to delete this room");
         }
 
         room.clearUsers();
